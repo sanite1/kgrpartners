@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+/*
+  KGR Partners theme — every value below is lifted verbatim from the
+  Claude Design handoff (KGR Home/About/Technology/Contact .dc.html).
+*/
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  /* brand greens */
+  --color-brand-50: #effbf1;
+  --color-brand-100: #d9f5df;
+  --color-brand-200: #b5ecc2;
+  --color-brand-300: #7fdd92;
+  --color-brand-400: #43d95e;
+  --color-brand-500: #0fa53a;
+  --color-brand-600: #0a7a2c;
+  --color-brand-700: #086423;
+
+  /* signature neon + solar amber */
+  --color-neon: #0ff338;
+  --color-solar: #f0b429;
+  --color-solar-700: #b07a0c;
+
+  /* deep greens & ink */
+  --color-ink: #0d1f15;
+  --color-forest: #06281a;
+  --color-forest-deep: #04170c;
+  --color-forest-line: #123524;
+  --color-forest-border: #14402c;
+
+  /* neutrals */
+  --color-mist: #f2f4f0;
+  --color-haze: #f7faf7;
+  --color-line: #e8ece8;
+  --color-card-line: #e4e9e3;
+  --color-divider: #e3e9e3;
+  --color-input-line: #dce4dc;
+  --color-bark: #4c5b51;
+  --color-sage: #5a675d;
+  --color-fog: #7a877e;
+  --color-fog-deep: #6b786e;
+  --color-mint: #9dbfa9;
+  --color-mint-soft: #8fae97;
+  --color-mint-dim: #7e9b88;
+  --color-mint-faint: #5f7d6a;
+  --color-mint-pale: #b9d4c1;
+  --color-placeholder: #9aa79e;
+}
+
+/* CTA gradient — linear-gradient(135deg,#0FA53A,#0FF338) everywhere in the design */
+@utility cta-gradient {
+  background-image: linear-gradient(135deg, #0fa53a, #0ff338);
+}
+
+/* hero headline gradient text */
+@utility text-gradient-green {
+  background-image: linear-gradient(135deg, #0fa53a, #43d95e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* page-header photo overlay */
+@utility header-overlay {
+  background: linear-gradient(
+    90deg,
+    rgba(4, 23, 12, 0.85) 0%,
+    rgba(4, 23, 12, 0.45) 70%,
+    rgba(4, 23, 12, 0.2)
+  );
+}
+
+/* outlined ghost numerals on the Technology page */
+@utility text-stroke-brand {
+  -webkit-text-stroke: 2px #0fa53a;
+}
+@utility text-stroke-solar {
+  -webkit-text-stroke: 2px #f0b429;
+}
+
+/* infinite topbar marquee (mobile) — two identical copies, shift one copy's width */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@utility animate-marquee {
+  animation: marquee 18s linear infinite;
+}
+
+/* hide scrollbars on mobile snap-scrollers without losing scroll */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    background: #fff;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: var(--color-brand-600);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--color-brand-500);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-placeholder);
+  }
+}
