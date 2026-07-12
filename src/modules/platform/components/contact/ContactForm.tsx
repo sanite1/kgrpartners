@@ -240,12 +240,12 @@ const ContactForm = () => {
 
         {showSent && (
           <p className="m-0 text-[13px] font-semibold text-brand-600">
-            Thanks — we've received your message.
+            Thanks, we've received your message.
           </p>
         )}
         {cooldown && (
           <p className="m-0 text-[13px] font-semibold text-solar-700">
-            Too many messages — please wait a moment before sending another.
+            Too many messages. Please wait a moment before sending another.
           </p>
         )}
       </form>

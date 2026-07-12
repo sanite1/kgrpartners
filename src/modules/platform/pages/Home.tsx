@@ -9,8 +9,8 @@ export default function Home() {
   return (
     <main>
       <PageMeta
-        title="KGR Partners — Nigeria's Solar Electric Transport Company"
-        description="Moving people and goods on pure sunshine. Converted electric buses, 800 kW of our own solar power and battery swaps in minutes — since 2017."
+        title="KGR Partners | Nigeria's Solar Electric Transport Company"
+        description="Moving people and goods on pure sunshine. Converted electric buses, 800 kW of our own solar power and battery swaps in minutes, since 2017."
       />
       <HomeHero />
       <ServicesSection />
