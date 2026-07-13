@@ -20,6 +20,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Leaf,
 };
 
+// Six collaboration areas in the gradient-badge row style of About's
+// "What we believe" section, with icons in the badges.
 const PartnerAreas = () => (
   <section className="px-5 py-16 sm:px-8 lg:px-16 lg:py-20">
     <div className="mx-auto max-w-7xl">
@@ -34,25 +36,22 @@ const PartnerAreas = () => (
       </div>
 
       <div
-        className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+        className="mt-12 grid grid-cols-1 gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-3"
         data-aos="fade-up"
         data-aos-delay="100"
       >
         {PARTNER_AREAS.map((area) => {
           const Icon = ICON_MAP[area.icon];
           return (
-            <div
-              key={area.title}
-              className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-6 transition-shadow hover:shadow-[0_12px_30px_rgba(13,31,21,0.08)] lg:p-7"
-            >
-              <span className="cta-gradient flex h-[52px] w-[52px] items-center justify-center rounded-xl text-forest-deep">
-                {Icon && <Icon size={24} strokeWidth={2.2} />}
+            <div key={area.title} className="flex gap-4">
+              <span className="cta-gradient flex h-11 w-11 flex-none items-center justify-center rounded-xl text-forest-deep">
+                {Icon && <Icon size={21} strokeWidth={2.3} />}
               </span>
               <div>
                 <div className="text-[17px] font-extrabold text-ink">
                   {area.title}
                 </div>
-                <p className="mb-0 mt-1.5 text-[14px] font-medium leading-[1.6] text-sage">
+                <p className="mb-0 mt-1 text-[14px] font-medium leading-[1.6] text-sage">
                   {area.description}
                 </p>
               </div>
@@ -63,7 +62,7 @@ const PartnerAreas = () => (
 
       {/* start the conversation */}
       <div
-        className="mt-10 flex flex-col items-start gap-6 rounded-[20px] bg-forest p-8 lg:flex-row lg:items-center lg:justify-between lg:p-10"
+        className="mt-14 flex flex-col items-start gap-6 rounded-[20px] bg-forest p-8 lg:flex-row lg:items-center lg:justify-between lg:p-10"
         data-aos="fade-up"
       >
         <div>

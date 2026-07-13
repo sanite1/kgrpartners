@@ -40,8 +40,7 @@ export const PARTNER_AREAS: PartnerArea[] = [
   },
   {
     title: "Carbon and climate finance",
-    description:
-      "Carbon credit generation and climate finance partnerships.",
+    description: "Carbon credit generation and climate finance partnerships.",
     icon: "Leaf",
   },
 ];
