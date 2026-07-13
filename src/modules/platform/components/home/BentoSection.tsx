@@ -37,10 +37,10 @@ const BentoSection = () => (
         <BoltMark width={26} height={34} />
         <div>
           <div className="text-[24px] font-extrabold text-white sm:text-[30px]">
-            4
+            800kW DC
           </div>
           <div className="text-[12px] font-semibold text-mint-soft sm:text-[13px]">
-            off-grid solar stations, built and run by us
+            our own off-grid solar power
           </div>
         </div>
       </div>
@@ -73,13 +73,23 @@ const BentoSection = () => (
         />
       </div>
 
-      {/* 0 L card */}
+      {/* 100% converted card */}
       <div className="flex flex-col justify-between rounded-[20px] border border-card-line bg-white p-5 sm:p-[22px]">
         <div className="text-[24px] font-extrabold text-ink sm:text-[30px]">
-          0 <span className="text-solar">g</span>
+          100<span className="text-solar">%</span>
         </div>
         <div className="text-[12px] font-semibold text-fog-deep sm:text-[13px]">
-          of grid or fossil power used to charge the fleet
+          of the fleet converted to electric
+        </div>
+      </div>
+
+      {/* CO₂ eliminated card */}
+      <div className="flex flex-col justify-between rounded-[20px] bg-forest p-5 sm:p-[22px]">
+        <div className="text-[24px] font-extrabold text-neon sm:text-[30px]">
+          4,158t
+        </div>
+        <div className="text-[12px] font-semibold text-mint-soft sm:text-[13px]">
+          of CO₂ eliminated to date
         </div>
       </div>
 

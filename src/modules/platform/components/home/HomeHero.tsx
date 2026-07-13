@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import BoltMark from "@/components/shared/BoltMark";
-import { HERO_STATS, HERO_IMAGES } from "@/data/home-data";
-import { cn } from "@/lib/utils";
+import { HERO_IMAGES } from "@/data/home-data";
 
 const HomeHero = () => (
   <section className="relative overflow-hidden bg-linear-to-b from-haze to-white px-5 pb-16 pt-10 sm:px-8 lg:px-16 lg:pb-20 lg:pt-[72px]">
@@ -15,19 +14,26 @@ const HomeHero = () => (
       className="relative flex flex-col justify-center gap-[22px]"
       data-aos="fade-up"
     >
-      <span className="inline-flex items-center gap-2 text-[12px] font-extrabold tracking-[2px] text-brand-500 sm:text-[13px]">
-        <span className="inline-block h-0.5 w-7 shrink-0 bg-solar" />
+      {/* status-pill eyebrow, echoing the "Solar station live" badge idiom */}
+      <span className="inline-flex w-fit items-center gap-2 whitespace-nowrap rounded-full border border-brand-200 bg-white py-2 pl-3 pr-3.5 text-[10px] font-extrabold tracking-[0.5px] text-brand-600 shadow-[0_4px_14px_rgba(15,165,58,0.12)] sm:gap-2.5 sm:pl-3.5 sm:pr-4 sm:text-[12px] sm:tracking-[2px]">
+        <span className="relative flex h-2.5 w-2.5 shrink-0">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-solar opacity-60 motion-reduce:animate-none" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-solar" />
+        </span>
         NIGERIA'S SOLAR ELECTRIC TRANSPORT COMPANY
       </span>
-      <h1 className="m-0 text-[38px] font-extrabold leading-[1.08] tracking-[-1.5px] text-ink sm:text-[48px] lg:text-[58px]">
-        Moving people and goods on{" "}
-        <span className="text-gradient-green">pure sunshine.</span>
+      <h1 className="m-0 text-[38px] font-extrabold leading-[1.08] tracking-[-1.5px] text-ink sm:text-[48px] lg:text-[56px]">
+        Driving Nigeria's{" "}
+        <span className="text-gradient-green">clean energy future</span>, one
+        electric vehicle at a time.
       </h1>
-      <p className="m-0 max-w-[500px] text-[16px] font-medium leading-[1.65] text-bark lg:text-[17px]">
-        Since 2017 we have carried communities to work and to school. Today
-        our electric buses and tricycles, built and converted by our own
-        engineers, run on our own off-grid solar stations, with battery swaps
-        that take under five minutes rather than hours.
+      <p className="m-0 max-w-[520px] text-[16px] font-medium leading-[1.65] text-bark lg:text-[17px]">
+        KGR Partners Ltd is an indigenous Nigerian clean energy mobility
+        company headquartered in Kaduna State. We build our own electric
+        tricycles from scratch, convert commercial buses to electric, and
+        charge the entire fleet on our own 800kW DC off-grid solar
+        infrastructure. No fossil fuel. No grid dependency. Just a fully
+        operational transport business moving over 5,000 commuters every day.
       </p>
       <div className="mt-1.5 flex flex-col gap-3.5 sm:flex-row">
         <Link
@@ -42,25 +48,6 @@ const HomeHero = () => (
         >
           ▶ See how it works
         </Link>
-      </div>
-      <div className="mt-4 grid grid-cols-3 divide-x divide-divider">
-        {HERO_STATS.map((stat, i) => (
-          <div
-            key={stat.label}
-            className={cn(
-              "flex flex-col gap-1",
-              i > 0 && "pl-4 sm:pl-8",
-              i < HERO_STATS.length - 1 && "pr-3 sm:pr-8",
-            )}
-          >
-            <div className="text-[22px] font-extrabold text-ink sm:text-[30px]">
-              {stat.value}
-            </div>
-            <div className="text-[12px] font-semibold text-fog sm:text-[13px]">
-              {stat.label}
-            </div>
-          </div>
-        ))}
       </div>
     </div>
 

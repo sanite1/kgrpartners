@@ -3,7 +3,7 @@ import SectionEyebrow from "@/components/shared/SectionEyebrow";
 import { STORY_CHECKS, STORY_IMAGE } from "@/data/home-data";
 
 const StoryTeaser = () => (
-  <section className="bg-white px-5 py-16 sm:px-8 lg:px-16 lg:py-[72px]">
+  <section className="bg-mist px-5 py-16 sm:px-8 lg:px-16 lg:py-[72px]">
     <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 lg:grid-cols-2">
     <div className="relative" data-aos="fade-right">
       <img

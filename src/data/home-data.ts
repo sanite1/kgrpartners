@@ -3,13 +3,6 @@ export interface HomeStat {
   label: string;
 }
 
-// the original design's stat trio, values corrected to the real data
-export const HERO_STATS: HomeStat[] = [
-  { value: "800kW DC", label: "Our own solar power" },
-  { value: "100%", label: "Fleet converted" },
-  { value: "4,158t", label: "CO₂ eliminated" },
-];
-
 // secondary stats bar from the content plan
 export const COMPANY_COUNTERS: HomeStat[] = [
   { value: "2017", label: "Founded" },

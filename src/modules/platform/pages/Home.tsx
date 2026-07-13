@@ -11,11 +11,11 @@ export default function Home() {
     <main>
       <PageMeta
         title="KGR Partners | Nigeria's Solar Electric Transport Company"
-        description="Moving people and goods on pure sunshine. Electric buses and tricycles built and charged in Kaduna on 800kW DC of our own off-grid solar power, since 2017."
+        description="Driving Nigeria's clean energy future, one electric vehicle at a time. Electric buses and tricycles built and charged in Kaduna on 800kW DC of our own off-grid solar power, since 2017."
       />
       <HomeHero />
-      <ServicesSection />
       <BentoSection />
+      <ServicesSection />
       <StoryTeaser />
       <CountersBand />
       <QuoteBand ctaLabel="Partner with us" ctaTo="/partner" />
