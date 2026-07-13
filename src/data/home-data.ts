@@ -3,11 +3,11 @@ export interface HomeStat {
   label: string;
 }
 
-// impact trio under the headline, per the content plan's hero stat band
+// the original design's stat trio, values corrected to the real data
 export const HERO_STATS: HomeStat[] = [
-  { value: "4,158t", label: "CO₂ eliminated to date" },
   { value: "800kW DC", label: "Our own solar power" },
-  { value: "30+ mo", label: "Zero-emission service" },
+  { value: "100%", label: "Fleet converted" },
+  { value: "4,158t", label: "CO₂ eliminated" },
 ];
 
 // secondary stats bar from the content plan

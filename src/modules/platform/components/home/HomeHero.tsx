@@ -17,30 +17,30 @@ const HomeHero = () => (
     >
       <span className="inline-flex items-center gap-2 text-[12px] font-extrabold tracking-[2px] text-brand-500 sm:text-[13px]">
         <span className="inline-block h-0.5 w-7 shrink-0 bg-solar" />
-        NIGERIA'S FIRST FULLY ELECTRIC MASS TRANSIT FLEET
+        NIGERIA'S SOLAR ELECTRIC TRANSPORT COMPANY
       </span>
-      <h1 className="m-0 text-[38px] font-extrabold leading-[1.08] tracking-[-1.5px] text-ink sm:text-[48px] lg:text-[56px]">
-        Driving Nigeria's{" "}
-        <span className="text-gradient-green">clean energy future</span>, one
-        electric vehicle at a time.
+      <h1 className="m-0 text-[38px] font-extrabold leading-[1.08] tracking-[-1.5px] text-ink sm:text-[48px] lg:text-[58px]">
+        Moving people and goods on{" "}
+        <span className="text-gradient-green">pure sunshine.</span>
       </h1>
       <p className="m-0 max-w-[500px] text-[16px] font-medium leading-[1.65] text-bark lg:text-[17px]">
-        An indigenous clean energy mobility company in Kaduna. We build our
-        own electric tricycles, convert commercial buses, and charge the whole
-        fleet on our own off-grid solar. No fossil fuel. No grid dependency.
+        Since 2017 we have carried communities to work and to school. Today
+        our electric buses and tricycles, built and converted by our own
+        engineers, run on our own off-grid solar stations, with battery swaps
+        that take under five minutes rather than hours.
       </p>
       <div className="mt-1.5 flex flex-col gap-3.5 sm:flex-row">
         <Link
-          to="/partner"
+          to="/about"
           className="rounded-lg bg-ink px-[30px] py-[15px] text-center text-[15px] font-extrabold text-white transition-transform hover:scale-[1.02] hover:text-white"
         >
-          Partner With Us
+          Discover our story
         </Link>
         <Link
-          to="/technology#impact"
+          to="/technology"
           className="rounded-lg border-2 border-brand-500 px-7 py-[13px] text-center text-[15px] font-extrabold text-brand-600 transition-colors hover:bg-brand-50"
         >
-          See Our Impact
+          ▶ See how it works
         </Link>
       </div>
       <div className="mt-4 grid grid-cols-3 divide-x divide-divider">
