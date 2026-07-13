@@ -37,10 +37,10 @@ const BentoSection = () => (
         <BoltMark width={26} height={34} />
         <div>
           <div className="text-[24px] font-extrabold text-white sm:text-[30px]">
-            800kW DC
+            4
           </div>
           <div className="text-[12px] font-semibold text-mint-soft sm:text-[13px]">
-            our own off-grid solar power
+            off-grid solar stations, built and run by us
           </div>
         </div>
       </div>

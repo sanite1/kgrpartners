@@ -17,20 +17,17 @@ const HomeHero = () => (
     >
       <span className="inline-flex items-center gap-2 text-[12px] font-extrabold tracking-[2px] text-brand-500 sm:text-[13px]">
         <span className="inline-block h-0.5 w-7 shrink-0 bg-solar" />
-        NIGERIA'S FIRST FULLY ELECTRIC, SOLAR-POWERED MASS TRANSIT FLEET
+        NIGERIA'S FIRST FULLY ELECTRIC MASS TRANSIT FLEET
       </span>
       <h1 className="m-0 text-[38px] font-extrabold leading-[1.08] tracking-[-1.5px] text-ink sm:text-[48px] lg:text-[56px]">
         Driving Nigeria's{" "}
         <span className="text-gradient-green">clean energy future</span>, one
         electric vehicle at a time.
       </h1>
-      <p className="m-0 max-w-[520px] text-[16px] font-medium leading-[1.65] text-bark lg:text-[17px]">
-        KGR Partners Ltd is an indigenous Nigerian clean energy mobility
-        company headquartered in Kaduna State. We build our own electric
-        tricycles from scratch, convert commercial buses to electric, and
-        charge the entire fleet on our own 800kW DC off-grid solar
-        infrastructure. No fossil fuel. No grid dependency. Just a fully
-        operational transport business moving over 5,000 commuters every day.
+      <p className="m-0 max-w-[500px] text-[16px] font-medium leading-[1.65] text-bark lg:text-[17px]">
+        An indigenous clean energy mobility company in Kaduna. We build our
+        own electric tricycles, convert commercial buses, and charge the whole
+        fleet on our own off-grid solar. No fossil fuel. No grid dependency.
       </p>
       <div className="mt-1.5 flex flex-col gap-3.5 sm:flex-row">
         <Link
