@@ -20,8 +20,9 @@ const ServicesSection = () => (
       </Link>
     </div>
 
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-      {SERVICES.map((service, i) => (
+    {/* top three only; the full set lives on /technology via "All services" */}
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      {SERVICES.slice(0, 3).map((service, i) => (
         <div
           key={service.title}
           className="group overflow-hidden rounded-2xl border border-line bg-white transition-shadow hover:shadow-[0_16px_40px_rgba(13,31,21,0.1)]"
