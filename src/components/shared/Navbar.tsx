@@ -62,10 +62,10 @@ const Navbar = () => {
             </NavLink>
           ))}
           <Link
-            to="/contact"
+            to="/partner"
             className="cta-gradient rounded-lg px-6 py-[11px] text-[14px] font-extrabold text-forest-deep transition-transform hover:scale-[1.03] hover:text-forest-deep"
           >
-            Request a Ride →
+            Partner With Us →
           </Link>
         </nav>
 
@@ -114,11 +114,11 @@ const Navbar = () => {
               </NavLink>
             ))}
             <Link
-              to="/contact"
+              to="/partner"
               onClick={() => setOpen(false)}
               className="cta-gradient mt-2 rounded-lg px-6 py-3.5 text-center text-[15px] font-extrabold text-forest-deep hover:text-forest-deep"
             >
-              Request a Ride →
+              Partner With Us →
             </Link>
             <div className="mt-3 border-t border-line pt-3 text-[13px] font-semibold text-fog">
               {COMPANY_INFO.phone} · {COMPANY_INFO.email}

@@ -13,6 +13,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.kgrpartners.com/team</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.kgrpartners.com/gallery</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.kgrpartners.com/faq</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.kgrpartners.com/partner</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.kgrpartners.com/contact</loc>
     <priority>0.8</priority>
   </url>

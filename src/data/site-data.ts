@@ -3,10 +3,13 @@ export interface NavLinkItem {
   to: string;
 }
 
+// Team / FAQ / Partner stay out of the bar to keep it uncrowded; they are
+// reachable from the footer, the About team teaser, and the nav CTA.
 export const NAV_LINKS: NavLinkItem[] = [
   { label: "Home", to: "/" },
   { label: "About Us", to: "/about" },
   { label: "Our Technology", to: "/technology" },
+  { label: "Gallery", to: "/gallery" },
   { label: "Contact", to: "/contact" },
 ];
 
@@ -32,13 +35,17 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
     title: "Company",
     links: [
       { label: "About us", to: "/about" },
-      { label: "Our technology", to: "/technology" },
+      { label: "Meet the team", to: "/team" },
+      { label: "Gallery", to: "/gallery" },
+      { label: "FAQ", to: "/faq" },
+      { label: "Partner with us", to: "/partner" },
       { label: "Contact", to: "/contact" },
     ],
   },
   {
     title: "Services",
     links: [
+      { label: "Tricycle manufacturing", to: "/technology#manufacturing" },
       { label: "Electric conversion", to: "/technology#conversion" },
       { label: "Solar charging", to: "/technology#solar-charging" },
       { label: "Battery swapping", to: "/technology#battery-swapping" },

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -48,6 +49,13 @@ const ContactForm = () => {
   const [cooldown, setCooldown] = useState(false);
   const submitContact = useSubmitContact();
 
+  // e.g. /contact?subject=Partnership preselects the matching subject
+  const [searchParams] = useSearchParams();
+  const subjectParam = searchParams.get("subject");
+  const defaultSubject = CONTACT_SUBJECTS.includes(subjectParam ?? "")
+    ? (subjectParam as string)
+    : CONTACT_SUBJECTS[0];
+
   const {
     register,
     handleSubmit,
@@ -60,7 +68,7 @@ const ContactForm = () => {
       name: "",
       email: "",
       phone: "",
-      subject: CONTACT_SUBJECTS[0],
+      subject: defaultSubject,
       message: "",
     },
   });

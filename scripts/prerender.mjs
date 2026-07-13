@@ -19,7 +19,31 @@ const ROUTES = [
     path: "/technology",
     title: "Our Technology | KGR Partners",
     description:
-      "Three systems, one fleet that never stops: petrol to electric conversion, 800kW DC of our own off-grid solar charging, and battery swaps in under 5 minutes.",
+      "Four systems, one fleet that never stops: local tricycle manufacturing, petrol to electric conversion, 800kW DC off-grid solar charging, and battery swaps in under 5 minutes.",
+  },
+  {
+    path: "/team",
+    title: "Meet the Team | KGR Partners",
+    description:
+      "The nine people behind Nigeria's first fully electric, solar-powered mass transit fleet, from the CEO to the battery technicians.",
+  },
+  {
+    path: "/gallery",
+    title: "Gallery | KGR Partners",
+    description:
+      "The fleet, the solar stations and the swap bays. Photos of KGR Partners' electric transport operation in Kaduna.",
+  },
+  {
+    path: "/faq",
+    title: "FAQ | KGR Partners",
+    description:
+      "What we do, how battery swapping works, where we operate and how to partner with KGR Partners.",
+  },
+  {
+    path: "/partner",
+    title: "Partner With Us | KGR Partners",
+    description:
+      "We collaborate with government agencies, investors, transport unions and development organisations on EV conversion, charging infrastructure and fleet electrification.",
   },
   {
     path: "/contact",

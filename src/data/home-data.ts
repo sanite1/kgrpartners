@@ -3,10 +3,20 @@ export interface HomeStat {
   label: string;
 }
 
+// impact trio under the headline, per the content plan's hero stat band
 export const HERO_STATS: HomeStat[] = [
+  { value: "4,158t", label: "CO₂ eliminated to date" },
   { value: "800kW DC", label: "Our own solar power" },
-  { value: "50+", label: "Electric fleet" },
+  { value: "30+ mo", label: "Zero-emission service" },
+];
+
+// secondary stats bar from the content plan
+export const COMPANY_COUNTERS: HomeStat[] = [
+  { value: "2017", label: "Founded" },
+  { value: "50+", label: "Fleet size" },
   { value: "5,000+", label: "Daily commuters" },
+  { value: "100+", label: "Total staff" },
+  { value: "300+", label: "Indirect jobs" },
 ];
 
 export interface ServiceCard {
@@ -18,6 +28,14 @@ export interface ServiceCard {
 }
 
 export const SERVICES: ServiceCard[] = [
+  {
+    techId: "manufacturing",
+    title: "Local tricycle manufacturing",
+    description:
+      "We do not just convert. We design and build electric tricycles (Keke NAPEP) from scratch using locally sourced materials, right here in Kaduna.",
+    image:
+      "https://images.unsplash.com/photo-1549383433-0d8ef3f38afa?w=600&q=80",
+  },
   {
     techId: "conversion",
     title: "Petrol to electric conversion",

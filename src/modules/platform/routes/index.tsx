@@ -7,6 +7,10 @@ import NotFound from "../pages/NotFound";
 const Home = lazy(() => import("../pages/Home"));
 const About = lazy(() => import("../pages/About"));
 const Technology = lazy(() => import("../pages/Technology"));
+const Team = lazy(() => import("../pages/Team"));
+const Gallery = lazy(() => import("../pages/Gallery"));
+const Faq = lazy(() => import("../pages/Faq"));
+const Partner = lazy(() => import("../pages/Partner"));
 const Contact = lazy(() => import("../pages/Contact"));
 
 const LoadingFallback = () => (
@@ -24,6 +28,10 @@ export const PlatformRoutes = () => (
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/technology" element={<Technology />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/faq" element={<Faq />} />
+          <Route path="/partner" element={<Partner />} />
           <Route path="/contact" element={<Contact />} />
         </Route>
         <Route path="*" element={<NotFound />} />

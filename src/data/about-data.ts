@@ -61,6 +61,12 @@ export const BELIEFS: BeliefItem[] = [
   },
 ];
 
+export const VISION =
+  "To be the leading indigenous electric vehicle mobility company in Nigeria, driving a clean, affordable, and sustainable transportation revolution from Northern Nigeria to the entire nation.";
+
+export const MISSION =
+  "To deliver reliable, locally-adapted electric vehicle solutions and off-grid solar charging infrastructure that reduce transportation costs, cut carbon emissions, and create economic opportunities for Nigerian communities nationwide.";
+
 export const ABOUT_IMAGES = {
   header:
     "https://images.unsplash.com/photo-1649502913092-fb7f0e8fc632?w=1400&q=80",
