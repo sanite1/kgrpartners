@@ -81,7 +81,9 @@ over the rewrite automatically.
 
 - Replace Unsplash placeholder photos with real fleet/depot photography
   (all URLs live in `src/data/*-data.ts`).
-- Replace the placeholder phone number `+234 800 000 0000`
-  (`src/data/site-data.ts`, `src/data/contact-data.ts`, `index.html` JSON-LD).
 - Replace `public/og-image.png` with a real 1200×630 share card.
 - After deploy, submit `sitemap.xml` in Google Search Console.
+
+Real company data (contact details, stats, story) comes from
+`KGR_Partners_Website_Content_Plan` and is integrated in phases; see
+`src/data/` for the single source of truth per page.

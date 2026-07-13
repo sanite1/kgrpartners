@@ -11,7 +11,7 @@ export default function About() {
     <main>
       <PageMeta
         title="About Us | KGR Partners"
-        description="The road taught us. The sun changed us. From a 2017 diesel fleet to Nigeria's fully converted solar electric transport company."
+        description="The road taught us. The sun changed us. From a 2017 fuel-powered fleet to Nigeria's first fully electric, solar-powered mass transit operator and local EV manufacturer."
       />
       <PageHeader
         eyebrow="ABOUT US"

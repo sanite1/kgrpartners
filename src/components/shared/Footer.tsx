@@ -41,9 +41,11 @@ const Footer = () => (
         <span className="mb-1.5 text-[14px] font-extrabold text-white">
           Reach us
         </span>
-        <span>{COMPANY_INFO.location}</span>
+        <span>{COMPANY_INFO.address}</span>
         <span>{COMPANY_INFO.email}</span>
-        <span>{COMPANY_INFO.phone}</span>
+        <span>
+          {COMPANY_INFO.phone} · {COMPANY_INFO.phone2}
+        </span>
       </div>
     </div>
 

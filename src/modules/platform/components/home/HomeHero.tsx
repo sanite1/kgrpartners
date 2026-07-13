@@ -25,9 +25,10 @@ const HomeHero = () => (
       </h1>
       <p className="m-0 max-w-[500px] text-[16px] font-medium leading-[1.65] text-bark lg:text-[17px]">
         Since 2017 we have carried communities to work and to school. Today our
-        converted electric buses run without a single breakdown, powered by our
-        own 800&nbsp;kW solar stations, with battery swaps that take minutes
-        rather than hours.
+        fleet of 50+ electric buses and tricycles serves over 5,000 daily
+        commuters, charged entirely by our own 800kW DC off-grid solar
+        stations, with battery swaps that take under five minutes rather than
+        hours.
       </p>
       <div className="mt-1.5 flex flex-col gap-3.5 sm:flex-row">
         <Link

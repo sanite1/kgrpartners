@@ -11,28 +11,28 @@ export const TIMELINE: TimelineEntry[] = [
     period: "2017",
     title: "We start driving",
     description:
-      "A diesel fleet begins moving people and goods across Nigerian roads, serving workers, students and traders every day.",
+      "Registered with the CAC, a conventional fuel-powered fleet begins moving people and goods across the Kaduna metropolis, serving workers, students and traders every day.",
     accent: "solar",
   },
   {
-    period: "2017 to 2022",
+    period: "2017 to 2023",
     title: "We learn and prepare",
     description:
-      "While serving our routes, we build the engineering skill and capability to reimagine the fleet from the ground up.",
+      "Volatile fuel costs and heavy maintenance push us to build the engineering skill to reimagine the fleet from the ground up.",
     accent: "solar",
   },
   {
-    period: "2023",
+    period: "Late 2023",
     title: "We go electric",
     description:
-      "Old engines come out, silent electric powertrains go in. Our solar stations rise and the battery swap system goes live.",
+      "Our first batch of vehicles is retrofitted to full electric power and tested across Kaduna's urban terrain. The remaining fleet follows, charged by our own solar stations.",
     accent: "brand",
   },
   {
     period: "Today",
-    title: "We run on sunshine",
+    title: "We build our own EVs",
     description:
-      "Nearly two years electric, without a single breakdown, insulated from fuel prices and free of diesel fumes.",
+      "Over 30 months of zero-emission, revenue-generating operation. And beyond converting, we now build electric tricycles from scratch with locally sourced materials.",
     accent: "neon",
     dark: true,
   },

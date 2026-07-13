@@ -13,13 +13,13 @@ const ROUTES = [
     path: "/about",
     title: "About Us | KGR Partners",
     description:
-      "The road taught us. The sun changed us. From a 2017 diesel fleet to Nigeria's fully converted solar electric transport company.",
+      "The road taught us. The sun changed us. From a 2017 fuel-powered fleet to Nigeria's first fully electric, solar-powered mass transit operator and local EV manufacturer.",
   },
   {
     path: "/technology",
     title: "Our Technology | KGR Partners",
     description:
-      "Three systems, one fleet that never stops: diesel-to-electric conversion, 800 kW of our own solar charging, and battery swaps in minutes.",
+      "Three systems, one fleet that never stops: petrol to electric conversion, 800kW DC of our own off-grid solar charging, and battery swaps in under 5 minutes.",
   },
   {
     path: "/contact",

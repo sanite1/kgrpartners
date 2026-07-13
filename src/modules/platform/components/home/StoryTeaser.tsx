@@ -22,10 +22,11 @@ const StoryTeaser = () => (
         We did not buy a green fleet. We built one.
       </h2>
       <p className="m-0 text-[16px] font-medium leading-[1.7] text-bark">
-        Fuel crises, rising diesel costs and constant wear pushed us to a
-        decision in 2023: leave fossil fuels behind for good. Instead of
-        scrapping our ageing buses, we gave them a second life, rebuilt by our
-        own engineers as clean, silent electric machines.
+        Volatile fuel costs and heavy maintenance pushed us to a decision in
+        late 2023: leave fossil fuels behind for good. Instead of scrapping our
+        ageing vehicles, we gave them a second life, rebuilt by our own
+        engineers as clean, silent electric machines. Today we go further and
+        build electric tricycles from scratch, right here in Kaduna.
       </p>
       <div className="mt-1.5 flex flex-col gap-3 text-[15px] font-bold text-ink">
         {STORY_CHECKS.map((check) => (

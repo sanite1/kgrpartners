@@ -4,9 +4,9 @@ export interface HomeStat {
 }
 
 export const HERO_STATS: HomeStat[] = [
-  { value: "800 kW", label: "Our own solar power" },
-  { value: "100%", label: "Fleet converted" },
-  { value: "0 L", label: "Diesel burned" },
+  { value: "800kW DC", label: "Our own solar power" },
+  { value: "50+", label: "Electric fleet" },
+  { value: "5,000+", label: "Daily commuters" },
 ];
 
 export interface ServiceCard {
@@ -20,9 +20,9 @@ export interface ServiceCard {
 export const SERVICES: ServiceCard[] = [
   {
     techId: "conversion",
-    title: "Diesel to electric conversion",
+    title: "Petrol to electric conversion",
     description:
-      "Old engines out, silent electric powertrains in. Our own fleet was our first customer, and every bus earned a second life instead of a trip to the scrapyard.",
+      "Old engines out, silent electric powertrains in. We retrofit commercial buses and Keke NAPEP tricycles, and every vehicle earns a second life instead of a trip to the scrapyard.",
     image:
       "https://images.unsplash.com/photo-1529171918672-ba6d0733a56c?w=600&q=80",
   },
@@ -30,7 +30,7 @@ export const SERVICES: ServiceCard[] = [
     techId: "solar-charging",
     title: "Solar charging stations",
     description:
-      "We designed and built our own stations, generating about 800 kW. That is more than the entire fleet needs to run on sunlight every single day.",
+      "We designed and built 4 off-grid stations generating about 800kW DC combined. That is more than the entire fleet needs to run on sunlight every single day.",
     image:
       "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&q=80",
   },
@@ -38,16 +38,16 @@ export const SERVICES: ServiceCard[] = [
     techId: "battery-swapping",
     title: "Battery swap network",
     description:
-      "Depleted packs are exchanged for charged ones in minutes. Our buses keep moving while others sit and wait at chargers.",
+      "Depleted packs are exchanged for fully charged ones in under 5 minutes. Our vehicles keep moving while others sit and wait at chargers.",
     image:
       "https://images.unsplash.com/photo-1572816225927-d08fb138f2b2?w=600&q=80",
   },
 ];
 
 export const STORY_CHECKS: string[] = [
-  "Conversion over replacement, nothing to the scrapyard",
-  "Solar stations designed and run by our own team",
-  "Integrated battery swapping in minutes, not hours",
+  "Electric tricycles built from scratch with locally sourced materials",
+  "4 off-grid solar stations designed and run by our own team",
+  "Integrated battery swapping in under 5 minutes, not hours",
 ];
 
 export const HERO_IMAGES = {

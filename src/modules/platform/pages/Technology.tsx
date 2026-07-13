@@ -10,7 +10,7 @@ export default function Technology() {
     <main>
       <PageMeta
         title="Our Technology | KGR Partners"
-        description="Three systems, one fleet that never stops: diesel-to-electric conversion, 800 kW of our own solar charging, and battery swaps in minutes."
+        description="Three systems, one fleet that never stops: petrol to electric conversion, 800kW DC of our own off-grid solar charging, and battery swaps in under 5 minutes."
       />
       <PageHeader
         eyebrow="OUR TECHNOLOGY"

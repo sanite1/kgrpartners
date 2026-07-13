@@ -15,9 +15,17 @@ export interface ContactChannel {
 }
 
 export const CONTACT_CHANNELS: ContactChannel[] = [
-  { label: "EMAIL US", value: "info@kgrpartners.com", icon: "Mail" },
-  { label: "CALL US", value: "+234 800 000 0000", icon: "Phone" },
-  { label: "VISIT THE DEPOT", value: "Kaduna, Nigeria", icon: "MapPin" },
+  { label: "EMAIL US", value: "kgrpartners744@gmail.com", icon: "Mail" },
+  {
+    label: "CALL US",
+    value: "0703 697 3015 · 0803 343 4560",
+    icon: "Phone",
+  },
+  {
+    label: "VISIT THE DEPOT",
+    value: "No.6 GGSS Road, Kawo, Kaduna",
+    icon: "MapPin",
+  },
 ];
 
 export interface ContactQuickStat {

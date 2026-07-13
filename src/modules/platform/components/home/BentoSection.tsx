@@ -32,15 +32,15 @@ const BentoSection = () => (
         </div>
       </div>
 
-      {/* 800 kW dark card */}
+      {/* 800kW DC dark card */}
       <div className="flex flex-col justify-between rounded-[20px] bg-ink p-5 sm:p-[22px]">
         <BoltMark width={26} height={34} />
         <div>
           <div className="text-[24px] font-extrabold text-white sm:text-[30px]">
-            800 kW
+            800kW DC
           </div>
           <div className="text-[12px] font-semibold text-mint-soft sm:text-[13px]">
-            our own solar power
+            our own off-grid solar power
           </div>
         </div>
       </div>
@@ -54,13 +54,13 @@ const BentoSection = () => (
         />
       </div>
 
-      {/* 3 min gradient card */}
+      {/* swap-time gradient card */}
       <div className="cta-gradient flex flex-col justify-between rounded-[20px] p-5 sm:p-[22px]">
         <div className="text-[24px] font-extrabold text-forest-deep sm:text-[30px]">
-          3 min
+          &lt; 5 min
         </div>
         <div className="text-[13px] font-bold text-forest-deep sm:text-[14px]">
-          battery swap, so buses never wait at chargers
+          battery swap, so vehicles never wait at chargers
         </div>
       </div>
 
@@ -76,10 +76,10 @@ const BentoSection = () => (
       {/* 0 L card */}
       <div className="flex flex-col justify-between rounded-[20px] border border-card-line bg-white p-5 sm:p-[22px]">
         <div className="text-[24px] font-extrabold text-ink sm:text-[30px]">
-          0 <span className="text-solar">L</span>
+          0 <span className="text-solar">g</span>
         </div>
         <div className="text-[12px] font-semibold text-fog-deep sm:text-[13px]">
-          diesel burned per day on routes free of fumes
+          of grid or fossil power used to charge the fleet
         </div>
       </div>
 

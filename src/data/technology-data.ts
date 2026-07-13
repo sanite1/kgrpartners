@@ -20,11 +20,11 @@ export const TECH_SYSTEMS: TechSystem[] = [
     number: "01",
     title: "Diesel to electric conversion",
     description:
-      "Every bus in our fleet once burned diesel. Our engineers strip out the old engine, gearbox and fuel system, then install a silent electric powertrain in its place. The body, the seats and the soul of the bus stay Nigerian. Only the smoke leaves.",
+      "Every vehicle in our fleet once burned petrol or diesel. Our engineers strip out the old engine, gearbox and fuel system, then install a silent electric powertrain built for Nigerian road and load conditions. We electrify 10-seater commercial buses and Keke NAPEP tricycles alike. Only the smoke leaves.",
     stats: [
       { value: "100%", label: "of our fleet converted" },
-      { value: "0", label: "buses scrapped" },
-      { value: "Silent", label: "and free of fumes" },
+      { value: "50+", label: "buses and tricycles" },
+      { value: "0", label: "vehicles scrapped" },
     ],
     image:
       "https://images.unsplash.com/photo-1529171918672-ba6d0733a56c?w=800&q=80",
@@ -35,11 +35,11 @@ export const TECH_SYSTEMS: TechSystem[] = [
     number: "02",
     title: "Solar charging stations",
     description:
-      "We built our own charging infrastructure rather than wait for the grid. Our solar stations generate roughly 800 kW, more than the entire fleet needs. Every kilometre we drive is powered by Nigerian sunlight collected on Nigerian rooftops.",
+      "We built our own charging infrastructure rather than wait for the grid. Our 4 off-grid solar stations generate roughly 800kW DC combined, fully independent of the national grid. Every kilometre we drive is powered by Nigerian sunlight, even where public power supply is unreliable.",
     stats: [
-      { value: "800 kW", label: "generation capacity" },
-      { value: "100%", label: "fleet needs covered" },
-      { value: "₦0", label: "spent on diesel" },
+      { value: "800kW DC", label: "combined solar capacity" },
+      { value: "4", label: "off-grid charging stations" },
+      { value: "₦0", label: "spent on fuel or grid power" },
     ],
     image:
       "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&q=80",
@@ -51,11 +51,11 @@ export const TECH_SYSTEMS: TechSystem[] = [
     number: "03",
     title: "Integrated battery swapping",
     description:
-      "A bus that waits at a charger is a bus that earns nothing. So we designed a battery swap system: when a pack runs low, the bus rolls into a station and exchanges it for a fully charged one in minutes. The depleted pack charges on solar while the bus is already back on its route.",
+      "A vehicle that waits at a charger is a vehicle that earns nothing. So we built a proprietary battery swap system: when a pack runs low, the vehicle rolls into a station and exchanges it for a fully charged, pre-verified one in under 5 minutes. The depleted pack charges on solar while the vehicle is already back on its route.",
     stats: [
-      { value: "Minutes", label: "per battery swap" },
+      { value: "< 5 min", label: "per battery swap" },
       { value: "0 hrs", label: "idle at chargers" },
-      { value: "~2 yrs", label: "without a breakdown" },
+      { value: "30+ mo", label: "zero-emission operation" },
     ],
     image:
       "https://images.unsplash.com/photo-1572816225927-d08fb138f2b2?w=800&q=80",

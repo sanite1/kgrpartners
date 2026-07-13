@@ -16,17 +16,18 @@ const StoryIntro = () => (
       data-aos-delay="100"
     >
       <p className="m-0">
-        KGR Partners started operations in 2017, moving people and goods across
-        Nigeria with a fleet of conventional diesel buses. We soon met the
-        familiar problems of the business: fuel crises, rising diesel costs
-        eating into margins, smoke and emissions, and mechanical wear that made
-        life harder for drivers and passengers alike.
+        KGR Partners Ltd is an indigenous Nigerian clean energy mobility
+        company headquartered in Kaduna State. Founded in 2017 and registered
+        with the Corporate Affairs Commission (RC: 7451921), we were
+        established to provide affordable, efficient and sustainable township
+        mobility services within the Kaduna metropolis.
       </p>
       <p className="m-0">
-        Rather than accept those problems as the cost of doing business, we
-        spent our early years serving communities while quietly building the
-        technical knowledge to do things differently. In 2023 we made the
-        decision that would redefine us. We left fossil fuels behind for good.
+        Since commencing commercial operations in 2017, we have grown from a
+        conventional internal combustion engine transport operator into one of
+        the few private companies in Northern Nigeria running commercially
+        converted electric vehicles on public roads. Not as a pilot, but as a
+        fully operational, revenue-generating transport business.
       </p>
     </div>
     </div>

@@ -11,12 +11,15 @@ export const NAV_LINKS: NavLinkItem[] = [
 ];
 
 export const COMPANY_INFO = {
-  location: "Kaduna, Nigeria",
+  location: "Kawo, Kaduna State, Nigeria",
+  address: "No.6 GGSS Road, KTC Layout, Kawo, Kaduna State, Nigeria",
   hours: "Mon to Sat, 6:00 to 20:00",
-  email: "info@kgrpartners.com",
-  phone: "+234 800 000 0000",
+  email: "kgrpartners744@gmail.com",
+  phone: "0703 697 3015",
+  phone2: "0803 343 4560",
+  rcNumber: "RC: 7451921",
   blurb:
-    "A Nigerian transport company moving people and goods on solar charged electric buses, converted and powered by our own team.",
+    "An indigenous Nigerian clean energy mobility company. We build and convert electric vehicles, charge them on our own off-grid solar stations, and move thousands of commuters across Kaduna every day.",
 };
 
 export interface FooterColumn {
