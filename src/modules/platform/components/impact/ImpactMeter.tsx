@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Fuel, Zap } from "lucide-react";
+import { Fuel, Zap, Leaf } from "lucide-react";
 import SectionEyebrow from "@/components/shared/SectionEyebrow";
 import {
   EMISSION_FACTOR_DIESEL,
@@ -252,6 +252,22 @@ const ImpactMeter = () => {
                 className={inputClasses}
               />
             </div>
+            {/* the emission factor in use, mirroring the EV tab's rates strip */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl border border-line bg-haze px-4 py-3.5">
+              <span className="flex items-center gap-1.5 text-[13px] font-extrabold text-ink">
+                <Fuel size={15} className="text-solar-700" />
+                {fFactor}
+                <span className="font-semibold text-fog">
+                  kg CO₂ / litre of {fType === "bus" ? "diesel" : "petrol"}
+                </span>
+              </span>
+              <span className="hidden h-3.5 w-px bg-divider sm:block" />
+              <span className="flex items-center gap-1.5 text-[12px] font-semibold text-fog">
+                <Leaf size={14} className="text-brand-600" />
+                standard combustion factor
+              </span>
+            </div>
+
             <p className="m-0 text-[12.5px] font-semibold leading-[1.5] text-fog">
               ≈ {fmt1(fLitresDay)} L of {fType === "bus" ? "diesel" : "petrol"}{" "}
               avoided per day across the fleet.
