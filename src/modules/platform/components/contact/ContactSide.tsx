@@ -35,10 +35,10 @@ const ContactSide = () => (
         Own petrol or diesel vehicles? Ask about converting them to electric.
       </div>
       <Link
-        to="/technology"
+        to="/conversion"
         className="cta-gradient self-start rounded-lg px-6 py-3 text-[14px] font-extrabold text-forest-deep hover:text-forest-deep"
       >
-        How conversion works →
+        Start a conversion sheet →
       </Link>
     </div>
 

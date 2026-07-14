@@ -3,13 +3,13 @@ export interface NavLinkItem {
   to: string;
 }
 
-// Team / FAQ / Partner stay out of the bar to keep it uncrowded; they are
-// reachable from the footer, the About team teaser, and the nav CTA.
+// Team / FAQ / Partner / Gallery stay out of the bar to keep it uncrowded;
+// all of them remain reachable from the footer.
 export const NAV_LINKS: NavLinkItem[] = [
   { label: "Home", to: "/" },
   { label: "About Us", to: "/about" },
   { label: "Our Technology", to: "/technology" },
-  { label: "Gallery", to: "/gallery" },
+  { label: "Impact Calculator", to: "/impact" },
   { label: "Contact", to: "/contact" },
 ];
 
@@ -37,6 +37,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "About us", to: "/about" },
       { label: "Meet the team", to: "/team" },
       { label: "Gallery", to: "/gallery" },
+      { label: "Impact calculator", to: "/impact" },
       { label: "FAQ", to: "/faq" },
       { label: "Partner with us", to: "/partner" },
       { label: "Contact", to: "/contact" },
@@ -49,6 +50,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "Electric conversion", to: "/technology#conversion" },
       { label: "Solar charging", to: "/technology#solar-charging" },
       { label: "Battery swapping", to: "/technology#battery-swapping" },
+      { label: "Start a conversion", to: "/conversion" },
     ],
   },
 ];

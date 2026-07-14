@@ -11,12 +11,20 @@ const CtaBand = () => (
           We convert, we power, we keep you moving. Talk to our engineers.
         </p>
       </div>
-      <Link
-        to="/contact"
-        className="cta-gradient shrink-0 rounded-lg px-8 py-4 text-[15px] font-extrabold text-forest-deep transition-transform hover:scale-[1.03] hover:text-forest-deep"
-      >
-        Get in touch →
-      </Link>
+      <div className="flex shrink-0 flex-wrap gap-3">
+        <Link
+          to="/conversion"
+          className="cta-gradient rounded-lg px-8 py-4 text-[15px] font-extrabold text-forest-deep transition-transform hover:scale-[1.03] hover:text-forest-deep"
+        >
+          Start a conversion sheet →
+        </Link>
+        <Link
+          to="/contact"
+          className="rounded-lg border-2 border-brand-500 px-7 py-[14px] text-[15px] font-extrabold text-brand-600 transition-colors hover:bg-brand-50"
+        >
+          Get in touch
+        </Link>
+      </div>
     </div>
   </section>
 );

@@ -46,6 +46,18 @@ const ROUTES = [
       "We collaborate with government agencies, investors, transport unions and development organizations on EV conversion, charging infrastructure and fleet electrification.",
   },
   {
+    path: "/conversion",
+    title: "Start Your Conversion | KGR Partners",
+    description:
+      "Tell us about your vehicle with the EV conversion technical information sheet. Fill it online in six short steps, or download the fillable PDF.",
+  },
+  {
+    path: "/impact",
+    title: "Impact Calculator | KGR Partners",
+    description:
+      "See what today's routes are worth: CO₂ avoided by the solar-charged fleet, and what you would save in naira by switching your own vehicle to electric.",
+  },
+  {
     path: "/contact",
     title: "Contact | KGR Partners",
     description:
