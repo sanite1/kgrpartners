@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.kgrpartners.com/sitemap.xml
+Sitemap: https://www.kgrpartnersltd.com/sitemap.xml

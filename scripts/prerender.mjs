@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const SITE_URL = "https://www.kgrpartners.com";
+const SITE_URL = "https://www.kgrpartnersltd.com";
 
 const ROUTES = [
   {

@@ -66,7 +66,7 @@ anchors above.
 - **Convention:** page meta lives in TWO places — each page's `<PageMeta>`
   and the `ROUTES` table in `scripts/prerender.mjs`. Change one → change the
   other.
-- **Domain:** `https://www.kgrpartners.com` is assumed in
+- **Domain:** `https://www.kgrpartnersltd.com` is assumed in
   `scripts/prerender.mjs` (`SITE_URL`), `index.html` (OG/canonical/JSON-LD),
   `public/robots.txt` and `public/sitemap.xml`. If the real domain differs,
   update all four.
