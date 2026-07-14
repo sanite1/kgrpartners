@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { Fuel, Zap } from "lucide-react";
 import SectionEyebrow from "@/components/shared/SectionEyebrow";
 import {
   EMISSION_FACTOR_DIESEL,
@@ -351,11 +352,28 @@ const ImpactMeter = () => {
               />
             </div>
 
-            <details className="rounded-xl border border-line bg-haze p-4">
-              <summary className="cursor-pointer text-[13px] font-extrabold text-brand-600">
-                Adjust local prices
+            {/* the rates in use, always visible; expand to edit */}
+            <details className="group rounded-xl border border-line bg-haze">
+              <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-3.5 [&::-webkit-details-marker]:hidden">
+                <span className="flex items-center gap-1.5 text-[13px] font-extrabold text-ink">
+                  <Fuel size={15} className="text-solar-700" />
+                  ₦{fmt(num(ePriceP))}
+                  <span className="font-semibold text-fog">/ litre petrol</span>
+                </span>
+                <span className="hidden h-3.5 w-px bg-divider sm:block" />
+                <span className="flex items-center gap-1.5 text-[13px] font-extrabold text-ink">
+                  <Zap size={15} className="text-brand-600" />
+                  ₦{fmt(num(ePriceE))}
+                  <span className="font-semibold text-fog">
+                    / kWh electricity
+                  </span>
+                </span>
+                <span className="ml-auto text-[12px] font-extrabold text-brand-600">
+                  <span className="group-open:hidden">Adjust →</span>
+                  <span className="hidden group-open:inline">Done ↑</span>
+                </span>
               </summary>
-              <div className="mt-3 flex flex-col gap-4">
+              <div className="flex flex-col gap-4 border-t border-line px-4 pb-4 pt-3.5">
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="e-price-petrol" className={labelClasses}>
                     Petrol price (₦ / litre)
@@ -382,6 +400,10 @@ const ImpactMeter = () => {
                     className={inputClasses}
                   />
                 </div>
+                <p className="m-0 text-[12px] font-medium text-fog">
+                  Defaults reflect Nigerian market rates as of July 2026.
+                  Adjust them to match what you actually pay.
+                </p>
               </div>
             </details>
 
@@ -419,9 +441,9 @@ const ImpactMeter = () => {
             </div>
             <Link
               to="/conversion"
-              className="cta-gradient rounded-lg px-6 py-3 text-[14px] font-extrabold text-forest-deep hover:text-forest-deep"
+              className="cta-gradient whitespace-nowrap rounded-lg px-6 py-3 text-[14px] font-extrabold text-forest-deep hover:text-forest-deep"
             >
-              Like those numbers? Start a conversion sheet →
+              Start a conversion sheet →
             </Link>
           </div>
         </div>
