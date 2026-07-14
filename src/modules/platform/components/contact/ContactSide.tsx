@@ -32,7 +32,7 @@ const ContactSide = () => (
     <div className="mt-3.5 flex flex-col gap-3.5 rounded-[18px] bg-forest p-6 lg:p-[26px]">
       <SectionEyebrow tone="neon">FLEET OWNERS</SectionEyebrow>
       <div className="text-[18px] font-extrabold leading-[1.35] text-white sm:text-[20px]">
-        Own diesel buses? Ask about converting them to electric.
+        Own petrol or diesel vehicles? Ask about converting them to electric.
       </div>
       <Link
         to="/technology"

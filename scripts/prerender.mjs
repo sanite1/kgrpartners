@@ -43,7 +43,7 @@ const ROUTES = [
     path: "/partner",
     title: "Partner With Us | KGR Partners",
     description:
-      "We collaborate with government agencies, investors, transport unions and development organisations on EV conversion, charging infrastructure and fleet electrification.",
+      "We collaborate with government agencies, investors, transport unions and development organizations on EV conversion, charging infrastructure and fleet electrification.",
   },
   {
     path: "/contact",

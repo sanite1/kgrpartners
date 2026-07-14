@@ -11,7 +11,7 @@ export const TIMELINE: TimelineEntry[] = [
     period: "2017",
     title: "We start driving",
     description:
-      "Registered with the CAC, a conventional fuel-powered fleet begins moving people and goods across the Kaduna metropolis, serving workers, students and traders every day.",
+      "KGR Partners registers with the CAC and puts a conventional fuel-powered fleet on the road, moving people and goods across the Kaduna metropolis every day.",
     accent: "solar",
   },
   {
@@ -65,7 +65,7 @@ export const VISION =
   "To be the leading indigenous electric vehicle mobility company in Nigeria, driving a clean, affordable, and sustainable transportation revolution from Northern Nigeria to the entire nation.";
 
 export const MISSION =
-  "To deliver reliable, locally-adapted electric vehicle solutions and off-grid solar charging infrastructure that reduce transportation costs, cut carbon emissions, and create economic opportunities for Nigerian communities nationwide.";
+  "To deliver reliable, locally adapted electric vehicle solutions and off-grid solar charging infrastructure that reduce transportation costs, cut carbon emissions, and create economic opportunities for Nigerian communities nationwide.";
 
 export const ABOUT_IMAGES = {
   header:

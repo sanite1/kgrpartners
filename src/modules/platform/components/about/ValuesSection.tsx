@@ -14,7 +14,7 @@ const ValuesSection = () => (
       <div className="absolute -bottom-5 left-2 flex items-center gap-3.5 rounded-2xl bg-ink px-5 py-4 shadow-[0_14px_30px_rgba(4,23,12,0.25)] sm:-bottom-[22px] sm:-left-[18px] sm:px-[26px] sm:py-5">
         <BoltMark width={22} height={30} />
         <div className="text-[15px] font-extrabold leading-snug text-white sm:text-[16px]">
-          Every bus kept.
+          Every vehicle kept.
           <br />
           <span className="text-[13px] font-semibold text-mint-soft">
             Nothing sent to the scrapyard

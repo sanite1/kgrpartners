@@ -9,7 +9,7 @@ export default function Partner() {
     <main>
       <PageMeta
         title="Partner With Us | KGR Partners"
-        description="We collaborate with government agencies, investors, transport unions and development organisations on EV conversion, charging infrastructure and fleet electrification."
+        description="We collaborate with government agencies, investors, transport unions and development organizations on EV conversion, charging infrastructure and fleet electrification."
       />
       <PageHeader
         eyebrow="PARTNER WITH US"

@@ -145,12 +145,11 @@ export const IMPACT_STATS: ImpactStat[] = [
   {
     value: "4,158t",
     label:
-      "metric tons of CO₂ eliminated since full electric operations began in late 2023",
+      "of CO₂ eliminated since full electric operations began in late 2023",
   },
   {
     value: "~1,663t",
-    label:
-      "metric tons of CO₂ avoided annually relative to an equivalent ICE fleet",
+    label: "of CO₂ avoided annually relative to an equivalent ICE fleet",
   },
   {
     value: "800kW DC",
@@ -185,7 +184,7 @@ export const DAY_TIMELINE: DayMoment[] = [
     time: "06:00",
     title: "Stations wake",
     description:
-      "Solar panels catch first light. Overnight charged packs are ready in the racks.",
+      "Solar panels catch first light. Overnight-charged packs are ready in the racks.",
   },
   {
     time: "06:30",

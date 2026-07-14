@@ -27,7 +27,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "How can we partner with KGR Partners?",
     answer:
-      "We work with government agencies, private investors, transport unions, and development organisations on EV conversion programmes, charging infrastructure expansion, and fleet electrification. See our Partner With Us page or contact us directly.",
+      "We work with government agencies, private investors, transport unions, and development organizations on EV conversion programmes, charging infrastructure expansion, and fleet electrification. See our Partner With Us page or contact us directly.",
   },
   {
     question: "Are you hiring?",
