@@ -1,3 +1,4 @@
+import CountUp from "@/components/shared/CountUp";
 import { COMPANY_COUNTERS } from "@/data/home-data";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +19,7 @@ const CountersBand = () => (
           )}
         >
           <div className="text-[26px] font-extrabold text-white sm:text-[30px]">
-            {counter.value}
+            <CountUp value={counter.value} />
           </div>
           <div className="text-[13px] font-semibold text-mint-soft">
             {counter.label}
