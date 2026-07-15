@@ -18,9 +18,9 @@ export interface ContactChannel {
 export const CONTACT_CHANNELS: ContactChannel[] = [
   {
     label: "EMAIL US",
-    value: "kgrpartners744@gmail.com",
+    value: "info@kgrpartnersltd.com",
     icon: "Mail",
-    href: "mailto:kgrpartners744@gmail.com",
+    href: "mailto:info@kgrpartnersltd.com",
   },
   {
     label: "CALL US",

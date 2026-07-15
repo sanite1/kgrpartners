@@ -193,6 +193,6 @@ export const TOP_LEVEL_FIELD_IDS = [
 export const CONVERSION_PDF_PATH =
   "/downloads/KGR-EV-Conversion-Information-Sheet.pdf";
 
-export const CONVERSION_MAILTO = `mailto:kgrpartners744@gmail.com?subject=${encodeURIComponent(
+export const CONVERSION_MAILTO = `mailto:info@kgrpartnersltd.com?subject=${encodeURIComponent(
   "Completed EV Conversion Information Sheet",
 )}`;

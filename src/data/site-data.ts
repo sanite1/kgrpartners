@@ -17,7 +17,7 @@ export const COMPANY_INFO = {
   location: "Kawo, Kaduna State, Nigeria",
   address: "No.6 GGSS Road, KTC Layout, Kawo, Kaduna State, Nigeria",
   hours: "Mon to Sat, 6:00 to 20:00",
-  email: "kgrpartners744@gmail.com",
+  email: "info@kgrpartnersltd.com",
   phone: "0703 697 3015",
   phone2: "0803 343 4560",
   rcNumber: "RC: 7451921",
