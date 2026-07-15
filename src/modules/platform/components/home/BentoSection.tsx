@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import BoltMark from "@/components/shared/BoltMark";
 import SectionEyebrow from "@/components/shared/SectionEyebrow";
+import LiveCo2Ticker from "./LiveCo2Ticker";
 import { BENTO_IMAGES } from "@/data/home-data";
 
 // "At a glance" bento grid — 4 columns on desktop, a 2-column bento on
@@ -83,13 +84,17 @@ const BentoSection = () => (
         </div>
       </div>
 
-      {/* CO₂ eliminated card */}
+      {/* CO₂ eliminated card — live ticker, the fleet never stands still */}
       <div className="flex flex-col justify-between rounded-[20px] bg-forest p-5 sm:p-[22px]">
-        <div className="text-[24px] font-extrabold text-neon sm:text-[30px]">
-          4,158t
+        <div className="text-[24px] font-extrabold text-neon sm:text-[28px]">
+          <LiveCo2Ticker />
         </div>
-        <div className="text-[12px] font-semibold text-mint-soft sm:text-[13px]">
-          of CO₂ eliminated to date
+        <div className="flex items-center gap-2 text-[12px] font-semibold text-mint-soft sm:text-[13px]">
+          <span className="relative flex h-2 w-2 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neon opacity-60 motion-reduce:animate-none" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-neon" />
+          </span>
+          of CO₂ eliminated, and counting
         </div>
       </div>
 

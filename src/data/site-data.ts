@@ -37,7 +37,6 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "About us", to: "/about" },
       { label: "Meet the team", to: "/team" },
       { label: "Gallery", to: "/gallery" },
-      { label: "Impact calculator", to: "/impact" },
       { label: "FAQ", to: "/faq" },
       { label: "Partner with us", to: "/partner" },
       { label: "Contact", to: "/contact" },
@@ -51,6 +50,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "Solar charging", to: "/technology#solar-charging" },
       { label: "Battery swapping", to: "/technology#battery-swapping" },
       { label: "Start a conversion", to: "/conversion" },
+      { label: "Impact calculator", to: "/impact" },
     ],
   },
 ];

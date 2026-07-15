@@ -100,5 +100,11 @@ export const EV_GAUGE_REF_NAIRA_DAY = 15000;
 export const IMPACT_FOOTNOTE =
   "Estimates for planning purposes only, based on standard emission factors (petrol 2.31 kg CO₂/L, diesel 2.68 kg CO₂/L), a mature tree absorbing about 21 kg of CO₂ per year, and an average petrol car emitting about 4.6 tonnes of CO₂ per year. All prices and consumption rates are editable defaults; we will swap in KGR's own metered data as it becomes available.";
 
+// live CO₂ ticker: the verified 4,158t figure (as of the content plan,
+// 12 July 2026) accruing at the documented ~1,663 t/year avoidance rate
+export const CO2_ANCHOR_TONNES = 4158;
+export const CO2_ANCHOR_MS = Date.UTC(2026, 6, 12);
+export const CO2_TONNES_PER_YEAR = 1663;
+
 export const IMPACT_HEADER_IMAGE =
   "https://images.unsplash.com/photo-1593717191400-84f38ee95485?w=1400&q=80";
