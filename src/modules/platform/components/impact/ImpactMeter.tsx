@@ -7,9 +7,11 @@ import {
   EMISSION_FACTOR_PETROL,
   TREE_KG_PER_YEAR,
   CAR_KG_PER_YEAR,
-  FLEET_EFFICIENCY_DEFAULTS,
+  FLEET_VEHICLES,
+  VEHICLE_AGES,
   PETROL_BASE,
   EV_BASE,
+  EV_VEHICLE_LABELS,
   CYL_ADJUST,
   LOAD_FACTOR_PER_TONNE,
   DEFAULT_PETROL_PRICE,
@@ -21,7 +23,6 @@ import {
 import { cn } from "@/lib/utils";
 
 type TabId = "fleet" | "ev";
-type FleetVehicle = keyof typeof FLEET_EFFICIENCY_DEFAULTS;
 type EvVehicle = keyof typeof PETROL_BASE;
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-NG");
@@ -110,10 +111,23 @@ const ImpactMeter = () => {
   const [tab, setTab] = useState<TabId>("fleet");
 
   // fleet footprint inputs
-  const [fType, setFType] = useState<FleetVehicle>("bus");
+  const [fTypeId, setFTypeId] = useState(FLEET_VEHICLES[0].id);
+  const [fAgeId, setFAgeId] = useState(VEHICLE_AGES[0].id);
   const [fCount, setFCount] = useState("12");
   const [fKm, setFKm] = useState("180");
-  const [fEff, setFEff] = useState(String(FLEET_EFFICIENCY_DEFAULTS.bus));
+  const [fEff, setFEff] = useState(String(FLEET_VEHICLES[0].l100));
+
+  const fVehicle =
+    FLEET_VEHICLES.find((v) => v.id === fTypeId) ?? FLEET_VEHICLES[0];
+
+  // type or age changes re-prefill the (still editable) consumption figure
+  const prefillEff = (typeId: string, ageId: string) => {
+    const vehicle = FLEET_VEHICLES.find((v) => v.id === typeId);
+    const age = VEHICLE_AGES.find((a) => a.id === ageId);
+    if (vehicle && age) {
+      setFEff(String(Math.round(vehicle.l100 * age.multiplier * 10) / 10));
+    }
+  };
 
   // switch-to-EV inputs
   const [eLitres, setELitres] = useState("8");
@@ -125,7 +139,9 @@ const ImpactMeter = () => {
 
   // ── fleet math (spec §1) ──
   const fFactor =
-    fType === "bus" ? EMISSION_FACTOR_DIESEL : EMISSION_FACTOR_PETROL;
+    fVehicle.fuel === "diesel"
+      ? EMISSION_FACTOR_DIESEL
+      : EMISSION_FACTOR_PETROL;
   const fLitresDay = num(fKm) * (num(fEff) / 100) * num(fCount);
   const fCo2Day = fLitresDay * fFactor;
   const fCo2Year = fCo2Day * 365;
@@ -188,22 +204,55 @@ const ImpactMeter = () => {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="f-type" className={labelClasses}>
-                Vehicle type
+                Vehicle type (the baseline you're avoiding)
               </label>
               <select
                 id="f-type"
-                value={fType}
+                value={fTypeId}
                 onChange={(e) => {
-                  const next = e.target.value as FleetVehicle;
-                  setFType(next);
-                  setFEff(String(FLEET_EFFICIENCY_DEFAULTS[next]));
+                  setFTypeId(e.target.value);
+                  prefillEff(e.target.value, fAgeId);
                 }}
                 className={inputClasses}
               >
-                <option value="bus">
-                  Diesel bus (baseline you're avoiding)
-                </option>
-                <option value="keke">Petrol tricycle / Keke</option>
+                <optgroup label="Diesel">
+                  {FLEET_VEHICLES.filter((v) => v.fuel === "diesel").map(
+                    (v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.label}
+                      </option>
+                    ),
+                  )}
+                </optgroup>
+                <optgroup label="Petrol">
+                  {FLEET_VEHICLES.filter((v) => v.fuel === "petrol").map(
+                    (v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.label}
+                      </option>
+                    ),
+                  )}
+                </optgroup>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="f-age" className={labelClasses}>
+                Vehicle model year
+              </label>
+              <select
+                id="f-age"
+                value={fAgeId}
+                onChange={(e) => {
+                  setFAgeId(e.target.value);
+                  prefillEff(fTypeId, e.target.value);
+                }}
+                className={inputClasses}
+              >
+                {VEHICLE_AGES.map((age) => (
+                  <option key={age.id} value={age.id}>
+                    {age.label}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
@@ -258,7 +307,7 @@ const ImpactMeter = () => {
                 <Fuel size={15} className="text-solar-700" />
                 {fFactor}
                 <span className="font-semibold text-fog">
-                  kg CO₂ / litre of {fType === "bus" ? "diesel" : "petrol"}
+                  kg CO₂ / litre of {fVehicle.fuel}
                 </span>
               </span>
               <span className="hidden h-3.5 w-px bg-divider sm:block" />
@@ -269,7 +318,7 @@ const ImpactMeter = () => {
             </div>
 
             <p className="m-0 text-[12.5px] font-semibold leading-[1.5] text-fog">
-              ≈ {fmt1(fLitresDay)} L of {fType === "bus" ? "diesel" : "petrol"}{" "}
+              ≈ {fmt1(fLitresDay)} L of {fVehicle.fuel}{" "}
               avoided per day across the fleet.
             </p>
           </div>
@@ -348,10 +397,11 @@ const ImpactMeter = () => {
                 onChange={(e) => setEType(e.target.value as EvVehicle)}
                 className={inputClasses}
               >
-                <option value="tricycle">Tricycle / Keke</option>
-                <option value="sedan">Car / sedan</option>
-                <option value="suv">SUV / pickup</option>
-                <option value="minibus">Minibus</option>
+                {(Object.keys(PETROL_BASE) as EvVehicle[]).map((id) => (
+                  <option key={id} value={id}>
+                    {EV_VEHICLE_LABELS[id]}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="flex flex-col gap-1.5">

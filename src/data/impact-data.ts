@@ -11,24 +11,72 @@ export const TREE_KG_PER_YEAR = 21;
 // an average petrol car emits ~4.6 tonnes CO₂/year
 export const CAR_KG_PER_YEAR = 4600;
 
-// fleet tab: what the equivalent fossil vehicle would burn (L/100km)
-export const FLEET_EFFICIENCY_DEFAULTS = { bus: 35, keke: 4 } as const;
+// fleet tab: the fossil baseline being avoided — fuel sets the emission
+// factor, l100 is the typical consumption prefilled into the editable field
+export interface FleetVehicleOption {
+  id: string;
+  label: string;
+  fuel: "diesel" | "petrol";
+  l100: number;
+}
+
+export const FLEET_VEHICLES: FleetVehicleOption[] = [
+  { id: "bus", label: "Diesel bus", fuel: "diesel", l100: 35 },
+  { id: "dieselMinibus", label: "Diesel minibus", fuel: "diesel", l100: 18 },
+  { id: "truck", label: "Diesel truck", fuel: "diesel", l100: 30 },
+  { id: "keke", label: "Petrol tricycle / Keke", fuel: "petrol", l100: 4 },
+  { id: "motorcycle", label: "Petrol motorcycle", fuel: "petrol", l100: 3 },
+  { id: "hatchback", label: "Petrol hatchback", fuel: "petrol", l100: 7 },
+  { id: "sedan", label: "Petrol sedan", fuel: "petrol", l100: 8 },
+  { id: "suv", label: "Petrol SUV / crossover", fuel: "petrol", l100: 11 },
+  { id: "pickup", label: "Petrol pickup", fuel: "petrol", l100: 12 },
+  { id: "petrolMinibus", label: "Petrol minibus", fuel: "petrol", l100: 14 },
+];
+
+// vehicle age adjusts the prefilled consumption; older engines burn more
+export interface VehicleAgeOption {
+  id: string;
+  label: string;
+  multiplier: number;
+}
+
+export const VEHICLE_AGES: VehicleAgeOption[] = [
+  { id: "new", label: "2015 or newer", multiplier: 1 },
+  { id: "mid", label: "2005 to 2014", multiplier: 1.15 },
+  { id: "old", label: "Before 2005", multiplier: 1.3 },
+];
 
 // EV tab: assumed petrol use by vehicle type (L/100km)
 export const PETROL_BASE = {
   tricycle: 4,
+  motorcycle: 3,
+  hatchback: 7,
   sedan: 8,
   suv: 11,
+  pickup: 12,
   minibus: 14,
 } as const;
 
 // EV tab: assumed EV energy use by vehicle type (kWh/100km)
 export const EV_BASE = {
   tricycle: 5,
+  motorcycle: 3,
+  hatchback: 13,
   sedan: 15,
   suv: 20,
+  pickup: 22,
   minibus: 28,
 } as const;
+
+export const EV_VEHICLE_LABELS: Record<keyof typeof PETROL_BASE, string> = {
+  tricycle: "Tricycle / Keke",
+  motorcycle: "Motorcycle",
+  hatchback: "Hatchback",
+  sedan: "Car / sedan",
+  suv: "SUV / crossover",
+  pickup: "Pickup",
+  minibus: "Minibus",
+};
 
 // engine size adjustment on petrol consumption
 export const CYL_ADJUST: Record<string, number> = {
