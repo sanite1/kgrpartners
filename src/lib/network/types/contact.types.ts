@@ -1,12 +1,11 @@
-// Mirrors the backend's public contact endpoint contract
-// (CONTACT_FORM_INTEGRATION.md): POST /api/contact/:companyId — no auth.
+// Mirrors kgr-backend's public contact endpoint: POST /api/contact, no auth.
 // Validation rules enforced server-side (Joi) and mirrored client-side (zod):
-//   name    required, 2–200 chars
+//   name    required, 2-200 chars
 //   email   required, valid email
-//   message required, 1–5000 chars
+//   message required, 1-5000 chars
 //   phone   optional, max 50 chars
 //   subject optional, max 300 chars
-//   metadata optional, free-form primitives — extra top-level fields are REJECTED
+//   metadata optional, free-form primitives; extra top-level fields are REJECTED
 
 export interface ContactFormValues {
   name: string;

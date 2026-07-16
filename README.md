@@ -22,7 +22,6 @@ npm run dev            # port 3000
 | Var | Purpose |
 | --- | --- |
 | `VITE_API_URL` | Backend base URL (contact endpoint host) |
-| `VITE_CONTACT_COMPANY_ID` | Company ObjectId for `POST /api/contact/:companyId` |
 
 Set the same two vars in the hosting provider's project settings — the
 contact form cannot submit without them.
