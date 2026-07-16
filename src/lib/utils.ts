@@ -9,6 +9,24 @@ export function cn(...inputs: ClassValue[]) {
 export const fmtNaira = (amount: string | number | undefined): string =>
   `₦${Number(amount || 0).toLocaleString("en-NG")}`;
 
+// the business day in Lagos, YYYY-MM-DD (matches the backend's dayString)
+export const todayLagos = (): string =>
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Lagos",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
+export const downloadBlob = (blob: Blob, filename: string): void => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 export const fmtDate = (iso: string | undefined): string =>
   iso
     ? new Date(iso).toLocaleDateString("en-NG", {

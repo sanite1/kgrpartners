@@ -10,6 +10,7 @@ import type {
   ReceiptsQueryParams,
   VoidReceiptPayload,
   ReceiptSummary,
+  OutstandingSummary,
 } from "../types/receipt.types";
 import {
   useQuery,
@@ -52,6 +53,11 @@ export const voidReceiptFn = (
 ): Promise<ApiResponse<Receipt>> =>
   api.post<ApiResponse<Receipt>>(`${BASE}/${id}/void`, payload);
 
+// GET /api/receipts/outstanding-summary: NYP aging banner figures
+export const getOutstandingSummaryFn = (): Promise<
+  ApiResponse<OutstandingSummary>
+> => api.get<ApiResponse<OutstandingSummary>>(`${BASE}/outstanding-summary`);
+
 // GET /api/receipts/summary?date=YYYY-MM-DD
 export const getReceiptSummaryFn = (
   date?: string,
@@ -70,6 +76,7 @@ export const receiptKeys = {
   detail: (id: string) => [...receiptKeys.all, "detail", id] as const,
   summary: (date?: string) =>
     [...receiptKeys.all, "summary", date ?? "today"] as const,
+  outstanding: () => [...receiptKeys.all, "outstanding"] as const,
 } as const;
 
 // Error helper
@@ -101,6 +108,17 @@ export const useGetReceiptSummary = (
   useQuery<ApiResponse<ReceiptSummary>, AxiosError>({
     queryKey: receiptKeys.summary(date),
     queryFn: () => getReceiptSummaryFn(date),
+    ...options,
+  });
+
+export const useGetOutstandingSummary = (
+  options?: Partial<
+    UseQueryOptions<ApiResponse<OutstandingSummary>, AxiosError>
+  >,
+) =>
+  useQuery<ApiResponse<OutstandingSummary>, AxiosError>({
+    queryKey: receiptKeys.outstanding(),
+    queryFn: () => getOutstandingSummaryFn(),
     ...options,
   });
 

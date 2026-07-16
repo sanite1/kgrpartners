@@ -45,6 +45,22 @@ export interface ReceiptsQueryParams {
   busId?: string;
   date?: string;
   search?: string;
+  sort?: "newest" | "oldest";
+}
+
+export interface OutstandingBucket {
+  count: number;
+  amount: string;
+}
+
+export interface OutstandingSummary {
+  count: number;
+  totalAmount: string;
+  buckets: {
+    d0_7: OutstandingBucket;
+    d8_30: OutstandingBucket;
+    d30plus: OutstandingBucket;
+  };
 }
 
 export interface VoidReceiptPayload {

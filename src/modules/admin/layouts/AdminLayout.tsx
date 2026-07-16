@@ -6,6 +6,9 @@ import {
   Tag,
   TicketPlus,
   ReceiptText,
+  HandCoins,
+  Hourglass,
+  BookText,
   LogOut,
   Menu,
   X,
@@ -23,6 +26,9 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Tag,
   TicketPlus,
   ReceiptText,
+  HandCoins,
+  Hourglass,
+  BookText,
 };
 
 const initials = (first: string, last: string) =>

@@ -9,7 +9,10 @@ export interface ConsoleNavItem {
 export const CONSOLE_NAV: ConsoleNavItem[] = [
   { label: "Dashboard", to: "/", icon: "LayoutDashboard" },
   { label: "Generate Receipt", to: "/generate", icon: "TicketPlus" },
+  { label: "PayPoint", to: "/paypoint", icon: "HandCoins" },
+  { label: "NYP List", to: "/nyp", icon: "Hourglass" },
   { label: "Receipts", to: "/receipts", icon: "ReceiptText" },
+  { label: "Daily Account", to: "/daily-account", icon: "BookText" },
   { label: "Buses", to: "/buses", icon: "Bus" },
   { label: "Trip Price", to: "/trip-price", icon: "Tag" },
 ];
