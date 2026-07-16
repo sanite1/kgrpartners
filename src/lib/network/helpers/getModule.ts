@@ -5,8 +5,7 @@ export const getModule = (): AppModule => {
   const port = window.location.port;
   if (hostname === "localhost" || hostname === "127.0.0.1") {
     if (port === "3000") return "platform";
-    if (port === "3001") return "app";
-    if (port === "3002") return "admin";
+    if (port === "3001") return "admin";
     return "platform";
   }
   if (hostname.startsWith("app.")) return "app";
