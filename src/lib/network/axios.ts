@@ -33,17 +33,21 @@ const processQueue = (error: unknown, token: string | null = null) => {
   );
   failedQueue = [];
 };
+// 401s from these endpoints are credential failures, not expired sessions;
+// they must reach the caller instead of triggering the refresh flow
+const AUTH_PATHS = ["/api/auth/login", "/api/auth/refresh"];
+
 const forceLogout = () => {
   localStorage.removeItem("app_token");
   localStorage.removeItem("app_user");
   localStorage.removeItem("app_refresh_token");
+  useAuthStore.getState().logout();
   if (getModule() === "admin") {
-    // only the admin module has /login; platform never navigates away
+    // only the admin module has /login; platform never navigates away.
+    // compare pathname only, otherwise /login?redirect=... re-nests itself
+    if (window.location.pathname === "/login") return;
     const currentPath = window.location.pathname + window.location.search;
-    window.location.href =
-      currentPath && currentPath !== "/login"
-        ? `/login?redirect=${encodeURIComponent(currentPath)}`
-        : "/login";
+    window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
   }
 };
 
@@ -56,7 +60,7 @@ axios.interceptors.response.use(
     if (
       error.response?.status !== 401 ||
       originalRequest._retry ||
-      originalRequest.url === "/api/auth/refresh"
+      AUTH_PATHS.includes(originalRequest.url || "")
     ) {
       if (
         error.response?.status === 401 &&
