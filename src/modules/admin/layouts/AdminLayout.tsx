@@ -4,6 +4,8 @@ import {
   LayoutDashboard,
   Bus,
   Tag,
+  TicketPlus,
+  ReceiptText,
   LogOut,
   Menu,
   X,
@@ -19,6 +21,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
   Bus,
   Tag,
+  TicketPlus,
+  ReceiptText,
 };
 
 const initials = (first: string, last: string) =>

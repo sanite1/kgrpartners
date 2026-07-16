@@ -100,6 +100,25 @@
   }
 }
 
+/* console receipt printing: only the ticket leaves the printer */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-ticket,
+  #print-ticket * {
+    visibility: visible;
+  }
+  #print-ticket {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: none !important;
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

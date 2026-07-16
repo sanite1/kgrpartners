@@ -8,6 +8,8 @@ import { PublicOnlyRoute } from "@/components/shared/PublicOnlyRoute";
 const Login = lazy(() => import("../pages/Login"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Buses = lazy(() => import("../pages/Buses"));
+const GenerateReceipt = lazy(() => import("../pages/GenerateReceipt"));
+const Receipts = lazy(() => import("../pages/Receipts"));
 const TripPrice = lazy(() => import("../pages/TripPrice"));
 
 const LoadingFallback = () => (
@@ -39,6 +41,8 @@ export const AdminRoutes = () => {
           <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/generate" element={<GenerateReceipt />} />
+              <Route path="/receipts" element={<Receipts />} />
               <Route path="/buses" element={<Buses />} />
               <Route path="/trip-price" element={<TripPrice />} />
             </Route>
