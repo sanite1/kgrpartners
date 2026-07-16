@@ -13,6 +13,8 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
   { label: "NYP List", to: "/nyp", icon: "Hourglass" },
   { label: "Receipts", to: "/receipts", icon: "ReceiptText" },
   { label: "Daily Account", to: "/daily-account", icon: "BookText" },
+  { label: "Inventory", to: "/inventory", icon: "Boxes" },
+  { label: "Requests", to: "/requests", icon: "ClipboardList" },
   { label: "Buses", to: "/buses", icon: "Bus" },
   { label: "Trip Price", to: "/trip-price", icon: "Tag" },
 ];

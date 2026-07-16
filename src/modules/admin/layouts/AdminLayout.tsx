@@ -9,6 +9,8 @@ import {
   HandCoins,
   Hourglass,
   BookText,
+  Boxes,
+  ClipboardList,
   LogOut,
   Menu,
   X,
@@ -29,6 +31,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   HandCoins,
   Hourglass,
   BookText,
+  Boxes,
+  ClipboardList,
 };
 
 const initials = (first: string, last: string) =>
