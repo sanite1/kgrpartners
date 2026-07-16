@@ -7,6 +7,8 @@ import { PublicOnlyRoute } from "@/components/shared/PublicOnlyRoute";
 
 const Login = lazy(() => import("../pages/Login"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
+const Buses = lazy(() => import("../pages/Buses"));
+const TripPrice = lazy(() => import("../pages/TripPrice"));
 
 const LoadingFallback = () => (
   <div className="flex h-screen items-center justify-center">
@@ -37,6 +39,8 @@ export const AdminRoutes = () => {
           <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/buses" element={<Buses />} />
+              <Route path="/trip-price" element={<TripPrice />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
