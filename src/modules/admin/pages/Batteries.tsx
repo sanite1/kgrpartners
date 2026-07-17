@@ -4,6 +4,7 @@ import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
 import StatusPill from "../components/console/StatusPill";
+import SearchSelect from "../components/console/SearchSelect";
 import Modal from "../components/console/Modal";
 import { useGetBuses } from "@/lib/network/api/bus.api";
 import {
@@ -144,6 +145,7 @@ export default function Batteries() {
 
   // issue form
   const [busSearch, setBusSearch] = useState("");
+  const [busOpen, setBusOpen] = useState(false);
   const [issueNote, setIssueNote] = useState("");
 
   // collect form
@@ -172,7 +174,7 @@ export default function Batteries() {
 
   const { data: busData } = useGetBuses(
     { search: busSearch, isActive: "true", pageSize: 6 },
-    { enabled: !!issueFor && busSearch.length > 0 },
+    { enabled: !!issueFor && busOpen },
   );
 
   const createBattery = useCreateBattery();
@@ -297,7 +299,7 @@ export default function Batteries() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className={cn(inputClasses, "py-2.5 pl-9 text-[14px]")}
+            className={cn(inputClasses, "py-2.5 pl-9 sm:text-[14px]")}
           />
         </div>
       </div>
@@ -540,45 +542,30 @@ export default function Batteries() {
             <label htmlFor="issue-bus" className={labelClasses}>
               Bus <span className="text-brand-500">*</span>
             </label>
-            <div className="relative">
-              <input
-                id="issue-bus"
-                type="text"
-                placeholder="Search bus number"
-                value={busSearch}
-                onChange={(e) => setBusSearch(e.target.value)}
-                className={inputClasses}
-                autoComplete="off"
-              />
-              {busSearch && (busData?.data ?? []).length > 0 && (
-                <div className="absolute inset-x-0 top-[52px] z-20 overflow-hidden rounded-xl border border-line bg-white shadow-[0_18px_44px_rgba(13,31,21,0.15)]">
-                  {(busData?.data ?? []).map((bus) => (
-                    <button
-                      key={bus._id}
-                      type="button"
-                      onClick={() => {
-                        if (!issueFor) return;
-                        issueBattery.mutate(
-                          {
-                            id: issueFor._id,
-                            payload: { busId: bus._id, note: issueNote || undefined },
-                          },
-                          { onSuccess: () => setIssueFor(null) },
-                        );
-                      }}
-                      className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent px-4 py-3 text-left transition-colors hover:bg-haze"
-                    >
-                      <span className="text-[14px] font-extrabold text-ink">
-                        {bus.number}
-                      </span>
-                      <span className="text-[12px] font-semibold text-fog">
-                        {bus.driverName || ""}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <SearchSelect
+              id="issue-bus"
+              placeholder="Search bus number"
+              search={busSearch}
+              onSearch={setBusSearch}
+              onOpenChange={setBusOpen}
+              inline
+              options={(busData?.data ?? []).map((bus) => ({
+                key: bus._id,
+                title: bus.number,
+                subtitle: bus.driverName || "",
+              }))}
+              onPick={(key) => {
+                if (!issueFor) return;
+                issueBattery.mutate(
+                  {
+                    id: issueFor._id,
+                    payload: { busId: key, note: issueNote || undefined },
+                  },
+                  { onSuccess: () => setIssueFor(null) },
+                );
+              }}
+              emptyText="No active bus matches."
+            />
             <p className="m-0 text-[12px] font-semibold text-fog">
               Picking a bus issues the battery immediately.
             </p>

@@ -117,7 +117,7 @@ export default function Receipts() {
               setDate(e.target.value);
               setPage(1);
             }}
-            className={cn(inputClasses, "py-2.5 text-[14px] sm:w-[170px]")}
+            className={cn(inputClasses, "py-2.5 sm:text-[14px] sm:w-[170px]")}
           />
           <div className="relative sm:w-[240px]">
             <Search
@@ -132,7 +132,7 @@ export default function Receipts() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className={cn(inputClasses, "py-2.5 pl-9 text-[14px]")}
+              className={cn(inputClasses, "py-2.5 pl-9 sm:text-[14px]")}
             />
           </div>
         </div>

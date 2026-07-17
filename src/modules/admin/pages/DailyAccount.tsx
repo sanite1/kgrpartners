@@ -44,7 +44,7 @@ export default function DailyAccount() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value || todayLagos())}
-              className={cn(inputClasses, "w-[165px] py-2.5 text-[14px]")}
+              className={cn(inputClasses, "w-[165px] py-2.5 sm:text-[14px]")}
             />
             <button
               type="button"

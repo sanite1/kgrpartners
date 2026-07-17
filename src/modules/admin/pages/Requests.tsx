@@ -4,6 +4,7 @@ import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
 import StatusPill from "../components/console/StatusPill";
+import SearchSelect from "../components/console/SearchSelect";
 import { useGetBuses } from "@/lib/network/api/bus.api";
 import { useGetItems } from "@/lib/network/api/inventory.api";
 import {
@@ -41,8 +42,10 @@ export default function Requests() {
 
   // form state
   const [busSearch, setBusSearch] = useState("");
+  const [busOpen, setBusOpen] = useState(false);
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [itemSearch, setItemSearch] = useState("");
+  const [itemOpen, setItemOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [quantity, setQuantity] = useState("1");
   const [narration, setNarration] = useState("");
@@ -58,11 +61,11 @@ export default function Requests() {
 
   const { data: busData } = useGetBuses(
     { search: busSearch, isActive: "true", pageSize: 6 },
-    { enabled: busSearch.length > 0 && !selectedBus },
+    { enabled: busOpen && !selectedBus },
   );
   const { data: itemData } = useGetItems(
     { search: itemSearch, isActive: "true", pageSize: 6 },
-    { enabled: itemSearch.length > 0 && !selectedItem },
+    { enabled: itemOpen && !selectedItem },
   );
 
   const { data, isLoading } = useGetPartRequests({
@@ -116,33 +119,6 @@ export default function Requests() {
     );
   };
 
-  const pickerDropdown = <T,>(
-    entries: T[],
-    render: (entry: T) => { key: string; title: string; subtitle: string },
-    onPick: (entry: T) => void,
-  ) => (
-    <div className="absolute inset-x-0 top-[52px] z-20 overflow-hidden rounded-xl border border-line bg-white shadow-[0_18px_44px_rgba(13,31,21,0.15)]">
-      {entries.map((entry) => {
-        const r = render(entry);
-        return (
-          <button
-            key={r.key}
-            type="button"
-            onClick={() => onPick(entry)}
-            className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent px-4 py-3 text-left transition-colors hover:bg-haze"
-          >
-            <span className="text-[14px] font-extrabold text-ink">
-              {r.title}
-            </span>
-            <span className="text-[12px] font-semibold text-fog">
-              {r.subtitle}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-
   return (
     <>
       <PageMeta title="Requests | KGR Console" />
@@ -181,28 +157,25 @@ export default function Requests() {
                   </button>
                 </div>
               ) : (
-                <div className="relative">
-                  <input
-                    id="rq-bus"
-                    type="text"
-                    placeholder="Search bus number"
-                    value={busSearch}
-                    onChange={(e) => setBusSearch(e.target.value)}
-                    className={inputClasses}
-                    autoComplete="off"
-                  />
-                  {busSearch &&
-                    (busData?.data ?? []).length > 0 &&
-                    pickerDropdown(
-                      busData?.data ?? [],
-                      (bus) => ({
-                        key: bus._id,
-                        title: bus.number,
-                        subtitle: bus.driverName || "",
-                      }),
-                      setSelectedBus,
-                    )}
-                </div>
+                <SearchSelect
+                  id="rq-bus"
+                  placeholder="Search bus number"
+                  search={busSearch}
+                  onSearch={setBusSearch}
+                  onOpenChange={setBusOpen}
+                  options={(busData?.data ?? []).map((bus) => ({
+                    key: bus._id,
+                    title: bus.number,
+                    subtitle: bus.driverName || "",
+                  }))}
+                  onPick={(key) => {
+                    const bus = (busData?.data ?? []).find(
+                      (b) => b._id === key,
+                    );
+                    if (bus) setSelectedBus(bus);
+                  }}
+                  emptyText="No active bus matches."
+                />
               )}
             </div>
 
@@ -231,28 +204,25 @@ export default function Requests() {
                   </button>
                 </div>
               ) : (
-                <div className="relative">
-                  <input
-                    id="rq-item"
-                    type="text"
-                    placeholder="Search stock items"
-                    value={itemSearch}
-                    onChange={(e) => setItemSearch(e.target.value)}
-                    className={inputClasses}
-                    autoComplete="off"
-                  />
-                  {itemSearch &&
-                    (itemData?.data ?? []).length > 0 &&
-                    pickerDropdown(
-                      itemData?.data ?? [],
-                      (item) => ({
-                        key: item._id,
-                        title: item.name,
-                        subtitle: `${item.quantityOnHand} ${item.unit} · ${fmtNaira(item.unitCost)}`,
-                      }),
-                      setSelectedItem,
-                    )}
-                </div>
+                <SearchSelect
+                  id="rq-item"
+                  placeholder="Search stock items"
+                  search={itemSearch}
+                  onSearch={setItemSearch}
+                  onOpenChange={setItemOpen}
+                  options={(itemData?.data ?? []).map((item) => ({
+                    key: item._id,
+                    title: item.name,
+                    subtitle: `${item.quantityOnHand} ${item.unit} · ${fmtNaira(item.unitCost)}`,
+                  }))}
+                  onPick={(key) => {
+                    const item = (itemData?.data ?? []).find(
+                      (i) => i._id === key,
+                    );
+                    if (item) setSelectedItem(item);
+                  }}
+                  emptyText="No stock item matches."
+                />
               )}
             </div>
 
@@ -385,7 +355,7 @@ export default function Requests() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className={cn(inputClasses, "py-2.5 pl-9 text-[14px]")}
+                className={cn(inputClasses, "py-2.5 pl-9 sm:text-[14px]")}
               />
             </div>
           </div>
@@ -460,7 +430,7 @@ export default function Requests() {
                             onChange={(e) => setDeclineNote(e.target.value)}
                             className={cn(
                               inputClasses,
-                              "flex-1 py-2 text-[13px]",
+                              "flex-1 py-2 sm:text-[13px]",
                             )}
                           />
                           <button

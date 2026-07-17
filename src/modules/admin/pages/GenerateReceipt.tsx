@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Printer, Plus, RotateCcw, Search, TriangleAlert } from "lucide-react";
+import { Printer, Plus, RotateCcw, TriangleAlert } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import PageHead from "../components/console/PageHead";
+import SearchSelect from "../components/console/SearchSelect";
 import Modal from "../components/console/Modal";
 import BusForm from "../components/buses/BusForm";
 import TicketCard from "../components/receipts/TicketCard";
@@ -25,6 +26,7 @@ const todayString = () =>
 
 export default function GenerateReceipt() {
   const [busSearch, setBusSearch] = useState("");
+  const [busOpen, setBusOpen] = useState(false);
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [trips, setTrips] = useState("1");
   const [checkIn, setCheckIn] = useState(true);
@@ -37,7 +39,7 @@ export default function GenerateReceipt() {
 
   const { data: busData } = useGetBuses(
     { search: busSearch, isActive: "true", pageSize: 8 },
-    { enabled: busSearch.length > 0 && !selectedBus },
+    { enabled: busOpen && !selectedBus },
   );
   const busResults = busData?.data ?? [];
 
@@ -131,45 +133,24 @@ export default function GenerateReceipt() {
                   </button>
                 </div>
               ) : (
-                <div className="relative">
-                  <Search
-                    size={15}
-                    className="absolute left-3.5 top-[15px] text-fog"
-                  />
-                  <input
-                    id="gr-bus"
-                    type="text"
-                    placeholder="Type a bus number, e.g. A 37"
-                    value={busSearch}
-                    onChange={(e) => setBusSearch(e.target.value)}
-                    className={cn(inputClasses, "pl-9")}
-                    autoComplete="off"
-                  />
-                  {busSearch && busResults.length > 0 && (
-                    <div className="absolute inset-x-0 top-[52px] z-20 overflow-hidden rounded-xl border border-line bg-white shadow-[0_18px_44px_rgba(13,31,21,0.15)]">
-                      {busResults.map((bus) => (
-                        <button
-                          key={bus._id}
-                          type="button"
-                          onClick={() => setSelectedBus(bus)}
-                          className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent px-4 py-3 text-left transition-colors hover:bg-haze"
-                        >
-                          <span className="text-[14px] font-extrabold text-ink">
-                            {bus.number}
-                          </span>
-                          <span className="text-[12px] font-semibold text-fog">
-                            {bus.driverName || ""}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {busSearch && busResults.length === 0 && (
-                    <div className="absolute inset-x-0 top-[52px] z-20 rounded-xl border border-line bg-white px-4 py-3 text-[13px] font-semibold text-fog shadow-[0_18px_44px_rgba(13,31,21,0.15)]">
-                      No active bus matches "{busSearch}".
-                    </div>
-                  )}
-                </div>
+                <SearchSelect
+                  id="gr-bus"
+                  placeholder="Type a bus number, e.g. A 37"
+                  icon
+                  search={busSearch}
+                  onSearch={setBusSearch}
+                  onOpenChange={setBusOpen}
+                  options={busResults.map((bus) => ({
+                    key: bus._id,
+                    title: bus.number,
+                    subtitle: bus.driverName || "",
+                  }))}
+                  onPick={(key) => {
+                    const bus = busResults.find((b) => b._id === key);
+                    if (bus) setSelectedBus(bus);
+                  }}
+                  emptyText="No active bus matches."
+                />
               )}
               <button
                 type="button"

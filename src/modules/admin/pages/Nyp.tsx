@@ -107,7 +107,7 @@ export default function Nyp() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className={cn(inputClasses, "py-2.5 pl-9 text-[14px]")}
+          className={cn(inputClasses, "py-2.5 pl-9 sm:text-[14px]")}
         />
       </div>
 

@@ -4,6 +4,7 @@ import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
 import StatusPill from "../components/console/StatusPill";
+import SearchSelect from "../components/console/SearchSelect";
 import Modal from "../components/console/Modal";
 import { useGetBuses } from "@/lib/network/api/bus.api";
 import { useGetItems } from "@/lib/network/api/inventory.api";
@@ -53,10 +54,13 @@ export default function Repairs() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [busSearch, setBusSearch] = useState("");
+  const [busOpen, setBusOpen] = useState(false);
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [batterySearch, setBatterySearch] = useState("");
+  const [batteryOpen, setBatteryOpen] = useState(false);
   const [selectedBattery, setSelectedBattery] = useState<Battery | null>(null);
   const [itemSearch, setItemSearch] = useState("");
+  const [itemOpen, setItemOpen] = useState(false);
   const [itemQty, setItemQty] = useState("1");
   const [draftParts, setDraftParts] = useState<DraftPart[]>([]);
 
@@ -73,23 +77,24 @@ export default function Repairs() {
   const [cancelNote, setCancelNote] = useState("");
   const [addPartFor, setAddPartFor] = useState<RepairJob | null>(null);
   const [addItemSearch, setAddItemSearch] = useState("");
+  const [addItemOpen, setAddItemOpen] = useState(false);
   const [addQty, setAddQty] = useState("1");
 
   const { data: busData } = useGetBuses(
     { search: busSearch, isActive: "true", pageSize: 6 },
-    { enabled: busSearch.length > 0 && !selectedBus },
+    { enabled: busOpen && !selectedBus },
   );
   const { data: batteryData } = useGetBatteries(
     { search: batterySearch, isActive: "true", pageSize: 6 },
-    { enabled: batterySearch.length > 0 && !selectedBattery },
+    { enabled: batteryOpen && !selectedBattery },
   );
   const { data: itemData } = useGetItems(
     { search: itemSearch, isActive: "true", pageSize: 6 },
-    { enabled: itemSearch.length > 0 },
+    { enabled: itemOpen },
   );
   const { data: addItemData } = useGetItems(
     { search: addItemSearch, isActive: "true", pageSize: 6 },
-    { enabled: !!addPartFor && addItemSearch.length > 0 },
+    { enabled: !!addPartFor && addItemOpen },
   );
 
   const { data, isLoading } = useGetRepairJobs({
@@ -162,29 +167,6 @@ export default function Repairs() {
     );
   };
 
-  const searchDropdown = (
-    entries: { key: string; title: string; subtitle: string }[],
-    onPick: (key: string) => void,
-  ) => (
-    <div className="absolute inset-x-0 top-[52px] z-20 overflow-hidden rounded-xl border border-line bg-white shadow-[0_18px_44px_rgba(13,31,21,0.15)]">
-      {entries.map((entry) => (
-        <button
-          key={entry.key}
-          type="button"
-          onClick={() => onPick(entry.key)}
-          className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent px-4 py-3 text-left transition-colors hover:bg-haze"
-        >
-          <span className="text-[14px] font-extrabold text-ink">
-            {entry.title}
-          </span>
-          <span className="text-[12px] font-semibold text-fog">
-            {entry.subtitle}
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-
   return (
     <>
       <PageMeta title="Repairs | KGR Console" />
@@ -237,32 +219,25 @@ export default function Repairs() {
                   </button>
                 </div>
               ) : (
-                <div className="relative">
-                  <input
-                    id="rj-bus"
-                    type="text"
-                    placeholder="Search bus number"
-                    value={busSearch}
-                    onChange={(e) => setBusSearch(e.target.value)}
-                    className={inputClasses}
-                    autoComplete="off"
-                  />
-                  {busSearch &&
-                    (busData?.data ?? []).length > 0 &&
-                    searchDropdown(
-                      (busData?.data ?? []).map((bus) => ({
-                        key: bus._id,
-                        title: bus.number,
-                        subtitle: bus.driverName || "",
-                      })),
-                      (key) => {
-                        const bus = (busData?.data ?? []).find(
-                          (b) => b._id === key,
-                        );
-                        if (bus) setSelectedBus(bus);
-                      },
-                    )}
-                </div>
+                <SearchSelect
+                  id="rj-bus"
+                  placeholder="Search bus number"
+                  search={busSearch}
+                  onSearch={setBusSearch}
+                  onOpenChange={setBusOpen}
+                  options={(busData?.data ?? []).map((bus) => ({
+                    key: bus._id,
+                    title: bus.number,
+                    subtitle: bus.driverName || "",
+                  }))}
+                  onPick={(key) => {
+                    const bus = (busData?.data ?? []).find(
+                      (b) => b._id === key,
+                    );
+                    if (bus) setSelectedBus(bus);
+                  }}
+                  emptyText="No active bus matches."
+                />
               )}
             </div>
 
@@ -288,32 +263,25 @@ export default function Repairs() {
                   </button>
                 </div>
               ) : (
-                <div className="relative">
-                  <input
-                    id="rj-battery"
-                    type="text"
-                    placeholder="Search battery code"
-                    value={batterySearch}
-                    onChange={(e) => setBatterySearch(e.target.value)}
-                    className={inputClasses}
-                    autoComplete="off"
-                  />
-                  {batterySearch &&
-                    (batteryData?.data ?? []).length > 0 &&
-                    searchDropdown(
-                      (batteryData?.data ?? []).map((battery) => ({
-                        key: battery._id,
-                        title: battery.code,
-                        subtitle: battery.status.replace("_", " "),
-                      })),
-                      (key) => {
-                        const battery = (batteryData?.data ?? []).find(
-                          (b) => b._id === key,
-                        );
-                        if (battery) setSelectedBattery(battery);
-                      },
-                    )}
-                </div>
+                <SearchSelect
+                  id="rj-battery"
+                  placeholder="Search battery code"
+                  search={batterySearch}
+                  onSearch={setBatterySearch}
+                  onOpenChange={setBatteryOpen}
+                  options={(batteryData?.data ?? []).map((battery) => ({
+                    key: battery._id,
+                    title: battery.code,
+                    subtitle: battery.status.replace("_", " "),
+                  }))}
+                  onPick={(key) => {
+                    const battery = (batteryData?.data ?? []).find(
+                      (b) => b._id === key,
+                    );
+                    if (battery) setSelectedBattery(battery);
+                  }}
+                  emptyText="No battery matches."
+                />
               )}
               <p className="m-0 text-[12px] font-semibold text-fog">
                 Pick a bus, a battery, or both.
@@ -368,31 +336,24 @@ export default function Repairs() {
                 </div>
               )}
               <div className="grid grid-cols-[1fr_72px] gap-2">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search stock items"
-                    value={itemSearch}
-                    onChange={(e) => setItemSearch(e.target.value)}
-                    className={inputClasses}
-                    autoComplete="off"
-                  />
-                  {itemSearch &&
-                    (itemData?.data ?? []).length > 0 &&
-                    searchDropdown(
-                      (itemData?.data ?? []).map((item) => ({
-                        key: item._id,
-                        title: item.name,
-                        subtitle: `${item.quantityOnHand} ${item.unit} · ${fmtNaira(item.unitCost)}`,
-                      })),
-                      (key) => {
-                        const item = (itemData?.data ?? []).find(
-                          (i) => i._id === key,
-                        );
-                        if (item) addDraftPart(item);
-                      },
-                    )}
-                </div>
+                <SearchSelect
+                  placeholder="Search stock items"
+                  search={itemSearch}
+                  onSearch={setItemSearch}
+                  onOpenChange={setItemOpen}
+                  options={(itemData?.data ?? []).map((item) => ({
+                    key: item._id,
+                    title: item.name,
+                    subtitle: `${item.quantityOnHand} ${item.unit} · ${fmtNaira(item.unitCost)}`,
+                  }))}
+                  onPick={(key) => {
+                    const item = (itemData?.data ?? []).find(
+                      (i) => i._id === key,
+                    );
+                    if (item) addDraftPart(item);
+                  }}
+                  emptyText="No stock item matches."
+                />
                 <input
                   type="number"
                   min={1}
@@ -462,7 +423,7 @@ export default function Repairs() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className={cn(inputClasses, "py-2.5 pl-9 text-[14px]")}
+                className={cn(inputClasses, "py-2.5 pl-9 sm:text-[14px]")}
               />
             </div>
           </div>
@@ -567,7 +528,7 @@ export default function Repairs() {
                                 placeholder="Reason (optional)"
                                 value={cancelNote}
                                 onChange={(e) => setCancelNote(e.target.value)}
-                                className={cn(inputClasses, "flex-1 py-2 text-[13px]")}
+                                className={cn(inputClasses, "flex-1 py-2 sm:text-[13px]")}
                               />
                               <button
                                 type="button"
@@ -723,39 +684,33 @@ export default function Repairs() {
         onClose={() => setAddPartFor(null)}
       >
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-[1fr_72px] gap-2">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search stock items"
-                value={addItemSearch}
-                onChange={(e) => setAddItemSearch(e.target.value)}
-                className={inputClasses}
-                autoComplete="off"
-              />
-              {addItemSearch &&
-                (addItemData?.data ?? []).length > 0 &&
-                searchDropdown(
-                  (addItemData?.data ?? []).map((item) => ({
-                    key: item._id,
-                    title: item.name,
-                    subtitle: `${item.quantityOnHand} ${item.unit} · ${fmtNaira(item.unitCost)}`,
-                  })),
-                  (key) => {
-                    if (!addPartFor) return;
-                    addPart.mutate(
-                      {
-                        id: addPartFor._id,
-                        payload: {
-                          itemId: key,
-                          quantity: Math.max(1, parseInt(addQty, 10) || 1),
-                        },
-                      },
-                      { onSuccess: () => setAddPartFor(null) },
-                    );
+          <div className="grid grid-cols-[1fr_72px] items-start gap-2">
+            <SearchSelect
+              placeholder="Search stock items"
+              search={addItemSearch}
+              onSearch={setAddItemSearch}
+              onOpenChange={setAddItemOpen}
+              inline
+              options={(addItemData?.data ?? []).map((item) => ({
+                key: item._id,
+                title: item.name,
+                subtitle: `${item.quantityOnHand} ${item.unit} · ${fmtNaira(item.unitCost)}`,
+              }))}
+              onPick={(key) => {
+                if (!addPartFor) return;
+                addPart.mutate(
+                  {
+                    id: addPartFor._id,
+                    payload: {
+                      itemId: key,
+                      quantity: Math.max(1, parseInt(addQty, 10) || 1),
+                    },
                   },
-                )}
-            </div>
+                  { onSuccess: () => setAddPartFor(null) },
+                );
+              }}
+              emptyText="No stock item matches."
+            />
             <input
               type="number"
               min={1}

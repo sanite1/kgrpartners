@@ -145,7 +145,7 @@ export default function PayPoint() {
                 placeholder="Ticket ID, bill number or bus"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className={cn(inputClasses, "py-3.5 pl-11 text-[16px]")}
+                className={cn(inputClasses, "py-3.5 pl-11 text-[16px] sm:text-[16px]")}
               />
             </div>
             <button
