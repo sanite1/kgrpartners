@@ -184,7 +184,7 @@ export default function PayPoint() {
               </p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left">
+                <table className="w-full whitespace-nowrap border-collapse text-left">
                   <tbody>
                     {payments.map((p) => {
                       const receipt = p.receipt as {

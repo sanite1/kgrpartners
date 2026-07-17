@@ -190,7 +190,7 @@ export default function Reports() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] border-collapse">
+          <table className="w-full min-w-[860px] whitespace-nowrap border-collapse">
             <thead>
               <tr className="border-b border-line">
                 <th className={thClasses}>DATE</th>
@@ -329,7 +329,7 @@ export default function Reports() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse">
+          <table className="w-full min-w-[760px] whitespace-nowrap border-collapse">
             <thead>
               <tr className="border-b border-line">
                 <th className={thClasses}>BUS</th>

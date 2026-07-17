@@ -141,7 +141,7 @@ export default function Receipts() {
       {/* table */}
       <div className="overflow-hidden rounded-[20px] border border-line bg-white shadow-[0_12px_30px_rgba(13,31,21,0.05)]">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
+          <table className="w-full whitespace-nowrap border-collapse text-left">
             <thead>
               <tr className="border-b border-line">
                 {["BILL", "TICKET", "BUS", "TRIPS", "AMOUNT", "DATE", "STATUS", "CHECK-IN"].map(

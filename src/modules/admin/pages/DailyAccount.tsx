@@ -153,7 +153,7 @@ export default function DailyAccount() {
             </p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left">
+              <table className="w-full whitespace-nowrap border-collapse text-left">
                 <thead>
                   <tr className="border-b border-line">
                     {["TIME", "BILL", "BUS", "RECEIPT DAY", "AMOUNT", "CASHIER"].map(

@@ -100,8 +100,14 @@
   }
 }
 
-/* console receipt printing: only the ticket leaves the printer */
+/* console receipt printing: only the ticket leaves the printer,
+   centered near the top, with no browser date/URL header or footer
+   (zero page margins suppress them) */
 @media print {
+  @page {
+    size: auto;
+    margin: 0;
+  }
   body * {
     visibility: hidden;
   }
@@ -111,11 +117,14 @@
   }
   #print-ticket {
     position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    max-width: 420px;
+    left: 50%;
+    top: 14mm;
+    transform: translateX(-50%);
+    width: 105mm;
+    max-width: none;
     box-shadow: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 }
 
