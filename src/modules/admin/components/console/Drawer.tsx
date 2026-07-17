@@ -86,6 +86,6 @@ const Drawer = ({
 // the outer wrapper toggles pointer events so a closed drawer never
 // blocks clicks behind it, while still animating out
 const cnOpen = (open: boolean) =>
-  `fixed inset-0 z-[100] ${open ? "" : "pointer-events-none"}`;
+  `fixed inset-0 z-[100] h-dvh ${open ? "" : "pointer-events-none"}`;
 
 export default Drawer;

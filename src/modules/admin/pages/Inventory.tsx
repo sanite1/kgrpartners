@@ -58,9 +58,9 @@ const MovementsList = ({ itemId }: { itemId: string }) => {
         return (
           <div
             key={m._id}
-            className="flex items-center justify-between border-b border-line py-3 last:border-b-0"
+            className="flex flex-col gap-1 border-b border-line py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
           >
-            <div>
+            <div className="min-w-0">
               <span
                 className={cn(
                   "text-[13px] font-extrabold",
@@ -78,12 +78,14 @@ const MovementsList = ({ itemId }: { itemId: string }) => {
                 {m.note || m.type}
               </span>
             </div>
-            <div className="text-right text-[12px] font-semibold text-fog">
-              <div>balance {m.balanceAfter}</div>
+            <div className="shrink-0 text-[12px] font-semibold text-fog sm:text-right">
               <div>
-                {fmtDate(m.createdAt)} · {by?.firstName} {by?.lastName}
+                balance {m.balanceAfter} · {fmtDate(m.createdAt)}{" "}
+                {fmtTime(m.createdAt)}
               </div>
-              <div>{fmtTime(m.createdAt)}</div>
+              <div>
+                {by?.firstName} {by?.lastName}
+              </div>
             </div>
           </div>
         );

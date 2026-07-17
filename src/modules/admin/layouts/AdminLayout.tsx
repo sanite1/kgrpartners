@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, NavLink, Link } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -52,6 +52,15 @@ const AdminLayout = () => {
   const user = useAuthStore((s) => s.user);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navItems = navForRole(user?.role);
+
+  // lock the page while the drawer is open: background scroll on iOS
+  // shifts the browser toolbar and exposes content beside the scrim
+  useEffect(() => {
+    document.body.style.overflow = drawerOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [drawerOpen]);
 
   const sidebarContent = (
     <>
@@ -123,7 +132,7 @@ const AdminLayout = () => {
       {/* mobile drawer */}
       {drawerOpen && (
         <div
-          className="fixed inset-0 z-[90] bg-forest-deep/60 lg:hidden"
+          className="fixed inset-0 z-[90] h-dvh bg-forest-deep/60 lg:hidden"
           onClick={() => setDrawerOpen(false)}
         >
           <div

@@ -72,15 +72,14 @@ const MovementsList = ({ battery }: { battery: Battery }) => {
             key={m._id}
             className="rounded-xl border border-line bg-haze px-4 py-3"
           >
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <span className="text-[13.5px] font-extrabold text-ink">
                 {ACTION_LABEL[m.action]}: {STATUS_META[m.fromStatus].label} →{" "}
                 {STATUS_META[m.toStatus].label}
                 {m.busNumber ? ` (${m.busNumber})` : ""}
               </span>
-              <span className="shrink-0 text-right text-[12px] font-semibold text-fog">
-                <span className="block">{fmtDate(m.createdAt)}</span>
-                <span className="block">{fmtTime(m.createdAt)}</span>
+              <span className="shrink-0 text-[12px] font-semibold text-fog sm:text-right">
+                {fmtDate(m.createdAt)} · {fmtTime(m.createdAt)}
               </span>
             </div>
             <p className="m-0 mt-0.5 text-[12.5px] font-semibold text-fog">
