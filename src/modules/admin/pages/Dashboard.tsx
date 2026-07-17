@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { TicketPlus } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import PageHead from "../components/console/PageHead";
+import Skeleton from "../components/console/Skeleton";
 import { useGetReceiptSummary } from "@/lib/network/api/receipt.api";
 import { useGetItems } from "@/lib/network/api/inventory.api";
 import { useGetBatterySummary } from "@/lib/network/api/battery.api";
@@ -17,48 +18,56 @@ const dayLabel = (iso: string) =>
 
 export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
-  const { data } = useGetReceiptSummary();
+  const { data, isLoading: summaryLoading } = useGetReceiptSummary();
   const summary = data?.data;
 
   // yard ops: counts only, so tiny page sizes
-  const { data: lowStockData } = useGetItems({
+  const { data: lowStockData, isLoading: lowStockLoading } = useGetItems({
     lowStock: "true",
     isActive: "true",
     pageSize: 1,
   });
-  const { data: batterySummaryData } = useGetBatterySummary();
-  const { data: openRepairsData } = useGetRepairJobs({
-    status: "open",
-    pageSize: 1,
-  });
-  const { data: pendingRequestsData } = useGetPartRequests({
-    status: "pending",
-    pageSize: 1,
-  });
+  const { data: batterySummaryData, isLoading: batteriesLoading } =
+    useGetBatterySummary();
+  const { data: openRepairsData, isLoading: repairsLoading } = useGetRepairJobs(
+    {
+      status: "open",
+      pageSize: 1,
+    },
+  );
+  const { data: pendingRequestsData, isLoading: requestsLoading } =
+    useGetPartRequests({
+      status: "pending",
+      pageSize: 1,
+    });
 
   const batteryCounts = batterySummaryData?.data?.counts;
   const opsCells = [
     {
       label: "PENDING REQUESTS",
       value: pendingRequestsData?.pagination?.totalItems ?? 0,
+      loading: requestsLoading,
       to: "/requests",
       warnWhenPositive: true,
     },
     {
       label: "LOW STOCK ITEMS",
       value: lowStockData?.pagination?.totalItems ?? 0,
+      loading: lowStockLoading,
       to: "/inventory",
       warnWhenPositive: true,
     },
     {
       label: "OPEN REPAIRS",
       value: openRepairsData?.pagination?.totalItems ?? 0,
+      loading: repairsLoading,
       to: "/repairs",
       warnWhenPositive: false,
     },
     {
       label: "BATTERIES ON BUSES",
       value: batteryCounts?.on_bus ?? 0,
+      loading: batteriesLoading,
       to: "/batteries",
       warnWhenPositive: false,
     },
@@ -98,9 +107,13 @@ export default function Dashboard() {
             </span>
             COLLECTED TODAY
           </span>
-          <span className="text-[32px] font-extrabold leading-none text-neon">
-            {fmtNaira(summary?.collectedAmount)}
-          </span>
+          {summaryLoading ? (
+            <Skeleton className="h-8 w-44 bg-white/15" />
+          ) : (
+            <span className="text-[32px] font-extrabold leading-none text-neon">
+              {fmtNaira(summary?.collectedAmount)}
+            </span>
+          )}
         </div>
 
         {/* outstanding: warm on purpose */}
@@ -108,18 +121,26 @@ export default function Dashboard() {
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-forest-deep/70">
             OUTSTANDING
           </span>
-          <span className="text-[24px] font-extrabold leading-none text-forest-deep">
-            {fmtNaira(summary?.outstandingAmount)}
-          </span>
+          {summaryLoading ? (
+            <Skeleton className="h-6 w-28 bg-forest-deep/15" />
+          ) : (
+            <span className="text-[24px] font-extrabold leading-none text-forest-deep">
+              {fmtNaira(summary?.outstandingAmount)}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-col justify-between rounded-[20px] border border-line bg-white p-5">
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
             EXPECTED TODAY
           </span>
-          <span className="text-[24px] font-extrabold leading-none text-ink">
-            {fmtNaira(summary?.expectedAmount)}
-          </span>
+          {summaryLoading ? (
+            <Skeleton className="h-6 w-28" />
+          ) : (
+            <span className="text-[24px] font-extrabold leading-none text-ink">
+              {fmtNaira(summary?.expectedAmount)}
+            </span>
+          )}
         </div>
 
         {[
@@ -135,16 +156,20 @@ export default function Dashboard() {
             <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
               {cell.label}
             </span>
-            <span
-              className={cn(
-                "text-[28px] font-extrabold leading-none",
-                cell.label === "AWAITING PAYMENT" && cell.value > 0
-                  ? "text-solar-700"
-                  : "text-ink",
-              )}
-            >
-              {cell.value}
-            </span>
+            {summaryLoading ? (
+              <Skeleton className="h-7 w-12" />
+            ) : (
+              <span
+                className={cn(
+                  "text-[28px] font-extrabold leading-none",
+                  cell.label === "AWAITING PAYMENT" && cell.value > 0
+                    ? "text-solar-700"
+                    : "text-ink",
+                )}
+              >
+                {cell.value}
+              </span>
+            )}
           </div>
         ))}
       </div>
@@ -160,16 +185,20 @@ export default function Dashboard() {
             <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
               {cell.label}
             </span>
-            <span
-              className={cn(
-                "text-[26px] font-extrabold leading-none",
-                cell.warnWhenPositive && cell.value > 0
-                  ? "text-solar-700"
-                  : "text-ink",
-              )}
-            >
-              {cell.value}
-            </span>
+            {cell.loading ? (
+              <Skeleton className="h-6 w-10" />
+            ) : (
+              <span
+                className={cn(
+                  "text-[26px] font-extrabold leading-none",
+                  cell.warnWhenPositive && cell.value > 0
+                    ? "text-solar-700"
+                    : "text-ink",
+                )}
+              >
+                {cell.value}
+              </span>
+            )}
           </Link>
         ))}
       </div>
@@ -189,6 +218,22 @@ export default function Dashboard() {
             </span>
           </span>
         </div>
+        {summaryLoading && (
+          <div className="flex h-[160px] items-end justify-between gap-2 sm:gap-4">
+            {[55, 80, 40, 95, 65, 30, 75].map((height, i) => (
+              <div key={i} className="flex flex-1 flex-col items-center gap-2">
+                <div className="flex h-[120px] w-full items-end justify-center">
+                  <span
+                    className="w-[80%] max-w-[56px] animate-pulse rounded-t-md bg-mist"
+                    style={{ height: `${height}%` }}
+                  />
+                </div>
+                <Skeleton className="h-3 w-8" />
+              </div>
+            ))}
+          </div>
+        )}
+        {!summaryLoading && (
         <div className="flex h-[160px] items-end justify-between gap-2 sm:gap-4">
           {series.map((point) => {
             const expectedPct = Math.round(
@@ -220,6 +265,7 @@ export default function Dashboard() {
             );
           })}
         </div>
+        )}
       </div>
     </>
   );

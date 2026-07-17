@@ -3,6 +3,7 @@ import { Download, Search } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
+import Skeleton from "../components/console/Skeleton";
 import StatusPill from "../components/console/StatusPill";
 import { useGetReceipts } from "@/lib/network/api/receipt.api";
 import { useGetReceiptSummary } from "@/lib/network/api/receipt.api";
@@ -33,7 +34,8 @@ export default function PayPoint() {
   );
   const found = results?.data ?? [];
 
-  const { data: summaryData } = useGetReceiptSummary();
+  const { data: summaryData, isLoading: summaryLoading } =
+    useGetReceiptSummary();
   const summary = summaryData?.data;
   const expected = Number(summary?.expectedAmount ?? 0);
   const collected = Number(summary?.collectedAmount ?? 0);
@@ -271,12 +273,21 @@ export default function PayPoint() {
               />
             </svg>
             <div className="absolute left-1/2 top-[62%] w-full -translate-x-1/2 -translate-y-1/2 text-center">
-              <div className="text-[26px] font-extrabold leading-none text-neon">
-                {fmtNaira(summary?.collectedAmount)}
-              </div>
-              <div className="mt-1 text-[11px] font-semibold text-mint-soft">
-                of {fmtNaira(summary?.expectedAmount)} expected
-              </div>
+              {summaryLoading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Skeleton className="h-6 w-28 bg-white/15" />
+                  <Skeleton className="h-3 w-24 bg-white/10" />
+                </div>
+              ) : (
+                <>
+                  <div className="text-[26px] font-extrabold leading-none text-neon">
+                    {fmtNaira(summary?.collectedAmount)}
+                  </div>
+                  <div className="mt-1 text-[11px] font-semibold text-mint-soft">
+                    of {fmtNaira(summary?.expectedAmount)} expected
+                  </div>
+                </>
+              )}
             </div>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3">
@@ -284,18 +295,26 @@ export default function PayPoint() {
               <div className="text-[10px] font-extrabold tracking-[1.5px] text-mint-faint">
                 OUTSTANDING
               </div>
-              <div className="mt-1 text-[17px] font-extrabold text-solar">
-                {fmtNaira(summary?.outstandingAmount)}
-              </div>
+              {summaryLoading ? (
+                <Skeleton className="mt-2 h-4 w-20 bg-white/15" />
+              ) : (
+                <div className="mt-1 text-[17px] font-extrabold text-solar">
+                  {fmtNaira(summary?.outstandingAmount)}
+                </div>
+              )}
             </div>
             <div className="rounded-xl border border-forest-line p-3.5">
               <div className="text-[10px] font-extrabold tracking-[1.5px] text-mint-faint">
                 AWAITING
               </div>
-              <div className="mt-1 text-[17px] font-extrabold text-white">
-                {summary?.awaitingCount ?? 0} receipt
-                {(summary?.awaitingCount ?? 0) === 1 ? "" : "s"}
-              </div>
+              {summaryLoading ? (
+                <Skeleton className="mt-2 h-4 w-20 bg-white/15" />
+              ) : (
+                <div className="mt-1 text-[17px] font-extrabold text-white">
+                  {summary?.awaitingCount ?? 0} receipt
+                  {(summary?.awaitingCount ?? 0) === 1 ? "" : "s"}
+                </div>
+              )}
             </div>
           </div>
         </div>

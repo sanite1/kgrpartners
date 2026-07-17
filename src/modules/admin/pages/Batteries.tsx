@@ -5,6 +5,7 @@ import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
 import StatusPill from "../components/console/StatusPill";
 import SearchSelect from "../components/console/SearchSelect";
+import Skeleton from "../components/console/Skeleton";
 import Modal from "../components/console/Modal";
 import { useGetBuses } from "@/lib/network/api/bus.api";
 import {
@@ -164,7 +165,8 @@ export default function Batteries() {
   const [editNotes, setEditNotes] = useState("");
   const [editActive, setEditActive] = useState(true);
 
-  const { data: summaryData } = useGetBatterySummary();
+  const { data: summaryData, isLoading: summaryLoading } =
+    useGetBatterySummary();
   const summary = summaryData?.data;
 
   const { data, isLoading } = useGetBatteries({
@@ -240,14 +242,23 @@ export default function Batteries() {
               : "border-line bg-white hover:border-brand-500",
           )}
         >
-          <span
-            className={cn(
-              "block text-[24px] font-extrabold leading-none",
-              statusFilter === "all" ? "text-neon" : "text-ink",
-            )}
-          >
-            {summary?.total ?? 0}
-          </span>
+          {summaryLoading ? (
+            <Skeleton
+              className={cn(
+                "h-6 w-9",
+                statusFilter === "all" && "bg-white/15",
+              )}
+            />
+          ) : (
+            <span
+              className={cn(
+                "block text-[24px] font-extrabold leading-none",
+                statusFilter === "all" ? "text-neon" : "text-ink",
+              )}
+            >
+              {summary?.total ?? 0}
+            </span>
+          )}
           <span
             className={cn(
               "mt-1.5 block text-[11px] font-extrabold tracking-[1px]",
@@ -272,14 +283,20 @@ export default function Batteries() {
                 : "border-line bg-white hover:border-brand-500",
             )}
           >
-            <span
-              className={cn(
-                "block text-[24px] font-extrabold leading-none",
-                statusFilter === s ? "text-neon" : "text-ink",
-              )}
-            >
-              {summary?.counts?.[s] ?? 0}
-            </span>
+            {summaryLoading ? (
+              <Skeleton
+                className={cn("h-6 w-9", statusFilter === s && "bg-white/15")}
+              />
+            ) : (
+              <span
+                className={cn(
+                  "block text-[24px] font-extrabold leading-none",
+                  statusFilter === s ? "text-neon" : "text-ink",
+                )}
+              >
+                {summary?.counts?.[s] ?? 0}
+              </span>
+            )}
             <span
               className={cn(
                 "mt-1.5 block text-[11px] font-extrabold uppercase tracking-[1px]",

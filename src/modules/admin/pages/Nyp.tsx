@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
+import Skeleton from "../components/console/Skeleton";
 import {
   useGetReceipts,
   useGetOutstandingSummary,
@@ -30,7 +31,8 @@ export default function Nyp() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data: summaryData } = useGetOutstandingSummary();
+  const { data: summaryData, isLoading: summaryLoading } =
+    useGetOutstandingSummary();
   const summary = summaryData?.data;
 
   const { data, isLoading } = useGetReceipts({
@@ -60,13 +62,22 @@ export default function Nyp() {
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-mint-soft">
             TOTAL OUTSTANDING
           </span>
-          <div className="mt-1 text-[32px] font-extrabold leading-none text-solar">
-            {fmtNaira(summary?.totalAmount)}
-          </div>
-          <div className="mt-1.5 text-[13px] font-semibold text-mint-soft">
-            across {summary?.count ?? 0} receipt
-            {(summary?.count ?? 0) === 1 ? "" : "s"}
-          </div>
+          {summaryLoading ? (
+            <>
+              <Skeleton className="mt-2 h-7 w-40 bg-white/15" />
+              <Skeleton className="mt-2 h-3.5 w-28 bg-white/10" />
+            </>
+          ) : (
+            <>
+              <div className="mt-1 text-[32px] font-extrabold leading-none text-solar">
+                {fmtNaira(summary?.totalAmount)}
+              </div>
+              <div className="mt-1.5 text-[13px] font-semibold text-mint-soft">
+                across {summary?.count ?? 0} receipt
+                {(summary?.count ?? 0) === 1 ? "" : "s"}
+              </div>
+            </>
+          )}
         </div>
         <div className="flex flex-wrap gap-2.5">
           {[
@@ -94,12 +105,16 @@ export default function Nyp() {
                 <span className={cn("h-1.5 w-1.5 rounded-full", b.dot)} />
                 {b.label.toUpperCase()}
               </span>
-              <div className="mt-1 text-[15px] font-extrabold text-white">
-                {fmtNaira(b.bucket?.amount)}{" "}
-                <span className="text-[11px] font-semibold text-mint-soft">
-                  ({b.bucket?.count ?? 0})
-                </span>
-              </div>
+              {summaryLoading ? (
+                <Skeleton className="mt-2 h-4 w-24 bg-white/15" />
+              ) : (
+                <div className="mt-1 text-[15px] font-extrabold text-white">
+                  {fmtNaira(b.bucket?.amount)}{" "}
+                  <span className="text-[11px] font-semibold text-mint-soft">
+                    ({b.bucket?.count ?? 0})
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>

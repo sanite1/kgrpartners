@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PageMeta from "@/components/shared/PageMeta";
 import PageHead from "../components/console/PageHead";
+import Skeleton from "../components/console/Skeleton";
 import {
   useGetCurrentTripPrice,
   useGetTripPriceHistory,
@@ -28,7 +29,8 @@ export default function TripPrice() {
   const [amountError, setAmountError] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data: currentData } = useGetCurrentTripPrice();
+  const { data: currentData, isLoading: currentLoading } =
+    useGetCurrentTripPrice();
   const { data: historyData, isLoading: historyLoading } =
     useGetTripPriceHistory({ page, pageSize: 10 });
   const setTripPrice = useSetTripPrice();
@@ -81,7 +83,12 @@ export default function TripPrice() {
               </span>
               IN FORCE
             </span>
-            {current ? (
+            {currentLoading ? (
+              <>
+                <Skeleton className="mt-5 h-9 w-44 bg-white/15" />
+                <Skeleton className="mt-3 h-3.5 w-32 bg-white/10" />
+              </>
+            ) : current ? (
               <>
                 <div className="mt-4 text-[42px] font-extrabold leading-none text-neon">
                   {fmtNaira(current.amount)}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Download } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import PageHead from "../components/console/PageHead";
+import Skeleton from "../components/console/Skeleton";
 import {
   useGetDailyAccount,
   downloadPaymentsCsvFn,
@@ -18,7 +19,7 @@ const fmtTime = (iso: string) =>
 export default function DailyAccount() {
   const [date, setDate] = useState(todayLagos());
   const [downloading, setDownloading] = useState(false);
-  const { data } = useGetDailyAccount(date);
+  const { data, isLoading: accountLoading } = useGetDailyAccount(date);
   const account = data?.data;
 
   const handleDownload = async () => {
@@ -65,48 +66,68 @@ export default function DailyAccount() {
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
             EXPECTED
           </span>
-          <span className="mt-3 text-[20px] font-extrabold leading-none text-ink">
-            {fmtNaira(account?.expectedAmount)}
-          </span>
+          {accountLoading ? (
+            <Skeleton className="mt-3 h-5 w-24" />
+          ) : (
+            <span className="mt-3 text-[20px] font-extrabold leading-none text-ink">
+              {fmtNaira(account?.expectedAmount)}
+            </span>
+          )}
         </div>
         <div className="flex flex-col justify-between rounded-[20px] bg-forest p-5">
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-mint-soft">
             COLLECTED TOTAL
           </span>
-          <span className="mt-3 text-[20px] font-extrabold leading-none text-neon">
-            {fmtNaira(account?.collectedTotal)}
-          </span>
+          {accountLoading ? (
+            <Skeleton className="mt-3 h-5 w-24 bg-white/15" />
+          ) : (
+            <span className="mt-3 text-[20px] font-extrabold leading-none text-neon">
+              {fmtNaira(account?.collectedTotal)}
+            </span>
+          )}
         </div>
         <div className="flex flex-col justify-between rounded-[20px] border border-line bg-white p-5">
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
             FROM TODAY'S RECEIPTS
           </span>
-          <span className="mt-3 text-[20px] font-extrabold leading-none text-ink">
-            {fmtNaira(account?.collectedFromToday)}
-          </span>
+          {accountLoading ? (
+            <Skeleton className="mt-3 h-5 w-24" />
+          ) : (
+            <span className="mt-3 text-[20px] font-extrabold leading-none text-ink">
+              {fmtNaira(account?.collectedFromToday)}
+            </span>
+          )}
         </div>
         <div className="flex flex-col justify-between rounded-[20px] bg-solar p-5">
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-forest-deep/70">
             FROM ARREARS
           </span>
-          <span className="mt-3 text-[20px] font-extrabold leading-none text-forest-deep">
-            {fmtNaira(account?.collectedFromArrears)}
-          </span>
+          {accountLoading ? (
+            <Skeleton className="mt-3 h-5 w-24 bg-forest-deep/15" />
+          ) : (
+            <span className="mt-3 text-[20px] font-extrabold leading-none text-forest-deep">
+              {fmtNaira(account?.collectedFromArrears)}
+            </span>
+          )}
         </div>
         <div className="col-span-2 flex flex-col justify-between rounded-[20px] border border-line bg-white p-5 lg:col-span-1">
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
             STILL OUTSTANDING
           </span>
-          <span
-            className={cn(
-              "mt-3 text-[20px] font-extrabold leading-none",
-              Number(account?.outstandingToday ?? 0) > 0
-                ? "text-solar-700"
-                : "text-ink",
-            )}
-          >
-            {fmtNaira(account?.outstandingToday)}
-          </span>
+          {accountLoading ? (
+            <Skeleton className="mt-3 h-5 w-24" />
+          ) : (
+            <span
+              className={cn(
+                "mt-3 text-[20px] font-extrabold leading-none",
+                Number(account?.outstandingToday ?? 0) > 0
+                  ? "text-solar-700"
+                  : "text-ink",
+              )}
+            >
+              {fmtNaira(account?.outstandingToday)}
+            </span>
+          )}
         </div>
       </div>
 
