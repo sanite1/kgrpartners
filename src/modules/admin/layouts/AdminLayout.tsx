@@ -72,8 +72,8 @@ const AdminLayout = () => {
         </span>
       </div>
 
-      {/* nav */}
-      <nav className="flex flex-1 flex-col gap-1 px-3">
+      {/* nav: scrolls on its own when taller than the screen */}
+      <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 pb-8">
         {navItems.map((item) => {
           const Icon = ICON_MAP[item.icon];
           return (
