@@ -186,214 +186,214 @@ export default function Repairs() {
       >
         {/* new job form: store work only */}
         {canStock && (
-        <div className="rounded-[20px] border border-line bg-white p-6 shadow-[0_12px_30px_rgba(13,31,21,0.05)] lg:sticky lg:top-8">
-          <h2 className="mb-4 mt-0 text-[17px] font-extrabold text-ink">
-            New repair job
-          </h2>
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="rj-title" className={labelClasses}>
-                What is wrong? <span className="text-brand-500">*</span>
-              </label>
-              <input
-                id="rj-title"
-                type="text"
-                placeholder="Rear brake overhaul"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={inputClasses}
-              />
-            </div>
-
-            {/* bus */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="rj-bus" className={labelClasses}>
-                Bus
-              </label>
-              {selectedBus ? (
-                <div className="flex items-center justify-between rounded-[10px] border border-brand-200 bg-haze px-4 py-3">
-                  <span className="text-[15px] font-extrabold text-ink">
-                    {selectedBus.number}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedBus(null);
-                      setBusSearch("");
-                    }}
-                    className="cursor-pointer border-none bg-transparent text-[13px] font-extrabold text-brand-600"
-                  >
-                    Change
-                  </button>
-                </div>
-              ) : (
-                <SearchSelect
-                  id="rj-bus"
-                  placeholder="Search bus number"
-                  search={busSearch}
-                  onSearch={setBusSearch}
-                  onOpenChange={setBusOpen}
-                  options={(busData?.data ?? []).map((bus) => ({
-                    key: bus._id,
-                    title: bus.number,
-                    subtitle: bus.driverName || "",
-                  }))}
-                  onPick={(key) => {
-                    const bus = (busData?.data ?? []).find(
-                      (b) => b._id === key,
-                    );
-                    if (bus) setSelectedBus(bus);
-                  }}
-                  emptyText="No active bus matches."
-                />
-              )}
-            </div>
-
-            {/* battery */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="rj-battery" className={labelClasses}>
-                Battery
-              </label>
-              {selectedBattery ? (
-                <div className="flex items-center justify-between rounded-[10px] border border-brand-200 bg-haze px-4 py-3">
-                  <span className="text-[15px] font-extrabold text-ink">
-                    {selectedBattery.code}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedBattery(null);
-                      setBatterySearch("");
-                    }}
-                    className="cursor-pointer border-none bg-transparent text-[13px] font-extrabold text-brand-600"
-                  >
-                    Change
-                  </button>
-                </div>
-              ) : (
-                <SearchSelect
-                  id="rj-battery"
-                  placeholder="Search battery code"
-                  search={batterySearch}
-                  onSearch={setBatterySearch}
-                  onOpenChange={setBatteryOpen}
-                  options={(batteryData?.data ?? []).map((battery) => ({
-                    key: battery._id,
-                    title: battery.code,
-                    subtitle: battery.status.replace("_", " "),
-                  }))}
-                  onPick={(key) => {
-                    const battery = (batteryData?.data ?? []).find(
-                      (b) => b._id === key,
-                    );
-                    if (battery) setSelectedBattery(battery);
-                  }}
-                  emptyText="No battery matches."
-                />
-              )}
-              <p className="m-0 text-[12px] font-semibold text-fog">
-                Pick a bus, a battery, or both.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="rj-desc" className={labelClasses}>
-                Details
-              </label>
-              <textarea
-                id="rj-desc"
-                rows={2}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className={cn(inputClasses, "resize-y")}
-              />
-            </div>
-
-            {/* parts */}
-            <div className="flex flex-col gap-1.5">
-              <span className={labelClasses}>Parts from stock</span>
-              {draftParts.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  {draftParts.map((p) => (
-                    <div
-                      key={p.item._id}
-                      className="flex items-center justify-between rounded-[10px] border border-line bg-haze px-3.5 py-2.5"
-                    >
-                      <span className="text-[13px] font-bold text-ink">
-                        {p.item.name} × {p.quantity}
-                      </span>
-                      <span className="flex items-center gap-2.5">
-                        <span className="text-[13px] font-extrabold text-ink">
-                          {fmtNaira(p.quantity * Number(p.item.unitCost))}
-                        </span>
-                        <button
-                          type="button"
-                          aria-label={`Remove ${p.item.name}`}
-                          onClick={() =>
-                            setDraftParts((prev) =>
-                              prev.filter((d) => d.item._id !== p.item._id),
-                            )
-                          }
-                          className="cursor-pointer border-none bg-transparent text-fog transition-colors hover:text-red-600"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="grid grid-cols-[1fr_72px] gap-2">
-                <SearchSelect
-                  placeholder="Search stock items"
-                  search={itemSearch}
-                  onSearch={setItemSearch}
-                  onOpenChange={setItemOpen}
-                  options={(itemData?.data ?? []).map((item) => ({
-                    key: item._id,
-                    title: item.name,
-                    subtitle: `${item.quantityOnHand} ${item.unit} · ${fmtNaira(item.unitCost)}`,
-                  }))}
-                  onPick={(key) => {
-                    const item = (itemData?.data ?? []).find(
-                      (i) => i._id === key,
-                    );
-                    if (item) addDraftPart(item);
-                  }}
-                  emptyText="No stock item matches."
-                />
+          <div className="rounded-[20px] border border-line bg-white p-6 shadow-[0_12px_30px_rgba(13,31,21,0.05)] lg:sticky lg:top-8">
+            <h2 className="mb-4 mt-0 text-[17px] font-extrabold text-ink">
+              New repair job
+            </h2>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="rj-title" className={labelClasses}>
+                  What is wrong? <span className="text-brand-500">*</span>
+                </label>
                 <input
-                  type="number"
-                  min={1}
-                  aria-label="Quantity"
-                  value={itemQty}
-                  onChange={(e) => setItemQty(e.target.value)}
+                  id="rj-title"
+                  type="text"
+                  placeholder="Rear brake overhaul"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   className={inputClasses}
                 />
               </div>
-              {draftParts.length > 0 && (
-                <p className="m-0 text-[13px] font-semibold text-fog">
-                  Parts so far:{" "}
-                  <strong className="text-ink">{fmtNaira(draftCost)}</strong>
-                </p>
-              )}
-            </div>
 
-            <button
-              type="button"
-              disabled={!canSubmit}
-              onClick={submit}
-              className={cn(
-                "cta-gradient cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep",
-                !canSubmit
-                  ? "cursor-not-allowed opacity-50"
-                  : "transition-transform hover:scale-[1.02]",
-              )}
-            >
-              {createJob.isPending ? "Opening…" : "Open repair job →"}
-            </button>
+              {/* bus */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="rj-bus" className={labelClasses}>
+                  Bus
+                </label>
+                {selectedBus ? (
+                  <div className="flex items-center justify-between rounded-[10px] border border-brand-200 bg-haze px-4 py-3">
+                    <span className="text-[15px] font-extrabold text-ink">
+                      {selectedBus.number}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedBus(null);
+                        setBusSearch("");
+                      }}
+                      className="cursor-pointer border-none bg-transparent text-[13px] font-extrabold text-brand-600"
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : (
+                  <SearchSelect
+                    id="rj-bus"
+                    placeholder="Search bus number"
+                    search={busSearch}
+                    onSearch={setBusSearch}
+                    onOpenChange={setBusOpen}
+                    options={(busData?.data ?? []).map((bus) => ({
+                      key: bus._id,
+                      title: bus.number,
+                      subtitle: bus.driverName || "",
+                    }))}
+                    onPick={(key) => {
+                      const bus = (busData?.data ?? []).find(
+                        (b) => b._id === key,
+                      );
+                      if (bus) setSelectedBus(bus);
+                    }}
+                    emptyText="No active bus matches."
+                  />
+                )}
+              </div>
+
+              {/* battery */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="rj-battery" className={labelClasses}>
+                  Battery
+                </label>
+                {selectedBattery ? (
+                  <div className="flex items-center justify-between rounded-[10px] border border-brand-200 bg-haze px-4 py-3">
+                    <span className="text-[15px] font-extrabold text-ink">
+                      {selectedBattery.code}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedBattery(null);
+                        setBatterySearch("");
+                      }}
+                      className="cursor-pointer border-none bg-transparent text-[13px] font-extrabold text-brand-600"
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : (
+                  <SearchSelect
+                    id="rj-battery"
+                    placeholder="Search battery code"
+                    search={batterySearch}
+                    onSearch={setBatterySearch}
+                    onOpenChange={setBatteryOpen}
+                    options={(batteryData?.data ?? []).map((battery) => ({
+                      key: battery._id,
+                      title: battery.code,
+                      subtitle: battery.status.replace("_", " "),
+                    }))}
+                    onPick={(key) => {
+                      const battery = (batteryData?.data ?? []).find(
+                        (b) => b._id === key,
+                      );
+                      if (battery) setSelectedBattery(battery);
+                    }}
+                    emptyText="No battery matches."
+                  />
+                )}
+                <p className="m-0 text-[12px] font-semibold text-fog">
+                  Pick a bus, a battery, or both.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="rj-desc" className={labelClasses}>
+                  Details
+                </label>
+                <textarea
+                  id="rj-desc"
+                  rows={2}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className={cn(inputClasses, "resize-y")}
+                />
+              </div>
+
+              {/* parts */}
+              <div className="flex flex-col gap-1.5">
+                <span className={labelClasses}>Parts from stock</span>
+                {draftParts.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    {draftParts.map((p) => (
+                      <div
+                        key={p.item._id}
+                        className="flex items-center justify-between rounded-[10px] border border-line bg-haze px-3.5 py-2.5"
+                      >
+                        <span className="text-[13px] font-bold text-ink">
+                          {p.item.name} × {p.quantity}
+                        </span>
+                        <span className="flex items-center gap-2.5">
+                          <span className="text-[13px] font-extrabold text-ink">
+                            {fmtNaira(p.quantity * Number(p.item.unitCost))}
+                          </span>
+                          <button
+                            type="button"
+                            aria-label={`Remove ${p.item.name}`}
+                            onClick={() =>
+                              setDraftParts((prev) =>
+                                prev.filter((d) => d.item._id !== p.item._id),
+                              )
+                            }
+                            className="cursor-pointer border-none bg-transparent text-fog transition-colors hover:text-red-600"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="grid grid-cols-[1fr_72px] gap-2">
+                  <SearchSelect
+                    placeholder="Search stock items"
+                    search={itemSearch}
+                    onSearch={setItemSearch}
+                    onOpenChange={setItemOpen}
+                    options={(itemData?.data ?? []).map((item) => ({
+                      key: item._id,
+                      title: item.name,
+                      subtitle: `${item.quantityOnHand} ${item.unit} · ${fmtNaira(item.unitCost)}`,
+                    }))}
+                    onPick={(key) => {
+                      const item = (itemData?.data ?? []).find(
+                        (i) => i._id === key,
+                      );
+                      if (item) addDraftPart(item);
+                    }}
+                    emptyText="No stock item matches."
+                  />
+                  <input
+                    type="number"
+                    min={1}
+                    aria-label="Quantity"
+                    value={itemQty}
+                    onChange={(e) => setItemQty(e.target.value)}
+                    className={inputClasses}
+                  />
+                </div>
+                {draftParts.length > 0 && (
+                  <p className="m-0 text-[13px] font-semibold text-fog">
+                    Parts so far:{" "}
+                    <strong className="text-ink">{fmtNaira(draftCost)}</strong>
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="button"
+                disabled={!canSubmit}
+                onClick={submit}
+                className={cn(
+                  "cta-gradient cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep",
+                  !canSubmit
+                    ? "cursor-not-allowed opacity-50"
+                    : "transition-transform hover:scale-[1.02]",
+                )}
+              >
+                {createJob.isPending ? "Opening…" : "Open repair job →"}
+              </button>
+            </div>
           </div>
-        </div>
         )}
 
         {/* jobs list */}
@@ -468,7 +468,10 @@ export default function Repairs() {
                       <span className="text-[15px] font-extrabold text-ink">
                         {fmtNaira(job.totalCost)}
                       </span>
-                      <StatusPill tone={statusTone[job.status]} label={job.status} />
+                      <StatusPill
+                        tone={statusTone[job.status]}
+                        label={job.status}
+                      />
                     </div>
                   </div>
 
@@ -539,7 +542,10 @@ export default function Repairs() {
                                 placeholder="Reason (optional)"
                                 value={cancelNote}
                                 onChange={(e) => setCancelNote(e.target.value)}
-                                className={cn(inputClasses, "flex-1 py-2 sm:text-[13px]")}
+                                className={cn(
+                                  inputClasses,
+                                  "flex-1 py-2 sm:text-[13px]",
+                                )}
                               />
                               <button
                                 type="button"
@@ -548,7 +554,9 @@ export default function Repairs() {
                                   cancelJob.mutate(
                                     {
                                       id: job._id,
-                                      payload: { note: cancelNote || undefined },
+                                      payload: {
+                                        note: cancelNote || undefined,
+                                      },
                                     },
                                     {
                                       onSuccess: () => {
@@ -628,7 +636,10 @@ export default function Repairs() {
         <div className="flex flex-col gap-4">
           {completeFor && (
             <p className="m-0 text-[13.5px] font-semibold text-fog">
-              Parts used: <strong className="text-ink">{fmtNaira(completeFor.partsCost)}</strong>
+              Parts used:{" "}
+              <strong className="text-ink">
+                {fmtNaira(completeFor.partsCost)}
+              </strong>
             </p>
           )}
           <div className="flex flex-col gap-1.5">
@@ -666,7 +677,8 @@ export default function Repairs() {
           <button
             type="button"
             disabled={
-              completeJob.isPending || (!!laborCost && !moneyPattern.test(laborCost))
+              completeJob.isPending ||
+              (!!laborCost && !moneyPattern.test(laborCost))
             }
             onClick={() => {
               if (!completeFor) return;

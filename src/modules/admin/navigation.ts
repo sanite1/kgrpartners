@@ -21,7 +21,12 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
   },
   { label: "PayPoint", to: "/paypoint", icon: "HandCoins", roles: FRONT_DESK },
   { label: "NYP List", to: "/nyp", icon: "Hourglass", roles: FRONT_DESK },
-  { label: "Receipts", to: "/receipts", icon: "ReceiptText", roles: FRONT_DESK },
+  {
+    label: "Receipts",
+    to: "/receipts",
+    icon: "ReceiptText",
+    roles: FRONT_DESK,
+  },
   {
     label: "Daily Account",
     to: "/daily-account",
@@ -35,13 +40,26 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
     roles: [...STORE, "staff"],
   },
   { label: "Requests", to: "/requests", icon: "ClipboardList" },
-  { label: "Batteries", to: "/batteries", icon: "BatteryCharging", roles: STORE },
+  {
+    label: "Batteries",
+    to: "/batteries",
+    icon: "BatteryCharging",
+    roles: STORE,
+  },
   { label: "Repairs", to: "/repairs", icon: "Wrench", roles: STORE },
   { label: "Buses", to: "/buses", icon: "Bus" },
   { label: "Trip Price", to: "/trip-price", icon: "Tag", roles: MANAGERS },
   { label: "Reports", to: "/reports", icon: "ChartColumn", roles: MANAGERS },
+  {
+    label: "Conversions",
+    to: "/conversions",
+    icon: "PlugZap",
+    roles: MANAGERS,
+  },
   { label: "Users", to: "/users", icon: "UsersRound", roles: ["admin"] },
 ];
 
 export const navForRole = (role?: UserRole): ConsoleNavItem[] =>
-  CONSOLE_NAV.filter((item) => !item.roles || (role && item.roles.includes(role)));
+  CONSOLE_NAV.filter(
+    (item) => !item.roles || (role && item.roles.includes(role)),
+  );

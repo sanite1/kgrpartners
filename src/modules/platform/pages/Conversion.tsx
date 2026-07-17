@@ -36,7 +36,10 @@ export default function Conversion() {
         </div>
       </div>
 
-      <QuoteBand ctaLabel="See how conversion works" ctaTo="/technology#conversion" />
+      <QuoteBand
+        ctaLabel="See how conversion works"
+        ctaTo="/technology#conversion"
+      />
     </main>
   );
 }

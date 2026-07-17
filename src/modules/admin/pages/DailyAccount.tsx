@@ -156,16 +156,21 @@ export default function DailyAccount() {
               <table className="w-full whitespace-nowrap border-collapse text-left">
                 <thead>
                   <tr className="border-b border-line">
-                    {["TIME", "BILL", "BUS", "RECEIPT DAY", "AMOUNT", "CASHIER"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                        >
-                          {h}
-                        </th>
-                      ),
-                    )}
+                    {[
+                      "TIME",
+                      "BILL",
+                      "BUS",
+                      "RECEIPT DAY",
+                      "AMOUNT",
+                      "CASHIER",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>

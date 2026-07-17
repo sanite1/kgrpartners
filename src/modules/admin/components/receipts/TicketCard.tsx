@@ -57,10 +57,7 @@ const TicketCard = ({ receipt, draft, printable }: TicketCardProps) => {
           <BoltMark width={11} height={15} fill="#0FA53A" />
           KGR BUS RECEIPT
         </span>
-        <span
-          className="flex h-5 items-end gap-[2.5px]"
-          aria-hidden="true"
-        >
+        <span className="flex h-5 items-end gap-[2.5px]" aria-hidden="true">
           {BARCODE.map((width, i) => (
             <span
               key={i}

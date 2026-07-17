@@ -80,8 +80,8 @@ export default function Login() {
             Run the fleet from one place.
           </h1>
           <p className="m-0 max-w-[400px] text-[15px] font-medium leading-[1.7] text-mint-soft">
-            Receipts, batteries, repairs and people. The KGR Partners
-            management console.
+            Receipts, batteries, repairs and people. The KGR Partners management
+            console.
           </p>
         </div>
         <div className="text-[15px] font-extrabold leading-[1.5] text-mint">

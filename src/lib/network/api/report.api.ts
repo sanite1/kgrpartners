@@ -35,7 +35,9 @@ export const reportKeys = {
 
 export const useGetMonthlyReport = (
   month?: string,
-  options?: Partial<UseQueryOptions<ApiResponse<MonthlyReportData>, AxiosError>>,
+  options?: Partial<
+    UseQueryOptions<ApiResponse<MonthlyReportData>, AxiosError>
+  >,
 ) =>
   useQuery<ApiResponse<MonthlyReportData>, AxiosError>({
     queryKey: reportKeys.monthly(month),
@@ -45,7 +47,9 @@ export const useGetMonthlyReport = (
 
 export const useGetExpenseReport = (
   params?: { from?: string; to?: string },
-  options?: Partial<UseQueryOptions<ApiResponse<ExpenseReportData>, AxiosError>>,
+  options?: Partial<
+    UseQueryOptions<ApiResponse<ExpenseReportData>, AxiosError>
+  >,
 ) =>
   useQuery<ApiResponse<ExpenseReportData>, AxiosError>({
     queryKey: reportKeys.expenses(params),

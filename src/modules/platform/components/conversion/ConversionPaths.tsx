@@ -1,8 +1,5 @@
 import { Download, MousePointerClick, Mail } from "lucide-react";
-import {
-  CONVERSION_PDF_PATH,
-  CONVERSION_MAILTO,
-} from "@/data/conversion-data";
+import { CONVERSION_PDF_PATH, CONVERSION_MAILTO } from "@/data/conversion-data";
 
 // Two ways in: fill the sheet online (below) or take the PDF away.
 const ConversionPaths = () => (

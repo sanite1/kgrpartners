@@ -1,10 +1,6 @@
 // Categories from the content plan. Images are placeholders from the design's
 // photo list until professional photography arrives; swap URLs here only.
-export type GalleryCategory =
-  | "fleet"
-  | "solar"
-  | "swap"
-  | "conversions";
+export type GalleryCategory = "fleet" | "solar" | "swap" | "conversions";
 
 export interface GalleryFilter {
   id: GalleryCategory | "all";

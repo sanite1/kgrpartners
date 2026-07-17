@@ -318,8 +318,8 @@ const ImpactMeter = () => {
             </div>
 
             <p className="m-0 text-[12.5px] font-semibold leading-[1.5] text-fog">
-              ≈ {fmt1(fLitresDay)} L of {fVehicle.fuel}{" "}
-              avoided per day across the fleet.
+              ≈ {fmt1(fLitresDay)} L of {fVehicle.fuel} avoided per day across
+              the fleet.
             </p>
           </div>
 
@@ -422,14 +422,14 @@ const ImpactMeter = () => {
             <details className="group rounded-xl border border-line bg-haze">
               <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-3.5 [&::-webkit-details-marker]:hidden">
                 <span className="flex items-center gap-1.5 text-[13px] font-extrabold text-ink">
-                  <Fuel size={15} className="text-solar-700" />
-                  ₦{fmt(num(ePriceP))}
+                  <Fuel size={15} className="text-solar-700" />₦
+                  {fmt(num(ePriceP))}
                   <span className="font-semibold text-fog">/ litre petrol</span>
                 </span>
                 <span className="hidden h-3.5 w-px bg-divider sm:block" />
                 <span className="flex items-center gap-1.5 text-[13px] font-extrabold text-ink">
-                  <Zap size={15} className="text-brand-600" />
-                  ₦{fmt(num(ePriceE))}
+                  <Zap size={15} className="text-brand-600" />₦
+                  {fmt(num(ePriceE))}
                   <span className="font-semibold text-fog">
                     / kWh electricity
                   </span>
@@ -467,8 +467,8 @@ const ImpactMeter = () => {
                   />
                 </div>
                 <p className="m-0 text-[12px] font-medium text-fog">
-                  Defaults reflect Nigerian market rates as of July 2026.
-                  Adjust them to match what you actually pay.
+                  Defaults reflect Nigerian market rates as of July 2026. Adjust
+                  them to match what you actually pay.
                 </p>
               </div>
             </details>

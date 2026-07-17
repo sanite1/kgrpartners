@@ -19,8 +19,8 @@ npm run dev            # port 3000
 
 ### Environment
 
-| Var | Purpose |
-| --- | --- |
+| Var            | Purpose                                  |
+| -------------- | ---------------------------------------- |
 | `VITE_API_URL` | Backend base URL (contact endpoint host) |
 
 Set the same two vars in the hosting provider's project settings — the
@@ -36,12 +36,12 @@ contact form cannot submit without them.
 
 ## Pages
 
-| Route | Page |
-| --- | --- |
-| `/` | Home — hero, services, bento, story teaser |
-| `/about` | About — story, journey timeline, beliefs |
+| Route         | Page                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| `/`           | Home — hero, services, bento, story teaser                                                   |
+| `/about`      | About — story, journey timeline, beliefs                                                     |
 | `/technology` | Technology — 3 systems (`#conversion`, `#solar-charging`, `#battery-swapping`), day timeline |
-| `/contact` | Contact — contact cards + form (the only backend integration) |
+| `/contact`    | Contact — contact cards + form (the only backend integration)                                |
 
 Home service cards and footer service links deep-link to the technology
 anchors above.

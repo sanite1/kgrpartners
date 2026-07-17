@@ -105,16 +105,18 @@ export const useGetMovements = (
 
 export const useCreateItem = () => {
   const qc = useQueryClient();
-  return useMutation<ApiResponse<InventoryItem>, AxiosError, CreateItemPayload>({
-    mutationFn: (payload) => createItemFn(payload),
-    onSuccess: (data) => {
-      toast.success(data.message);
-      qc.invalidateQueries({ queryKey: inventoryKeys.all });
+  return useMutation<ApiResponse<InventoryItem>, AxiosError, CreateItemPayload>(
+    {
+      mutationFn: (payload) => createItemFn(payload),
+      onSuccess: (data) => {
+        toast.success(data.message);
+        qc.invalidateQueries({ queryKey: inventoryKeys.all });
+      },
+      onError: (error) => {
+        toast.error(getErrorMessage(error));
+      },
     },
-    onError: (error) => {
-      toast.error(getErrorMessage(error));
-    },
-  });
+  );
 };
 
 export const useUpdateItem = () => {

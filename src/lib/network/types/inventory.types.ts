@@ -25,7 +25,8 @@ export interface StockMovement {
   quantity: number;
   balanceAfter: number;
   note: string;
-  relatedRequest?: { _id: string; requestId: number; busNumber: string } | string;
+  relatedRequest?:
+    { _id: string; requestId: number; busNumber: string } | string;
   by: ReceiptUserRef | string;
   createdAt: string;
 }

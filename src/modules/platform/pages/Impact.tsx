@@ -22,7 +22,10 @@ export default function Impact() {
           <ImpactMeter />
         </div>
       </div>
-      <QuoteBand ctaLabel="See our verified impact" ctaTo="/technology#impact" />
+      <QuoteBand
+        ctaLabel="See our verified impact"
+        ctaTo="/technology#impact"
+      />
     </main>
   );
 }

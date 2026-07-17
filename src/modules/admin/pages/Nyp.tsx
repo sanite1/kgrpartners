@@ -70,9 +70,21 @@ export default function Nyp() {
         </div>
         <div className="flex flex-wrap gap-2.5">
           {[
-            { label: "≤ 7 days", bucket: summary?.buckets.d0_7, dot: "bg-brand-400" },
-            { label: "8 to 30 days", bucket: summary?.buckets.d8_30, dot: "bg-solar" },
-            { label: "over 30 days", bucket: summary?.buckets.d30plus, dot: "bg-red-400" },
+            {
+              label: "≤ 7 days",
+              bucket: summary?.buckets.d0_7,
+              dot: "bg-brand-400",
+            },
+            {
+              label: "8 to 30 days",
+              bucket: summary?.buckets.d8_30,
+              dot: "bg-solar",
+            },
+            {
+              label: "over 30 days",
+              bucket: summary?.buckets.d30plus,
+              dot: "bg-red-400",
+            },
           ].map((b) => (
             <div
               key={b.label}

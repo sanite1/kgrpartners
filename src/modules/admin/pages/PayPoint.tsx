@@ -145,7 +145,10 @@ export default function PayPoint() {
                 placeholder="Ticket ID, bill number or bus"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className={cn(inputClasses, "py-3.5 pl-11 text-[16px] sm:text-[16px]")}
+                className={cn(
+                  inputClasses,
+                  "py-3.5 pl-11 text-[16px] sm:text-[16px]",
+                )}
               />
             </div>
             <button
@@ -235,7 +238,11 @@ export default function PayPoint() {
             COLLECTED TODAY
           </span>
           <div className="relative mx-auto mt-4 w-full max-w-[240px]">
-            <svg viewBox="0 0 220 130" className="block w-full" aria-hidden="true">
+            <svg
+              viewBox="0 0 220 130"
+              className="block w-full"
+              aria-hidden="true"
+            >
               <defs>
                 <linearGradient id="pp-gauge" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#0FA53A" />
@@ -258,7 +265,8 @@ export default function PayPoint() {
                 strokeDasharray={ARC}
                 strokeDashoffset={ARC - ARC * pct}
                 style={{
-                  transition: "stroke-dashoffset 0.6s cubic-bezier(0.2,0.8,0.2,1)",
+                  transition:
+                    "stroke-dashoffset 0.6s cubic-bezier(0.2,0.8,0.2,1)",
                 }}
               />
             </svg>

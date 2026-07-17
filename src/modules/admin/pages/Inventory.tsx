@@ -210,16 +210,21 @@ export default function Inventory() {
           <table className="w-full whitespace-nowrap border-collapse text-left">
             <thead>
               <tr className="border-b border-line">
-                {["ITEM", "CATEGORY", "IN STOCK", "UNIT COST", "STOCK VALUE", "STATUS"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="whitespace-nowrap px-4 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
+                {[
+                  "ITEM",
+                  "CATEGORY",
+                  "IN STOCK",
+                  "UNIT COST",
+                  "STOCK VALUE",
+                  "STATUS",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="whitespace-nowrap px-4 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                  >
+                    {h}
+                  </th>
+                ))}
                 <th className="px-4 py-3.5" />
               </tr>
             </thead>

@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import BoltMark from "@/components/shared/BoltMark";
 import SectionEyebrow from "@/components/shared/SectionEyebrow";
-import { useSubmitContact } from "@/lib/network/api/contact.api";
-import type { ContactFormValues } from "@/lib/network/types/contact.types";
+import { useSubmitConversion } from "@/lib/network/api/conversion.api";
+import type { SubmitConversionPayload } from "@/lib/network/types/conversion.types";
 import {
   CONVERSION_SECTIONS,
   TOP_LEVEL_FIELD_IDS,
@@ -31,7 +31,7 @@ const ConversionWizard = () => {
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sent, setSent] = useState(false);
-  const submitContact = useSubmitContact();
+  const submitConversion = useSubmitConversion();
 
   // autosave the draft so a 45-field form survives leaving the page
   useEffect(() => {
@@ -80,30 +80,31 @@ const ConversionWizard = () => {
       setStep(0);
       return;
     }
-    const metadata: Record<string, string> = {};
-    for (const s of CONVERSION_SECTIONS) {
-      for (const field of s.fields) {
-        const value = (values[field.id] ?? "").trim();
-        const isTopLevel = (
-          TOP_LEVEL_FIELD_IDS as readonly string[]
-        ).includes(field.id);
-        if (value && !isTopLevel) metadata[field.label] = value;
-      }
-    }
-    metadata["Source"] = "conversion-page";
 
-    const payload: ContactFormValues = {
+    // group answered technical fields under their section title, so the
+    // console shows the sheet the way it was filled. the four top-level
+    // fields (name/email/phone/remarks) travel outside the sections.
+    const topLevel = TOP_LEVEL_FIELD_IDS as readonly string[];
+    const sections = CONVERSION_SECTIONS.map((s) => ({
+      title: s.title,
+      fields: s.fields
+        .filter((field) => !topLevel.includes(field.id))
+        .map((field) => ({
+          label: field.label,
+          value: (values[field.id] ?? "").trim(),
+        }))
+        .filter((f) => f.value !== ""),
+    })).filter((s) => s.fields.length > 0);
+
+    const payload: SubmitConversionPayload = {
       name: values.contactPerson.trim(),
       email: values.emailAddress.trim(),
-      subject: "EV Conversion Technical Sheet",
-      message:
-        (values.remarks ?? "").trim() ||
-        "EV conversion technical information sheet submitted via the website.",
-      metadata,
+      sections,
     };
     if (values.phoneNumber?.trim()) payload.phone = values.phoneNumber.trim();
+    if (values.remarks?.trim()) payload.remarks = values.remarks.trim();
 
-    submitContact.mutate(payload, {
+    submitConversion.mutate(payload, {
       onSuccess: () => {
         setSent(true);
         setValues({});
@@ -122,7 +123,7 @@ const ConversionWizard = () => {
             if (path === "name") next.contactPerson = field.message;
             if (path === "email") next.emailAddress = field.message;
             if (path === "phone") next.phoneNumber = field.message;
-            if (path === "message") next.remarks = field.message;
+            if (path === "remarks") next.remarks = field.message;
           }
           if (Object.keys(next).length) {
             setErrors(next);
@@ -303,16 +304,16 @@ const ConversionWizard = () => {
           ) : (
             <button
               type="button"
-              disabled={submitContact.isPending}
+              disabled={submitConversion.isPending}
               onClick={handleSubmit}
               className={cn(
                 "cta-gradient flex-1 cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep sm:flex-none",
-                submitContact.isPending
+                submitConversion.isPending
                   ? "cursor-not-allowed opacity-60"
                   : "transition-transform hover:scale-[1.02]",
               )}
             >
-              {submitContact.isPending ? "Sending…" : "Submit sheet →"}
+              {submitConversion.isPending ? "Sending…" : "Submit sheet →"}
             </button>
           )}
         </div>

@@ -135,10 +135,14 @@ export default function Buses() {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-[14px] font-semibold text-bark">
-                    {bus.driverName || <span className="text-fog">Not set</span>}
+                    {bus.driverName || (
+                      <span className="text-fog">Not set</span>
+                    )}
                   </td>
                   <td className="px-5 py-4 text-[14px] font-semibold text-bark">
-                    {bus.driverPhone || <span className="text-fog">Not set</span>}
+                    {bus.driverPhone || (
+                      <span className="text-fog">Not set</span>
+                    )}
                   </td>
                   <td className="px-5 py-4">
                     <StatusPill
@@ -187,8 +191,9 @@ export default function Buses() {
         {pagination && pagination.totalItems > 0 && (
           <div className="flex items-center justify-between border-t border-line px-5 py-3.5">
             <span className="text-[13px] font-semibold text-fog">
-              {pagination.totalItems} bus{pagination.totalItems === 1 ? "" : "es"}{" "}
-              · page {pagination.page} of {pagination.totalPages}
+              {pagination.totalItems} bus
+              {pagination.totalItems === 1 ? "" : "es"} · page {pagination.page}{" "}
+              of {pagination.totalPages}
             </span>
             <div className="flex gap-2">
               <button
@@ -217,9 +222,7 @@ export default function Buses() {
         open={modal !== null}
         onClose={() => setModal(null)}
       >
-        {modal && (
-          <BusForm bus={modal.bus} onDone={() => setModal(null)} />
-        )}
+        {modal && <BusForm bus={modal.bus} onDone={() => setModal(null)} />}
       </Modal>
     </>
   );

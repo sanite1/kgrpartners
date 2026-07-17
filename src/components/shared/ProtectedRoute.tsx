@@ -21,9 +21,7 @@ export const ProtectedRoute = ({ requiredRole }: ProtectedRouteProps) => {
   }
 
   if (!user) {
-    const redirect = encodeURIComponent(
-      location.pathname + location.search,
-    );
+    const redirect = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/login?redirect=${redirect}`} replace />;
   }
 

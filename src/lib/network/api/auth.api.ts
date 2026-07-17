@@ -66,7 +66,11 @@ export const useGetMe = (
 // REACT QUERY: Mutations
 
 export const useLogin = () =>
-  useMutation<ApiResponse<LoginData>, AxiosError<ApiErrorResponse>, LoginPayload>({
+  useMutation<
+    ApiResponse<LoginData>,
+    AxiosError<ApiErrorResponse>,
+    LoginPayload
+  >({
     mutationFn: (payload) => loginFn(payload),
     onError: (error) => {
       // 400 field errors are mapped onto inputs by the form itself

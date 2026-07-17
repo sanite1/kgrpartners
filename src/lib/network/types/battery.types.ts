@@ -2,11 +2,7 @@
 import type { ReceiptUserRef } from "./receipt.types";
 
 export type BatteryStatus =
-  | "in_store"
-  | "charging"
-  | "on_bus"
-  | "faulty"
-  | "in_repair";
+  "in_store" | "charging" | "on_bus" | "faulty" | "in_repair";
 
 export type BatteryMoveAction = "issue" | "collect" | "status";
 

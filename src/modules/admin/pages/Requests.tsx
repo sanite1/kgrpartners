@@ -305,12 +305,18 @@ export default function Requests() {
             <button
               type="button"
               disabled={
-                !selectedBus || !selectedItem || qty < 1 || createRequest.isPending
+                !selectedBus ||
+                !selectedItem ||
+                qty < 1 ||
+                createRequest.isPending
               }
               onClick={() => submit(false)}
               className={cn(
                 "cta-gradient cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep",
-                !selectedBus || !selectedItem || qty < 1 || createRequest.isPending
+                !selectedBus ||
+                  !selectedItem ||
+                  qty < 1 ||
+                  createRequest.isPending
                   ? "cursor-not-allowed opacity-50"
                   : "transition-transform hover:scale-[1.02]",
               )}
@@ -375,7 +381,8 @@ export default function Requests() {
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <span className="text-[15px] font-extrabold text-ink">
-                        #{request.requestId} · {request.itemName} × {request.quantity}
+                        #{request.requestId} · {request.itemName} ×{" "}
+                        {request.quantity}
                       </span>
                       <span className="ml-2 text-[13px] font-semibold text-fog">
                         for {request.busNumber}
@@ -400,7 +407,9 @@ export default function Requests() {
                       <span className="text-sage">"{request.narration}"</span>
                     )}
                     {request.nextRequestDate && (
-                      <span>locked until {fmtDate(request.nextRequestDate)}</span>
+                      <span>
+                        locked until {fmtDate(request.nextRequestDate)}
+                      </span>
                     )}
                     {request.decisionNote && (
                       <span className="text-sage">

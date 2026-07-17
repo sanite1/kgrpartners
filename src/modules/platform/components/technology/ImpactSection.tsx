@@ -7,7 +7,10 @@ import {
 
 // Dedicated Environmental Impact section; anchor target of "See Our Impact".
 const ImpactSection = () => (
-  <section id="impact" className="scroll-mt-24 bg-forest px-5 py-16 sm:px-8 lg:px-16 lg:py-[72px]">
+  <section
+    id="impact"
+    className="scroll-mt-24 bg-forest px-5 py-16 sm:px-8 lg:px-16 lg:py-[72px]"
+  >
     <div className="mx-auto max-w-7xl">
       <div className="max-w-[720px]" data-aos="fade-up">
         <SectionEyebrow tone="neon">OUR ENVIRONMENTAL IMPACT</SectionEyebrow>

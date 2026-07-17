@@ -17,8 +17,7 @@ const thClasses =
 const tdClasses = "px-4 py-3 text-[13.5px] font-semibold text-ink";
 
 const toCsv = (header: string[], rows: (string | number)[][]) => {
-  const escape = (v: string | number) =>
-    `"${String(v).replace(/"/g, '""')}"`;
+  const escape = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
   return [header, ...rows].map((r) => r.map(escape).join(",")).join("\n");
 };
 
@@ -213,7 +212,12 @@ export default function Reports() {
                   <td className={cn(tdClasses, "text-right")}>
                     {fmtNaira(d.expected)}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-brand-600")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-brand-600",
+                    )}
+                  >
                     {fmtNaira(d.collected)}
                   </td>
                   <td className={cn(tdClasses, "text-right")}>
@@ -226,42 +230,90 @@ export default function Reports() {
                     className={cn(
                       tdClasses,
                       "text-right",
-                      Number(d.outstanding) > 0 && "font-extrabold text-solar-700",
+                      Number(d.outstanding) > 0 &&
+                        "font-extrabold text-solar-700",
                     )}
                   >
                     {fmtNaira(d.outstanding)}
                   </td>
                   <td className={cn(tdClasses, "text-right")}>{d.voided}</td>
-                  <td className={cn(tdClasses, "text-right")}>{d.notCheckedIn}</td>
+                  <td className={cn(tdClasses, "text-right")}>
+                    {d.notCheckedIn}
+                  </td>
                 </tr>
               ))}
               {monthTotals && days.length > 0 && (
                 <tr className="bg-forest-deep">
-                  <td className={cn(tdClasses, "rounded-l-xl font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "rounded-l-xl font-extrabold text-white",
+                    )}
+                  >
                     TOTAL
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-white",
+                    )}
+                  >
                     {monthTotals.issued}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-white",
+                    )}
+                  >
                     {fmtNaira(monthTotals.expected)}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-neon")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-neon",
+                    )}
+                  >
                     {fmtNaira(monthTotals.collected)}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-white",
+                    )}
+                  >
                     {fmtNaira(monthTotals.fromToday)}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-white",
+                    )}
+                  >
                     {fmtNaira(monthTotals.fromArrears)}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-solar")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-solar",
+                    )}
+                  >
                     {fmtNaira(monthTotals.outstanding)}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-white",
+                    )}
+                  >
                     {monthTotals.voided}
                   </td>
-                  <td className={cn(tdClasses, "rounded-r-xl text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "rounded-r-xl text-right font-extrabold text-white",
+                    )}
+                  >
                     {monthTotals.notCheckedIn}
                   </td>
                 </tr>
@@ -363,32 +415,72 @@ export default function Reports() {
                   <td className={cn(tdClasses, "text-right")}>
                     {fmtNaira(b.repairsLabor)}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-brand-600")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-brand-600",
+                    )}
+                  >
                     {fmtNaira(b.total)}
                   </td>
                 </tr>
               ))}
               {expenseTotals && busRows.length > 0 && (
                 <tr className="bg-forest-deep">
-                  <td className={cn(tdClasses, "rounded-l-xl font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "rounded-l-xl font-extrabold text-white",
+                    )}
+                  >
                     TOTAL
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-white",
+                    )}
+                  >
                     {expenseTotals.requestsCount}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-white",
+                    )}
+                  >
                     {fmtNaira(expenseTotals.requestsTotal)}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-white",
+                    )}
+                  >
                     {expenseTotals.repairsCount}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-white",
+                    )}
+                  >
                     {fmtNaira(expenseTotals.repairsParts)}
                   </td>
-                  <td className={cn(tdClasses, "text-right font-extrabold text-white")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "text-right font-extrabold text-white",
+                    )}
+                  >
                     {fmtNaira(expenseTotals.repairsLabor)}
                   </td>
-                  <td className={cn(tdClasses, "rounded-r-xl text-right font-extrabold text-neon")}>
+                  <td
+                    className={cn(
+                      tdClasses,
+                      "rounded-r-xl text-right font-extrabold text-neon",
+                    )}
+                  >
                     {fmtNaira(expenseTotals.total)}
                   </td>
                 </tr>

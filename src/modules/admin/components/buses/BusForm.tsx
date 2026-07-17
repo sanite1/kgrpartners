@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { useCreateBus, useUpdateBus } from "@/lib/network/api/bus.api";
 import type { Bus } from "@/lib/network/types/bus.types";
-import {
-  inputClasses,
-  labelClasses,
-  errorClasses,
-} from "../console/form";
+import { inputClasses, labelClasses, errorClasses } from "../console/form";
 import { cn } from "@/lib/utils";
 
 interface BusFormProps {
@@ -128,11 +124,7 @@ const BusForm = ({ bus, onDone }: BusFormProps) => {
             : "transition-transform hover:scale-[1.02]",
         )}
       >
-        {isPending
-          ? "Saving…"
-          : bus
-            ? "Save changes"
-            : "Register bus →"}
+        {isPending ? "Saving…" : bus ? "Save changes" : "Register bus →"}
       </button>
     </div>
   );

@@ -95,8 +95,8 @@ export default function TripPrice() {
               </>
             ) : (
               <p className="mb-0 mt-4 text-[15px] font-semibold text-mint-pale">
-                No trip price configured yet. Set the first one to start
-                issuing receipts.
+                No trip price configured yet. Set the first one to start issuing
+                receipts.
               </p>
             )}
           </div>
@@ -186,7 +186,9 @@ export default function TripPrice() {
                 key={price._id}
                 className={cn(
                   "rounded-2xl border border-line border-t-4 bg-white p-5 shadow-[0_8px_20px_rgba(13,31,21,0.04)]",
-                  i === 0 && page === 1 ? "border-t-brand-500" : "border-t-solar",
+                  i === 0 && page === 1
+                    ? "border-t-brand-500"
+                    : "border-t-solar",
                 )}
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">

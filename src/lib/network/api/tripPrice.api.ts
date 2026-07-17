@@ -61,9 +61,7 @@ const getErrorMessage = (error: unknown): string => {
 // REACT QUERY: Queries
 
 export const useGetCurrentTripPrice = (
-  options?: Partial<
-    UseQueryOptions<ApiResponse<TripPrice | null>, AxiosError>
-  >,
+  options?: Partial<UseQueryOptions<ApiResponse<TripPrice | null>, AxiosError>>,
 ) =>
   useQuery<ApiResponse<TripPrice | null>, AxiosError>({
     queryKey: tripPriceKeys.current(),

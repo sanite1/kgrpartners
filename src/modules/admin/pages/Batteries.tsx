@@ -17,10 +17,7 @@ import {
   useCollectBattery,
   useSetBatteryStatus,
 } from "@/lib/network/api/battery.api";
-import type {
-  Battery,
-  BatteryStatus,
-} from "@/lib/network/types/battery.types";
+import type { Battery, BatteryStatus } from "@/lib/network/types/battery.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canManageStock } from "../permissions";
 import { cn, fmtDate, fmtTime } from "@/lib/utils";
@@ -103,7 +100,10 @@ const MovementsList = ({ battery }: { battery: Battery }) => {
             type="button"
             disabled={!pagination.hasPrevPage}
             onClick={() => setPage((p) => p - 1)}
-            className={cn(smallBtn, "disabled:cursor-not-allowed disabled:opacity-40")}
+            className={cn(
+              smallBtn,
+              "disabled:cursor-not-allowed disabled:opacity-40",
+            )}
           >
             Previous
           </button>
@@ -111,7 +111,10 @@ const MovementsList = ({ battery }: { battery: Battery }) => {
             type="button"
             disabled={!pagination.hasNextPage}
             onClick={() => setPage((p) => p + 1)}
-            className={cn(smallBtn, "disabled:cursor-not-allowed disabled:opacity-40")}
+            className={cn(
+              smallBtn,
+              "disabled:cursor-not-allowed disabled:opacity-40",
+            )}
           >
             Next
           </button>
@@ -140,9 +143,9 @@ export default function Batteries() {
 
   // register form
   const [regCode, setRegCode] = useState("");
-  const [regStatus, setRegStatus] = useState<"in_store" | "charging" | "faulty">(
-    "in_store",
-  );
+  const [regStatus, setRegStatus] = useState<
+    "in_store" | "charging" | "faulty"
+  >("in_store");
   const [regNotes, setRegNotes] = useState("");
 
   // issue form
@@ -151,9 +154,9 @@ export default function Batteries() {
   const [issueNote, setIssueNote] = useState("");
 
   // collect form
-  const [collectTo, setCollectTo] = useState<"in_store" | "charging" | "faulty">(
-    "charging",
-  );
+  const [collectTo, setCollectTo] = useState<
+    "in_store" | "charging" | "faulty"
+  >("charging");
   const [collectNote, setCollectNote] = useState("");
 
   // edit form
@@ -192,8 +195,10 @@ export default function Batteries() {
     setEditFor(battery);
   };
 
-  const quickStatus = (battery: Battery, to: "in_store" | "charging" | "faulty") =>
-    setStatus.mutate({ id: battery._id, payload: { to } });
+  const quickStatus = (
+    battery: Battery,
+    to: "in_store" | "charging" | "faulty",
+  ) => setStatus.mutate({ id: battery._id, payload: { to } });
 
   return (
     <>
@@ -337,44 +342,49 @@ export default function Batteries() {
             <div className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-line pt-3.5">
               {canStock &&
                 (battery.status === "in_store" ||
-                battery.status === "charging") && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setBusSearch("");
-                      setIssueNote("");
-                      setIssueFor(battery);
-                    }}
-                    className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
-                  >
-                    Issue to bus
-                  </button>
-                  <button
-                    type="button"
-                    disabled={setStatus.isPending}
-                    onClick={() =>
-                      quickStatus(
-                        battery,
-                        battery.status === "in_store" ? "charging" : "in_store",
-                      )
-                    }
-                    className={smallBtn}
-                  >
-                    {battery.status === "in_store"
-                      ? "Start charging"
-                      : "Back to store"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={setStatus.isPending}
-                    onClick={() => quickStatus(battery, "faulty")}
-                    className={cn(smallBtn, "hover:border-red-300 hover:text-red-600")}
-                  >
-                    Faulty
-                  </button>
-                </>
-              )}
+                  battery.status === "charging") && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBusSearch("");
+                        setIssueNote("");
+                        setIssueFor(battery);
+                      }}
+                      className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
+                    >
+                      Issue to bus
+                    </button>
+                    <button
+                      type="button"
+                      disabled={setStatus.isPending}
+                      onClick={() =>
+                        quickStatus(
+                          battery,
+                          battery.status === "in_store"
+                            ? "charging"
+                            : "in_store",
+                        )
+                      }
+                      className={smallBtn}
+                    >
+                      {battery.status === "in_store"
+                        ? "Start charging"
+                        : "Back to store"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={setStatus.isPending}
+                      onClick={() => quickStatus(battery, "faulty")}
+                      className={cn(
+                        smallBtn,
+                        "hover:border-red-300 hover:text-red-600",
+                      )}
+                    >
+                      Faulty
+                    </button>
+                  </>
+                )}
               {canStock && battery.status === "on_bus" && (
                 <button
                   type="button"
@@ -454,7 +464,10 @@ export default function Batteries() {
             type="button"
             disabled={!pagination.hasPrevPage}
             onClick={() => setPage((p) => p - 1)}
-            className={cn(smallBtn, "px-3.5 py-2 text-[13px] disabled:cursor-not-allowed disabled:opacity-40")}
+            className={cn(
+              smallBtn,
+              "px-3.5 py-2 text-[13px] disabled:cursor-not-allowed disabled:opacity-40",
+            )}
           >
             Previous
           </button>
@@ -462,7 +475,10 @@ export default function Batteries() {
             type="button"
             disabled={!pagination.hasNextPage}
             onClick={() => setPage((p) => p + 1)}
-            className={cn(smallBtn, "px-3.5 py-2 text-[13px] disabled:cursor-not-allowed disabled:opacity-40")}
+            className={cn(
+              smallBtn,
+              "px-3.5 py-2 text-[13px] disabled:cursor-not-allowed disabled:opacity-40",
+            )}
           >
             Next
           </button>
@@ -497,7 +513,9 @@ export default function Batteries() {
               id="bat-status"
               value={regStatus}
               onChange={(e) =>
-                setRegStatus(e.target.value as "in_store" | "charging" | "faulty")
+                setRegStatus(
+                  e.target.value as "in_store" | "charging" | "faulty",
+                )
               }
               className={inputClasses}
             >

@@ -95,7 +95,10 @@ export default function GenerateReceipt() {
         <div className="rounded-[20px] border border-line bg-white p-6 shadow-[0_12px_30px_rgba(13,31,21,0.05)] sm:p-8">
           {!price && (
             <div className="mb-5 flex items-start gap-3 rounded-xl border border-solar/40 bg-[#FDF6E3] px-4 py-3.5">
-              <TriangleAlert size={18} className="mt-0.5 flex-none text-solar-700" />
+              <TriangleAlert
+                size={18}
+                className="mt-0.5 flex-none text-solar-700"
+              />
               <p className="m-0 text-[13px] font-semibold text-solar-700">
                 No trip price is configured, so receipts cannot be issued yet.{" "}
                 <Link to="/trip-price" className="underline">
@@ -231,7 +234,10 @@ export default function GenerateReceipt() {
                 onClick={() => issue(false)}
                 className={cn(
                   "cta-gradient cursor-pointer rounded-[10px] border-none px-8 py-4 text-[15px] font-extrabold text-forest-deep",
-                  !selectedBus || tripsNum < 1 || !price || createReceipt.isPending
+                  !selectedBus ||
+                    tripsNum < 1 ||
+                    !price ||
+                    createReceipt.isPending
                     ? "cursor-not-allowed opacity-50"
                     : "transition-transform hover:scale-[1.02]",
                 )}

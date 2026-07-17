@@ -11,9 +11,7 @@ const Team = lazy(() => import("../pages/Team"));
 const Gallery = lazy(() => import("../pages/Gallery"));
 const Faq = lazy(() => import("../pages/Faq"));
 const Partner = lazy(() => import("../pages/Partner"));
-const Conversion = lazy(
-  () => import("../pages/Conversion"),
-);
+const Conversion = lazy(() => import("../pages/Conversion"));
 const Impact = lazy(() => import("../pages/Impact"));
 const Contact = lazy(() => import("../pages/Contact"));
 
@@ -36,10 +34,7 @@ export const PlatformRoutes = () => (
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/partner" element={<Partner />} />
-          <Route
-            path="/conversion"
-            element={<Conversion />}
-          />
+          <Route path="/conversion" element={<Conversion />} />
           <Route path="/impact" element={<Impact />} />
           <Route path="/contact" element={<Contact />} />
         </Route>

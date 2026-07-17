@@ -5,7 +5,11 @@ import { CONTACT_IMAGES, CONTACT_QUICK_STATS } from "@/data/contact-data";
 import { cn } from "@/lib/utils";
 
 const ContactSide = () => (
-  <div className="flex flex-col gap-[22px]" data-aos="fade-up" data-aos-delay="100">
+  <div
+    className="flex flex-col gap-[22px]"
+    data-aos="fade-up"
+    data-aos-delay="100"
+  >
     {/* photo + floating badge */}
     <div className="relative">
       <img
@@ -56,9 +60,7 @@ const ContactSide = () => (
           <div className="text-[20px] font-extrabold text-brand-500 sm:text-[24px]">
             {stat.value}
           </div>
-          <div className="text-[12px] font-semibold text-fog">
-            {stat.label}
-          </div>
+          <div className="text-[12px] font-semibold text-fog">{stat.label}</div>
         </div>
       ))}
     </div>

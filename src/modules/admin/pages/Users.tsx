@@ -21,7 +21,13 @@ import {
   errorClasses,
 } from "../components/console/form";
 
-const ROLES: UserRole[] = ["staff", "cashier", "storekeeper", "manager", "admin"];
+const ROLES: UserRole[] = [
+  "staff",
+  "cashier",
+  "storekeeper",
+  "manager",
+  "admin",
+];
 
 const roleTone = (role: UserRole): "success" | "warn" | "muted" =>
   role === "admin" ? "success" : role === "manager" ? "warn" : "muted";
@@ -215,16 +221,21 @@ export default function Users() {
         <table className="w-full whitespace-nowrap border-collapse text-left">
           <thead>
             <tr className="border-b border-line">
-              {["USER", "EMAIL", "ACCESS LEVEL", "STATUS", "LAST LOGIN", ""].map(
-                (h) => (
-                  <th
-                    key={h}
-                    className="px-5 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                  >
-                    {h}
-                  </th>
-                ),
-              )}
+              {[
+                "USER",
+                "EMAIL",
+                "ACCESS LEVEL",
+                "STATUS",
+                "LAST LOGIN",
+                "",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="px-5 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>

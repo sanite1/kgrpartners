@@ -11,10 +11,7 @@ import {
   useCheckInReceipt,
   useVoidReceipt,
 } from "@/lib/network/api/receipt.api";
-import type {
-  Receipt,
-  ReceiptStatus,
-} from "@/lib/network/types/receipt.types";
+import type { Receipt, ReceiptStatus } from "@/lib/network/types/receipt.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canApprove } from "../permissions";
 import { cn, fmtNaira, fmtDate } from "@/lib/utils";
@@ -145,16 +142,23 @@ export default function Receipts() {
           <table className="w-full whitespace-nowrap border-collapse text-left">
             <thead>
               <tr className="border-b border-line">
-                {["BILL", "TICKET", "BUS", "TRIPS", "AMOUNT", "DATE", "STATUS", "CHECK-IN"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="whitespace-nowrap px-4 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
+                {[
+                  "BILL",
+                  "TICKET",
+                  "BUS",
+                  "TRIPS",
+                  "AMOUNT",
+                  "DATE",
+                  "STATUS",
+                  "CHECK-IN",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="whitespace-nowrap px-4 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -310,7 +314,9 @@ export default function Receipts() {
                 />
                 <button
                   type="button"
-                  disabled={voidReason.trim().length < 3 || voidReceipt.isPending}
+                  disabled={
+                    voidReason.trim().length < 3 || voidReceipt.isPending
+                  }
                   onClick={handleVoid}
                   className="mt-2.5 cursor-pointer rounded-lg border-none bg-red-600 px-5 py-2.5 text-[13px] font-extrabold text-white disabled:opacity-40"
                 >
