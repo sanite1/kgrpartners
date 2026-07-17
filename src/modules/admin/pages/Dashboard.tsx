@@ -3,7 +3,11 @@ import { TicketPlus } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import PageHead from "../components/console/PageHead";
 import Skeleton from "../components/console/Skeleton";
-import { useGetReceiptSummary } from "@/lib/network/api/receipt.api";
+import {
+  useGetReceiptSummary,
+  useGetOutstandingSummary,
+} from "@/lib/network/api/receipt.api";
+import { useGetBuses } from "@/lib/network/api/bus.api";
 import { useGetItems } from "@/lib/network/api/inventory.api";
 import { useGetBatterySummary } from "@/lib/network/api/battery.api";
 import { useGetRepairJobs } from "@/lib/network/api/repair.api";
@@ -20,6 +24,16 @@ export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
   const { data, isLoading: summaryLoading } = useGetReceiptSummary();
   const summary = data?.data;
+
+  // overall money position: every unpaid receipt, all time
+  const { data: outstandingData, isLoading: outstandingLoading } =
+    useGetOutstandingSummary();
+  const outstanding = outstandingData?.data;
+
+  const { data: busesData, isLoading: busesLoading } = useGetBuses({
+    isActive: "true",
+    pageSize: 1,
+  });
 
   // yard ops: counts only, so tiny page sizes
   const { data: lowStockData, isLoading: lowStockLoading } = useGetItems({
@@ -85,7 +99,7 @@ export default function Dashboard() {
       <PageHead
         eyebrow="OVERVIEW"
         title={`Welcome back, ${user?.firstName ?? ""}`}
-        subtitle="Today at the yard, at a glance."
+        subtitle="The whole yard at a glance. Daily Account has today's ledger."
         actions={
           <Link
             to="/generate"
@@ -98,56 +112,76 @@ export default function Dashboard() {
 
       {/* bento stats */}
       <div className="grid auto-rows-[124px] grid-cols-2 gap-4 lg:grid-cols-4">
-        {/* collected: the day's headline */}
+        {/* collected this month: the running headline */}
         <div className="col-span-2 flex flex-col justify-between rounded-[20px] bg-forest p-5">
           <span className="flex items-center gap-2 text-[11px] font-extrabold tracking-[1.5px] text-mint-soft">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neon opacity-60 motion-reduce:animate-none" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-neon" />
             </span>
-            COLLECTED TODAY
+            COLLECTED THIS MONTH
           </span>
           {summaryLoading ? (
             <Skeleton className="h-8 w-44 bg-white/15" />
           ) : (
             <span className="text-[32px] font-extrabold leading-none text-neon">
-              {fmtNaira(summary?.collectedAmount)}
+              {fmtNaira(summary?.monthCollected)}
             </span>
           )}
         </div>
 
-        {/* outstanding: warm on purpose */}
+        {/* every unpaid receipt, all time: warm on purpose */}
         <div className="flex flex-col justify-between rounded-[20px] bg-solar p-5">
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-forest-deep/70">
-            OUTSTANDING
+            TOTAL OUTSTANDING
           </span>
-          {summaryLoading ? (
+          {outstandingLoading ? (
             <Skeleton className="h-6 w-28 bg-forest-deep/15" />
           ) : (
             <span className="text-[24px] font-extrabold leading-none text-forest-deep">
-              {fmtNaira(summary?.outstandingAmount)}
+              {fmtNaira(outstanding?.totalAmount)}
             </span>
           )}
         </div>
 
         <div className="flex flex-col justify-between rounded-[20px] border border-line bg-white p-5">
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
-            EXPECTED TODAY
+            COLLECTED TODAY
           </span>
           {summaryLoading ? (
             <Skeleton className="h-6 w-28" />
           ) : (
             <span className="text-[24px] font-extrabold leading-none text-ink">
-              {fmtNaira(summary?.expectedAmount)}
+              {fmtNaira(summary?.collectedAmount)}
             </span>
           )}
         </div>
 
         {[
-          { label: "RECEIPTS ISSUED", value: summary?.issuedCount ?? 0 },
-          { label: "TRIPS EXPECTED", value: summary?.trips ?? 0 },
-          { label: "BUSES CHECKED IN", value: summary?.checkedIn ?? 0 },
-          { label: "AWAITING PAYMENT", value: summary?.awaitingCount ?? 0 },
+          {
+            label: "RECEIPTS THIS MONTH",
+            value: summary?.monthIssuedCount ?? 0,
+            loading: summaryLoading,
+            warnWhenPositive: false,
+          },
+          {
+            label: "UNPAID RECEIPTS",
+            value: outstanding?.count ?? 0,
+            loading: outstandingLoading,
+            warnWhenPositive: true,
+          },
+          {
+            label: "ACTIVE BUSES",
+            value: busesData?.pagination?.totalItems ?? 0,
+            loading: busesLoading,
+            warnWhenPositive: false,
+          },
+          {
+            label: "BATTERY FLEET",
+            value: batterySummaryData?.data?.total ?? 0,
+            loading: batteriesLoading,
+            warnWhenPositive: false,
+          },
         ].map((cell) => (
           <div
             key={cell.label}
@@ -156,13 +190,13 @@ export default function Dashboard() {
             <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
               {cell.label}
             </span>
-            {summaryLoading ? (
+            {cell.loading ? (
               <Skeleton className="h-7 w-12" />
             ) : (
               <span
                 className={cn(
                   "text-[28px] font-extrabold leading-none",
-                  cell.label === "AWAITING PAYMENT" && cell.value > 0
+                  cell.warnWhenPositive && cell.value > 0
                     ? "text-solar-700"
                     : "text-ink",
                 )}

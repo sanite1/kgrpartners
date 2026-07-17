@@ -83,5 +83,7 @@ export interface ReceiptSummary {
   trips: number;
   checkedIn: number;
   awaitingCount: number;
+  monthCollected: string;
+  monthIssuedCount: number;
   series: ReceiptSummarySeriesPoint[];
 }

@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DrawerProps {
   title: string;
@@ -73,10 +74,24 @@ const Drawer = ({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        <div
+          className={cn(
+            "flex-1 overflow-y-auto px-6 py-5",
+            // without a footer the body ends under the iOS toolbar band;
+            // keep the last content clear of it on phones
+            !footer && "pb-24 md:pb-5",
+          )}
+        >
+          {children}
+        </div>
 
         {footer && (
-          <div className="border-t border-line px-6 py-4">{footer}</div>
+          // the panel extends under the iOS toolbar band (lvh) so the
+          // band shows the white sheet; the extra mobile padding keeps
+          // the action buttons above the bar itself
+          <div className="border-t border-line px-6 pb-24 pt-4 md:pb-4">
+            {footer}
+          </div>
         )}
       </div>
     </div>
