@@ -111,11 +111,16 @@ export default function Receipts() {
           <input
             type="date"
             value={date}
+            data-placeholder="Any date"
             onChange={(e) => {
               setDate(e.target.value);
               setPage(1);
             }}
-            className={cn(inputClasses, "py-2.5 sm:text-[14px] sm:w-[170px]")}
+            className={cn(
+              inputClasses,
+              "py-2.5 sm:text-[14px] sm:w-[170px]",
+              !date && "date-empty",
+            )}
           />
           <div className="relative sm:w-[240px]">
             <Search

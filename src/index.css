@@ -170,4 +170,14 @@
     text-align: left;
     margin: 0;
   }
+  /* iOS renders an EMPTY date field completely blank; pages mark
+     empty-able date inputs with .date-empty + data-placeholder so a
+     hint shows, like a text input's placeholder. iOS-only: desktop
+     browsers already show their own dd/mm/yyyy hint. */
+  @supports (-webkit-touch-callout: none) {
+    input.date-empty::before {
+      content: attr(data-placeholder);
+      color: var(--color-placeholder);
+    }
+  }
 }

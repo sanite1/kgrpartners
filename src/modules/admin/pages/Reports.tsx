@@ -354,8 +354,13 @@ export default function Reports() {
                 id="rep-from"
                 type="date"
                 value={from}
+                data-placeholder="Start date"
                 onChange={(e) => setFrom(e.target.value)}
-                className={cn(inputClasses, "py-2.5")}
+                className={cn(
+                  inputClasses,
+                  "min-w-[150px] py-2.5",
+                  !from && "date-empty",
+                )}
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -366,8 +371,13 @@ export default function Reports() {
                 id="rep-to"
                 type="date"
                 value={to}
+                data-placeholder="End date"
                 onChange={(e) => setTo(e.target.value)}
-                className={cn(inputClasses, "py-2.5")}
+                className={cn(
+                  inputClasses,
+                  "min-w-[150px] py-2.5",
+                  !to && "date-empty",
+                )}
               />
             </div>
             <button

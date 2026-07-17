@@ -142,8 +142,9 @@ export default function TripPrice() {
                     id="tp-from"
                     type="date"
                     value={effectiveFrom}
+                    data-placeholder="Today"
                     onChange={(e) => setEffectiveFrom(e.target.value)}
-                    className={inputClasses}
+                    className={cn(inputClasses, !effectiveFrom && "date-empty")}
                   />
                   <span className="text-[12px] font-medium text-fog">
                     Leave empty to apply immediately.

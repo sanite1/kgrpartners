@@ -255,8 +255,9 @@ export default function Requests() {
                   id="rq-next"
                   type="date"
                   value={nextRequestDate}
+                  data-placeholder="Optional"
                   onChange={(e) => setNextRequestDate(e.target.value)}
-                  className={inputClasses}
+                  className={cn(inputClasses, !nextRequestDate && "date-empty")}
                 />
               </div>
             </div>
