@@ -13,6 +13,7 @@ import {
   ClipboardList,
   BatteryCharging,
   Wrench,
+  ChartColumn,
   LogOut,
   Menu,
   X,
@@ -37,6 +38,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   ClipboardList,
   BatteryCharging,
   Wrench,
+  ChartColumn,
 };
 
 const initials = (first: string, last: string) =>

@@ -3,6 +3,10 @@ import { TicketPlus } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import PageHead from "../components/console/PageHead";
 import { useGetReceiptSummary } from "@/lib/network/api/receipt.api";
+import { useGetItems } from "@/lib/network/api/inventory.api";
+import { useGetBatterySummary } from "@/lib/network/api/battery.api";
+import { useGetRepairJobs } from "@/lib/network/api/repair.api";
+import { useGetPartRequests } from "@/lib/network/api/partRequest.api";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { cn, fmtNaira } from "@/lib/utils";
 
@@ -15,6 +19,50 @@ export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
   const { data } = useGetReceiptSummary();
   const summary = data?.data;
+
+  // yard ops: counts only, so tiny page sizes
+  const { data: lowStockData } = useGetItems({
+    lowStock: "true",
+    isActive: "true",
+    pageSize: 1,
+  });
+  const { data: batterySummaryData } = useGetBatterySummary();
+  const { data: openRepairsData } = useGetRepairJobs({
+    status: "open",
+    pageSize: 1,
+  });
+  const { data: pendingRequestsData } = useGetPartRequests({
+    status: "pending",
+    pageSize: 1,
+  });
+
+  const batteryCounts = batterySummaryData?.data?.counts;
+  const opsCells = [
+    {
+      label: "PENDING REQUESTS",
+      value: pendingRequestsData?.pagination?.totalItems ?? 0,
+      to: "/requests",
+      warnWhenPositive: true,
+    },
+    {
+      label: "LOW STOCK ITEMS",
+      value: lowStockData?.pagination?.totalItems ?? 0,
+      to: "/inventory",
+      warnWhenPositive: true,
+    },
+    {
+      label: "OPEN REPAIRS",
+      value: openRepairsData?.pagination?.totalItems ?? 0,
+      to: "/repairs",
+      warnWhenPositive: false,
+    },
+    {
+      label: "BATTERIES ON BUSES",
+      value: batteryCounts?.on_bus ?? 0,
+      to: "/batteries",
+      warnWhenPositive: false,
+    },
+  ];
 
   const series = summary?.series ?? [];
   const maxExpected = Math.max(
@@ -98,6 +146,31 @@ export default function Dashboard() {
               {cell.value}
             </span>
           </div>
+        ))}
+      </div>
+
+      {/* yard ops */}
+      <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {opsCells.map((cell) => (
+          <Link
+            key={cell.label}
+            to={cell.to}
+            className="flex h-[104px] flex-col justify-between rounded-[20px] border border-line bg-white p-5 transition-colors hover:border-brand-500"
+          >
+            <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
+              {cell.label}
+            </span>
+            <span
+              className={cn(
+                "text-[26px] font-extrabold leading-none",
+                cell.warnWhenPositive && cell.value > 0
+                  ? "text-solar-700"
+                  : "text-ink",
+              )}
+            >
+              {cell.value}
+            </span>
+          </Link>
         ))}
       </div>
 
