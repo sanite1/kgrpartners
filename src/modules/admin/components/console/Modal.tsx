@@ -28,7 +28,7 @@ const Modal = ({ title, open, onClose, children }: ModalProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex h-dvh items-center justify-center bg-forest-deep/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex h-lvh items-center justify-center bg-forest-deep/60 p-4"
       onClick={onClose}
     >
       <div

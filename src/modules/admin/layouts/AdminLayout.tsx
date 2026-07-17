@@ -73,7 +73,7 @@ const AdminLayout = () => {
       </div>
 
       {/* nav: scrolls on its own when taller than the screen */}
-      <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 pb-8">
+      <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 pb-28 lg:pb-8">
         {navItems.map((item) => {
           const Icon = ICON_MAP[item.icon];
           return (
@@ -132,7 +132,7 @@ const AdminLayout = () => {
       {/* mobile drawer */}
       {drawerOpen && (
         <div
-          className="fixed inset-0 z-[90] h-dvh bg-forest-deep/60 lg:hidden"
+          className="fixed inset-0 z-[90] h-lvh bg-forest-deep/60 lg:hidden"
           onClick={() => setDrawerOpen(false)}
         >
           <div
