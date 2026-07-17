@@ -15,6 +15,8 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
   { label: "Daily Account", to: "/daily-account", icon: "BookText" },
   { label: "Inventory", to: "/inventory", icon: "Boxes" },
   { label: "Requests", to: "/requests", icon: "ClipboardList" },
+  { label: "Batteries", to: "/batteries", icon: "BatteryCharging" },
+  { label: "Repairs", to: "/repairs", icon: "Wrench" },
   { label: "Buses", to: "/buses", icon: "Bus" },
   { label: "Trip Price", to: "/trip-price", icon: "Tag" },
 ];

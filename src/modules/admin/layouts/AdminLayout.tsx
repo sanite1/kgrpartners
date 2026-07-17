@@ -11,6 +11,8 @@ import {
   BookText,
   Boxes,
   ClipboardList,
+  BatteryCharging,
+  Wrench,
   LogOut,
   Menu,
   X,
@@ -33,6 +35,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   BookText,
   Boxes,
   ClipboardList,
+  BatteryCharging,
+  Wrench,
 };
 
 const initials = (first: string, last: string) =>

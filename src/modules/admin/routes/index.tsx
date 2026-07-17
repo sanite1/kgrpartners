@@ -15,6 +15,8 @@ const Nyp = lazy(() => import("../pages/Nyp"));
 const DailyAccount = lazy(() => import("../pages/DailyAccount"));
 const Inventory = lazy(() => import("../pages/Inventory"));
 const Requests = lazy(() => import("../pages/Requests"));
+const Batteries = lazy(() => import("../pages/Batteries"));
+const Repairs = lazy(() => import("../pages/Repairs"));
 const TripPrice = lazy(() => import("../pages/TripPrice"));
 
 const LoadingFallback = () => (
@@ -53,6 +55,8 @@ export const AdminRoutes = () => {
               <Route path="/daily-account" element={<DailyAccount />} />
               <Route path="/inventory" element={<Inventory />} />
               <Route path="/requests" element={<Requests />} />
+              <Route path="/batteries" element={<Batteries />} />
+              <Route path="/repairs" element={<Repairs />} />
               <Route path="/buses" element={<Buses />} />
               <Route path="/trip-price" element={<TripPrice />} />
             </Route>
