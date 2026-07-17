@@ -8,6 +8,7 @@ export interface Bus {
   isActive: boolean;
   notes: string;
   createdBy: string;
+  updatedBy?: string;
   createdAt: string;
   updatedAt: string;
 }

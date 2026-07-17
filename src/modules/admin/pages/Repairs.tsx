@@ -21,6 +21,7 @@ import type { Battery } from "@/lib/network/types/battery.types";
 import type { InventoryItem } from "@/lib/network/types/inventory.types";
 import type { RepairJob, RepairStatus } from "@/lib/network/types/repair.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
+import { canApprove, canManageStock } from "../permissions";
 import { cn, fmtNaira, fmtDate } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
@@ -48,7 +49,8 @@ const moneyPattern = /^\d+(\.\d{1,2})?$/;
 
 export default function Repairs() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "admin";
+  const canDecide = canApprove(user?.role);
+  const canStock = canManageStock(user?.role);
 
   // form state
   const [title, setTitle] = useState("");
@@ -176,8 +178,14 @@ export default function Repairs() {
         subtitle="Open a job, pull parts from stock, close it with the labor bill."
       />
 
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[400px_1fr]">
-        {/* new job form */}
+      <div
+        className={cn(
+          "grid grid-cols-1 items-start gap-6",
+          canStock && "lg:grid-cols-[400px_1fr]",
+        )}
+      >
+        {/* new job form: store work only */}
+        {canStock && (
         <div className="rounded-[20px] border border-line bg-white p-6 shadow-[0_12px_30px_rgba(13,31,21,0.05)] lg:sticky lg:top-8">
           <h2 className="mb-4 mt-0 text-[17px] font-extrabold text-ink">
             New repair job
@@ -386,6 +394,7 @@ export default function Repairs() {
             </button>
           </div>
         </div>
+        )}
 
         {/* jobs list */}
         <div>
@@ -494,20 +503,22 @@ export default function Repairs() {
                     )}
                   </div>
 
-                  {job.status === "open" && (
+                  {job.status === "open" && (canStock || canDecide) && (
                     <div className="mt-3 flex flex-wrap items-center gap-2.5 border-t border-line pt-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAddItemSearch("");
-                          setAddQty("1");
-                          setAddPartFor(job);
-                        }}
-                        className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-white px-4 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
-                      >
-                        <Plus size={14} /> Add part
-                      </button>
-                      {isAdmin && (
+                      {canStock && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAddItemSearch("");
+                            setAddQty("1");
+                            setAddPartFor(job);
+                          }}
+                          className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-white px-4 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
+                        >
+                          <Plus size={14} /> Add part
+                        </button>
+                      )}
+                      {canDecide && (
                         <>
                           <button
                             type="button"

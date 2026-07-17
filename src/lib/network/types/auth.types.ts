@@ -1,7 +1,12 @@
 // Mirrors kgr-backend: interfaces/user.interface.ts + auth.service.ts.
 // User shape is the Mongoose toJSON output (password and __v stripped).
 
-export type UserRole = "staff" | "admin";
+export type UserRole =
+  | "staff"
+  | "cashier"
+  | "storekeeper"
+  | "manager"
+  | "admin";
 
 export interface AuthUser {
   _id: string;

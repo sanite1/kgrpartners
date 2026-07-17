@@ -18,6 +18,7 @@ import type { InventoryItem } from "@/lib/network/types/inventory.types";
 import type { RequestStatus } from "@/lib/network/types/partRequest.types";
 import type { ApiErrorResponse } from "@/lib/network/types/api.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
+import { canApprove } from "../permissions";
 import { cn, fmtNaira, fmtDate } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
@@ -38,7 +39,7 @@ const statusTone: Record<RequestStatus, "warn" | "success" | "muted"> = {
 
 export default function Requests() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "admin";
+  const canDecide = canApprove(user?.role);
 
   // form state
   const [busSearch, setBusSearch] = useState("");
@@ -408,7 +409,7 @@ export default function Requests() {
                     )}
                   </div>
 
-                  {isAdmin && request.status === "pending" && (
+                  {canDecide && request.status === "pending" && (
                     <div className="mt-3 flex flex-wrap items-center gap-2.5 border-t border-line pt-3">
                       <button
                         type="button"

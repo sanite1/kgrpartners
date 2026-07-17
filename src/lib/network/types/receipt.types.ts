@@ -22,6 +22,7 @@ export interface Receipt {
   issuedBy: ReceiptUserRef | string;
   checkedIn: boolean;
   checkedInAt?: string;
+  checkedInBy?: ReceiptUserRef | string;
   paidAt?: string;
   paidBy?: ReceiptUserRef | string;
   voidedAt?: string;

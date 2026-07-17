@@ -14,11 +14,13 @@ import {
   BatteryCharging,
   Wrench,
   ChartColumn,
+  UsersRound,
   Menu,
   X,
   type LucideIcon,
 } from "lucide-react";
-import { CONSOLE_NAV } from "../navigation";
+import { useAuthStore } from "@/lib/network/stores/auth.store";
+import { navForRole } from "../navigation";
 import { cn } from "@/lib/utils";
 import TopBar, {
   NotificationBell,
@@ -41,10 +43,13 @@ const ICON_MAP: Record<string, LucideIcon> = {
   BatteryCharging,
   Wrench,
   ChartColumn,
+  UsersRound,
 };
 
 const AdminLayout = () => {
+  const user = useAuthStore((s) => s.user);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const navItems = navForRole(user?.role);
 
   const sidebarContent = (
     <>
@@ -58,7 +63,7 @@ const AdminLayout = () => {
 
       {/* nav */}
       <nav className="flex flex-1 flex-col gap-1 px-3">
-        {CONSOLE_NAV.map((item) => {
+        {navItems.map((item) => {
           const Icon = ICON_MAP[item.icon];
           return (
             <NavLink

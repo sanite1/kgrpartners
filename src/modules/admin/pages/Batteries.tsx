@@ -22,7 +22,8 @@ import type {
   BatteryStatus,
 } from "@/lib/network/types/battery.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { cn, fmtDate } from "@/lib/utils";
+import { canManageStock } from "../permissions";
+import { cn, fmtDate, fmtTime } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
 type PillTone = "success" | "warn" | "muted" | "danger";
@@ -79,8 +80,9 @@ const MovementsList = ({ battery }: { battery: Battery }) => {
                 {STATUS_META[m.toStatus].label}
                 {m.busNumber ? ` (${m.busNumber})` : ""}
               </span>
-              <span className="shrink-0 text-[12px] font-semibold text-fog">
-                {fmtDate(m.createdAt)}
+              <span className="shrink-0 text-right text-[12px] font-semibold text-fog">
+                <span className="block">{fmtDate(m.createdAt)}</span>
+                <span className="block">{fmtTime(m.createdAt)}</span>
               </span>
             </div>
             <p className="m-0 mt-0.5 text-[12.5px] font-semibold text-fog">
@@ -121,7 +123,7 @@ const MovementsList = ({ battery }: { battery: Battery }) => {
 
 export default function Batteries() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "admin";
+  const canStock = canManageStock(user?.role);
 
   const [statusFilter, setStatusFilter] = useState<BatteryStatus | "all">(
     "all",
@@ -201,7 +203,7 @@ export default function Batteries() {
         title="Batteries"
         subtitle="Every pack, where it is, and how it got there."
         actions={
-          isAdmin ? (
+          canStock ? (
             <button
               type="button"
               onClick={() => {
@@ -333,7 +335,8 @@ export default function Batteries() {
               </p>
             )}
             <div className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-line pt-3.5">
-              {(battery.status === "in_store" ||
+              {canStock &&
+                (battery.status === "in_store" ||
                 battery.status === "charging") && (
                 <>
                   <button
@@ -372,7 +375,7 @@ export default function Batteries() {
                   </button>
                 </>
               )}
-              {battery.status === "on_bus" && (
+              {canStock && battery.status === "on_bus" && (
                 <button
                   type="button"
                   onClick={() => {
@@ -385,7 +388,7 @@ export default function Batteries() {
                   Collect from {battery.busNumber}
                 </button>
               )}
-              {battery.status === "faulty" && (
+              {canStock && battery.status === "faulty" && (
                 <>
                   <button
                     type="button"
@@ -414,7 +417,7 @@ export default function Batteries() {
                 >
                   <History size={14} />
                 </button>
-                {isAdmin && (
+                {canStock && (
                   <button
                     type="button"
                     aria-label={`Edit ${battery.code}`}

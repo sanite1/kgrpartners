@@ -35,3 +35,14 @@ export const fmtDate = (iso: string | undefined): string =>
         year: "numeric",
       })
     : "";
+
+// clock time in Lagos, e.g. "2:51 pm"
+export const fmtTime = (iso: string | undefined): string =>
+  iso
+    ? new Date(iso).toLocaleTimeString("en-NG", {
+        timeZone: "Africa/Lagos",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "";

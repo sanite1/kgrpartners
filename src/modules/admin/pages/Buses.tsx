@@ -9,6 +9,7 @@ import BusForm from "../components/buses/BusForm";
 import { useGetBuses } from "@/lib/network/api/bus.api";
 import type { Bus } from "@/lib/network/types/bus.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
+import { canApprove } from "../permissions";
 import { cn, fmtDate } from "@/lib/utils";
 import { inputClasses } from "../components/console/form";
 
@@ -22,7 +23,7 @@ const FILTERS: { id: ActiveFilter; label: string }[] = [
 
 export default function Buses() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "admin";
+  const canEdit = canApprove(user?.role);
 
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>("all");
@@ -118,7 +119,7 @@ export default function Buses() {
                 <th className="px-5 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog">
                   REGISTERED
                 </th>
-                {isAdmin && <th className="px-5 py-3.5" />}
+                {canEdit && <th className="px-5 py-3.5" />}
               </tr>
             </thead>
             <tbody>
@@ -148,7 +149,7 @@ export default function Buses() {
                   <td className="px-5 py-4 text-[13px] font-semibold text-fog">
                     {fmtDate(bus.createdAt)}
                   </td>
-                  {isAdmin && (
+                  {canEdit && (
                     <td className="px-5 py-4 text-right">
                       <button
                         type="button"

@@ -16,6 +16,7 @@ import type {
   ReceiptStatus,
 } from "@/lib/network/types/receipt.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
+import { canApprove } from "../permissions";
 import { cn, fmtNaira, fmtDate } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
@@ -42,7 +43,7 @@ const statusLabel: Record<ReceiptStatus, string> = {
 
 export default function Receipts() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "admin";
+  const canVoid = canApprove(user?.role);
 
   const [status, setStatus] = useState<StatusFilter>("all");
   const [date, setDate] = useState("");
@@ -294,7 +295,7 @@ export default function Receipts() {
               )}
             </div>
 
-            {isAdmin && selected.status === "awaiting_payment" && (
+            {canVoid && selected.status === "awaiting_payment" && (
               <div className="w-full rounded-xl border border-red-200 bg-red-50/50 p-4">
                 <label htmlFor="void-reason" className={labelClasses}>
                   Void this receipt

@@ -8,6 +8,7 @@ import {
   useGetExpenseReport,
 } from "@/lib/network/api/report.api";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
+import { canApprove } from "../permissions";
 import { cn, fmtNaira, todayLagos, downloadBlob } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
@@ -26,19 +27,19 @@ const saveCsv = (csv: string, filename: string) =>
 
 export default function Reports() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "admin";
+  const canView = canApprove(user?.role);
 
   const [month, setMonth] = useState(todayLagos().slice(0, 7));
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
-  const monthly = useGetMonthlyReport(month, { enabled: isAdmin });
+  const monthly = useGetMonthlyReport(month, { enabled: canView });
   const expenses = useGetExpenseReport(
     { from: from || undefined, to: to || undefined },
-    { enabled: isAdmin },
+    { enabled: canView },
   );
 
-  if (!isAdmin) {
+  if (!canView) {
     return (
       <>
         <PageMeta title="Reports | KGR Console" />

@@ -16,7 +16,8 @@ import type {
   StockMovementType,
 } from "@/lib/network/types/inventory.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { cn, fmtNaira, fmtDate } from "@/lib/utils";
+import { canManageStock } from "../permissions";
+import { cn, fmtNaira, fmtDate, fmtTime } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
 type CategoryFilter = "all" | "part" | "battery" | "consumable" | "low";
@@ -82,6 +83,7 @@ const MovementsList = ({ itemId }: { itemId: string }) => {
               <div>
                 {fmtDate(m.createdAt)} · {by?.firstName} {by?.lastName}
               </div>
+              <div>{fmtTime(m.createdAt)}</div>
             </div>
           </div>
         );
@@ -92,7 +94,7 @@ const MovementsList = ({ itemId }: { itemId: string }) => {
 
 export default function Inventory() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "admin";
+  const canStock = canManageStock(user?.role);
 
   const [filter, setFilter] = useState<CategoryFilter>("all");
   const [search, setSearch] = useState("");
@@ -150,7 +152,7 @@ export default function Inventory() {
         title="Stock"
         subtitle="Parts, batteries and consumables, with every movement on record."
         actions={
-          isAdmin ? (
+          canStock ? (
             <button
               type="button"
               onClick={() => setItemModal({})}
@@ -275,7 +277,7 @@ export default function Inventory() {
                         >
                           <History size={14} />
                         </button>
-                        {isAdmin && (
+                        {canStock && (
                           <>
                             <button
                               type="button"
