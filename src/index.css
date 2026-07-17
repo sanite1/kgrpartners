@@ -151,4 +151,23 @@
   textarea::placeholder {
     color: var(--color-placeholder);
   }
+
+  /* iOS Safari gives date/month inputs a native look with an intrinsic
+     width that ignores the layout and bursts out of cards. Stripping
+     the appearance makes them obey width, padding and radius like any
+     other input. */
+  input[type="date"],
+  input[type="month"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    min-height: 48px;
+  }
+  /* iOS centers the value text inside the control; align it like text
+     inputs and stop the value pushing the field taller */
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="month"]::-webkit-date-and-time-value {
+    text-align: left;
+    margin: 0;
+  }
 }
