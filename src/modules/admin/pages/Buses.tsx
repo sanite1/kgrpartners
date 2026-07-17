@@ -222,7 +222,22 @@ export default function Buses() {
         open={modal !== null}
         onClose={() => setModal(null)}
       >
-        {modal && <BusForm bus={modal.bus} onDone={() => setModal(null)} />}
+        {modal && (
+          <BusForm
+            bus={modal.bus}
+            onDone={() => {
+              const wasCreate = !modal.bus;
+              setModal(null);
+              // reveal a newly registered bus even if a filter or search
+              // was hiding it
+              if (wasCreate) {
+                setActiveFilter("all");
+                setSearch("");
+                setPage(1);
+              }
+            }}
+          />
+        )}
       </Modal>
     </>
   );

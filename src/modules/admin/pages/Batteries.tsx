@@ -542,7 +542,15 @@ export default function Batteries() {
             onClick={() =>
               createBattery.mutate(
                 { code: regCode.trim(), status: regStatus, notes: regNotes },
-                { onSuccess: () => setRegisterOpen(false) },
+                {
+                  onSuccess: () => {
+                    setRegisterOpen(false);
+                    // show the new pack even if the board was filtered
+                    setStatusFilter("all");
+                    setSearch("");
+                    setPage(1);
+                  },
+                },
               )
             }
             className="cta-gradient mt-1 cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-50"

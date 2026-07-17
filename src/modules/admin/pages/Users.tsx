@@ -103,6 +103,14 @@ export default function Users() {
   const set = (patch: Partial<UserFormState>) =>
     setForm((f) => ({ ...f, ...patch }));
 
+  // clear any active filter/search so a newly created record is never
+  // hidden behind the view the admin happened to be looking at
+  const revealAll = () => {
+    setRoleFilter("all");
+    setSearch("");
+    setPage(1);
+  };
+
   const submit = () => {
     if (form.firstName.trim().length < 2 || form.lastName.trim().length < 2) {
       setError("Enter the first and last name");
@@ -141,7 +149,12 @@ export default function Users() {
           password: form.password,
           role: form.role,
         },
-        { onSuccess: () => setModal(null) },
+        {
+          onSuccess: () => {
+            setModal(null);
+            revealAll();
+          },
+        },
       );
     }
   };

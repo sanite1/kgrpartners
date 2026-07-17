@@ -364,7 +364,20 @@ export default function Inventory() {
         onClose={() => setItemModal(null)}
       >
         {itemModal && (
-          <ItemForm item={itemModal.item} onDone={() => setItemModal(null)} />
+          <ItemForm
+            item={itemModal.item}
+            onDone={() => {
+              const wasCreate = !itemModal.item;
+              setItemModal(null);
+              // reveal a newly added item even if a category filter or
+              // search was hiding it
+              if (wasCreate) {
+                setFilter("all");
+                setSearch("");
+                setPage(1);
+              }
+            }}
+          />
         )}
       </Modal>
 

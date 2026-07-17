@@ -145,6 +145,11 @@ export default function Repairs() {
     setDraftParts([]);
     setItemSearch("");
     setItemQty("1");
+    // a new job is always open: drop any status filter or search so it
+    // appears in the list immediately
+    setStatus("all");
+    setSearch("");
+    setPage(1);
   };
 
   const canSubmit =

@@ -94,6 +94,11 @@ export default function Requests() {
     setNarration("");
     setNextRequestDate("");
     setLockMessage(null);
+    // a new request is always pending: drop any status filter or search
+    // so it shows up in the list right away
+    setStatus("all");
+    setSearch("");
+    setPage(1);
   };
 
   const submit = (allowOverride: boolean) => {

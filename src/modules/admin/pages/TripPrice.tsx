@@ -54,6 +54,8 @@ export default function TripPrice() {
           setAmount("");
           setEffectiveFrom("");
           setNote("");
+          // the newest price sits on page 1 of the history
+          setPage(1);
         },
       },
     );
