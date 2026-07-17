@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, NavLink, Link, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, Link } from "react-router-dom";
 import {
   LayoutDashboard,
   Bus,
@@ -14,14 +14,16 @@ import {
   BatteryCharging,
   Wrench,
   ChartColumn,
-  LogOut,
   Menu,
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { CONSOLE_NAV } from "../navigation";
 import { cn } from "@/lib/utils";
+import TopBar, {
+  NotificationBell,
+  ProfileBadge,
+} from "../components/console/TopBar";
 import logoWhite from "@/assets/kgr-logo-white.png";
 import logo from "@/assets/kgr-logo-trans.png";
 
@@ -41,18 +43,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   ChartColumn,
 };
 
-const initials = (first: string, last: string) =>
-  `${first[0] ?? ""}${last[0] ?? ""}`.toUpperCase();
-
 const AdminLayout = () => {
-  const { user, logout } = useAuthStore();
-  const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
 
   const sidebarContent = (
     <>
@@ -89,36 +81,6 @@ const AdminLayout = () => {
           );
         })}
       </nav>
-
-      {/* user */}
-      {user && (
-        <div className="flex items-center gap-3 border-t border-forest-line px-4 py-4">
-          <span className="cta-gradient flex h-10 w-10 flex-none items-center justify-center rounded-xl text-[14px] font-extrabold text-forest-deep">
-            {initials(user.firstName, user.lastName)}
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[13px] font-extrabold leading-tight text-white">
-              {user.firstName} {user.lastName}
-            </div>
-            <div
-              className={cn(
-                "text-[10px] font-bold uppercase tracking-[1px]",
-                user.role === "admin" ? "text-neon" : "text-mint-soft",
-              )}
-            >
-              {user.role}
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            title="Sign out"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-forest-line bg-transparent text-mint transition-colors hover:border-neon hover:text-neon"
-          >
-            <LogOut size={15} />
-          </button>
-        </div>
-      )}
     </>
   );
 
@@ -137,14 +99,18 @@ const AdminLayout = () => {
             CONSOLE
           </span>
         </Link>
-        <button
-          type="button"
-          aria-label="Open menu"
-          onClick={() => setDrawerOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-line text-ink"
-        >
-          <Menu size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <ProfileBadge compact />
+          <button
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setDrawerOpen(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-line text-ink"
+          >
+            <Menu size={18} />
+          </button>
+        </div>
       </div>
 
       {/* mobile drawer */}
@@ -171,11 +137,14 @@ const AdminLayout = () => {
       )}
 
       {/* content */}
-      <main className="min-w-0 flex-1 px-4 pb-12 pt-[72px] sm:px-6 lg:px-10 lg:pt-8">
-        <div className="mx-auto max-w-[1200px]">
-          <Outlet />
-        </div>
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar />
+        <main className="px-4 pb-12 pt-[76px] sm:px-6 lg:px-10 lg:pt-8">
+          <div className="mx-auto max-w-[1200px]">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 };

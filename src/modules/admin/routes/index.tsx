@@ -17,6 +17,7 @@ const Inventory = lazy(() => import("../pages/Inventory"));
 const Requests = lazy(() => import("../pages/Requests"));
 const Batteries = lazy(() => import("../pages/Batteries"));
 const Repairs = lazy(() => import("../pages/Repairs"));
+const Profile = lazy(() => import("../pages/Profile"));
 const Reports = lazy(() => import("../pages/Reports"));
 const TripPrice = lazy(() => import("../pages/TripPrice"));
 
@@ -61,6 +62,7 @@ export const AdminRoutes = () => {
               <Route path="/buses" element={<Buses />} />
               <Route path="/trip-price" element={<TripPrice />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
