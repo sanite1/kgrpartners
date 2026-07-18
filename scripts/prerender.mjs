@@ -125,3 +125,29 @@ for (const route of ROUTES) {
   writeFileSync(resolve(outDir, "index.html"), html);
   console.log(`prerendered ${route.path}/index.html`);
 }
+
+// admin.html: the console shell with NO marketing meta. Served for every
+// path on the admin hostname by middleware.js, so sharing a console link
+// shows a bare "KGR Console" card instead of the company OG preview.
+let adminHtml = template;
+adminHtml = setTag(
+  adminHtml,
+  /<title>[^<]*<\/title>/,
+  "<title>KGR Console</title>",
+);
+adminHtml = setTag(
+  adminHtml,
+  /(<meta[^>]*name="description"[^>]*content=")[^"]*(")/,
+  "$1KGR Partners management console.$2",
+);
+// strip social cards and the public canonical entirely
+adminHtml = adminHtml.replace(/\s*<meta[^>]*property="og:[^>]*\/>/g, "");
+adminHtml = adminHtml.replace(/\s*<meta[^>]*name="twitter:[^>]*\/>/g, "");
+adminHtml = adminHtml.replace(/\s*<link[^>]*rel="canonical"[^>]*\/>/g, "");
+adminHtml = adminHtml.replace(/\s*<!-- Open Graph \/ social sharing -->/, "");
+adminHtml = adminHtml.replace(
+  "</head>",
+  `  <meta name="robots" content="noindex, nofollow" />\n  </head>`,
+);
+writeFileSync(resolve(root, "dist/admin.html"), adminHtml);
+console.log("prerendered /admin.html (console shell, no social meta)");
