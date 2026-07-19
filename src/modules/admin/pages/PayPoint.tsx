@@ -37,9 +37,20 @@ export default function PayPoint() {
   const { data: summaryData, isLoading: summaryLoading } =
     useGetReceiptSummary();
   const summary = summaryData?.data;
+  // the summary is role-scoped: managers see the whole yard, a cashier
+  // sees only their own figures (no expected/outstanding to compare)
+  const isPersonal = summary?.scope === "personal";
   const expected = Number(summary?.expectedAmount ?? 0);
-  const collected = Number(summary?.collectedAmount ?? 0);
-  const pct = expected > 0 ? Math.min(1, collected / expected) : 0;
+  const collected = Number(
+    (isPersonal ? summary?.myCollectedToday : summary?.collectedAmount) ?? 0,
+  );
+  const pct = isPersonal
+    ? collected > 0
+      ? 1
+      : 0
+    : expected > 0
+      ? Math.min(1, collected / expected)
+      : 0;
   const ARC = 283;
 
   const { data: todayPayments } = useGetPayments({
@@ -281,41 +292,74 @@ export default function PayPoint() {
               ) : (
                 <>
                   <div className="text-[26px] font-extrabold leading-none text-neon">
-                    {fmtNaira(summary?.collectedAmount)}
+                    {fmtNaira(collected)}
                   </div>
                   <div className="mt-1 text-[11px] font-semibold text-mint-soft">
-                    of {fmtNaira(summary?.expectedAmount)} expected
+                    {isPersonal
+                      ? `${summary?.myReceiptsToday ?? 0} receipt${(summary?.myReceiptsToday ?? 0) === 1 ? "" : "s"} today`
+                      : `of ${fmtNaira(summary?.expectedAmount)} expected`}
                   </div>
                 </>
               )}
             </div>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-forest-line p-3.5">
-              <div className="text-[10px] font-extrabold tracking-[1.5px] text-mint-faint">
-                OUTSTANDING
-              </div>
-              {summaryLoading ? (
-                <Skeleton className="mt-2 h-4 w-20 bg-white/15" />
-              ) : (
-                <div className="mt-1 text-[17px] font-extrabold text-solar">
-                  {fmtNaira(summary?.outstandingAmount)}
+            {isPersonal ? (
+              <>
+                <div className="rounded-xl border border-forest-line p-3.5">
+                  <div className="text-[10px] font-extrabold tracking-[1.5px] text-mint-faint">
+                    MY BUSES
+                  </div>
+                  {summaryLoading ? (
+                    <Skeleton className="mt-2 h-4 w-16 bg-white/15" />
+                  ) : (
+                    <div className="mt-1 text-[17px] font-extrabold text-white">
+                      {summary?.myBusesToday ?? 0}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="rounded-xl border border-forest-line p-3.5">
-              <div className="text-[10px] font-extrabold tracking-[1.5px] text-mint-faint">
-                AWAITING
-              </div>
-              {summaryLoading ? (
-                <Skeleton className="mt-2 h-4 w-20 bg-white/15" />
-              ) : (
-                <div className="mt-1 text-[17px] font-extrabold text-white">
-                  {summary?.awaitingCount ?? 0} receipt
-                  {(summary?.awaitingCount ?? 0) === 1 ? "" : "s"}
+                <div className="rounded-xl border border-forest-line p-3.5">
+                  <div className="text-[10px] font-extrabold tracking-[1.5px] text-mint-faint">
+                    MY CHECK-INS
+                  </div>
+                  {summaryLoading ? (
+                    <Skeleton className="mt-2 h-4 w-16 bg-white/15" />
+                  ) : (
+                    <div className="mt-1 text-[17px] font-extrabold text-white">
+                      {summary?.myCheckedInToday ?? 0}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <>
+                <div className="rounded-xl border border-forest-line p-3.5">
+                  <div className="text-[10px] font-extrabold tracking-[1.5px] text-mint-faint">
+                    OUTSTANDING
+                  </div>
+                  {summaryLoading ? (
+                    <Skeleton className="mt-2 h-4 w-20 bg-white/15" />
+                  ) : (
+                    <div className="mt-1 text-[17px] font-extrabold text-solar">
+                      {fmtNaira(summary?.outstandingAmount)}
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-xl border border-forest-line p-3.5">
+                  <div className="text-[10px] font-extrabold tracking-[1.5px] text-mint-faint">
+                    AWAITING
+                  </div>
+                  {summaryLoading ? (
+                    <Skeleton className="mt-2 h-4 w-20 bg-white/15" />
+                  ) : (
+                    <div className="mt-1 text-[17px] font-extrabold text-white">
+                      {summary?.awaitingCount ?? 0} receipt
+                      {(summary?.awaitingCount ?? 0) === 1 ? "" : "s"}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

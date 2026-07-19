@@ -82,16 +82,27 @@ export interface ReceiptSummarySeriesPoint {
   collectedAmount: string;
 }
 
+// The summary is scoped by role on the server. Managers get the whole
+// yard ("global"); everyone else gets only their own figures
+// ("personal"). Fields for the other scope are absent.
 export interface ReceiptSummary {
+  scope: "global" | "personal";
   date: string;
-  issuedCount: number;
-  expectedAmount: string;
-  collectedAmount: string;
-  outstandingAmount: string;
-  trips: number;
-  checkedIn: number;
-  awaitingCount: number;
-  monthCollected: string;
-  monthIssuedCount: number;
   series: ReceiptSummarySeriesPoint[];
+  // global (managers/admin)
+  issuedCount?: number;
+  expectedAmount?: string;
+  collectedAmount?: string;
+  outstandingAmount?: string;
+  trips?: number;
+  checkedIn?: number;
+  awaitingCount?: number;
+  monthCollected?: string;
+  monthIssuedCount?: number;
+  // personal (cashier and other non-managers)
+  myCollectedToday?: string;
+  myReceiptsToday?: number;
+  myBusesToday?: number;
+  myTripsToday?: number;
+  myCheckedInToday?: number;
 }

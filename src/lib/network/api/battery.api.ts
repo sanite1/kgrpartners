@@ -108,10 +108,15 @@ export const useGetBatteries = (
     ...options,
   });
 
-export const useGetBatterySummary = () =>
+export const useGetBatterySummary = (
+  options?: Partial<
+    UseQueryOptions<ApiResponse<BatterySummaryData>, AxiosError>
+  >,
+) =>
   useQuery<ApiResponse<BatterySummaryData>, AxiosError>({
     queryKey: batteryKeys.summary(),
     queryFn: () => getBatterySummaryFn(),
+    ...options,
   });
 
 export const useGetBatteryMovements = (
