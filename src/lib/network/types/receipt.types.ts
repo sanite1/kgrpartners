@@ -99,6 +99,10 @@ export interface ReceiptSummary {
   awaitingCount?: number;
   monthCollected?: string;
   monthIssuedCount?: number;
+  monthTrips?: number;
+  busesActive?: number;
+  busesWorkingToday?: number;
+  busesIdleToday?: number;
   // personal (cashier and other non-managers)
   myCollectedToday?: string;
   myReceiptsToday?: number;

@@ -333,6 +333,31 @@ export default function Dashboard() {
             />
           </div>
 
+          {/* today's work: who went out and how many trips */}
+          <div className="mt-4 grid auto-rows-[124px] grid-cols-2 gap-4 lg:grid-cols-4">
+            <StatCell
+              label="BUSES WORKING TODAY"
+              value={summary?.busesWorkingToday ?? 0}
+              loading={summaryLoading}
+            />
+            <StatCell
+              label="BUSES IDLE TODAY"
+              value={summary?.busesIdleToday ?? 0}
+              loading={summaryLoading}
+              warn
+            />
+            <StatCell
+              label="TRIPS TODAY"
+              value={summary?.trips ?? 0}
+              loading={summaryLoading}
+            />
+            <StatCell
+              label="TRIPS THIS MONTH"
+              value={summary?.monthTrips ?? 0}
+              loading={summaryLoading}
+            />
+          </div>
+
           <div className="mt-4">{opsCells}</div>
           <TrendChart series={series} loading={summaryLoading} />
         </>
