@@ -16,6 +16,7 @@ import {
   ChartColumn,
   UsersRound,
   PlugZap,
+  Wallet,
   Menu,
   X,
   type LucideIcon,
@@ -46,6 +47,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   ChartColumn,
   UsersRound,
   PlugZap,
+  Wallet,
 };
 
 const AdminLayout = () => {

@@ -51,6 +51,12 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
   { label: "Trip Price", to: "/trip-price", icon: "Tag", roles: MANAGERS },
   { label: "Reports", to: "/reports", icon: "ChartColumn", roles: MANAGERS },
   {
+    label: "Expenditures",
+    to: "/expenditures",
+    icon: "Wallet",
+    roles: MANAGERS,
+  },
+  {
     label: "Conversions",
     to: "/conversions",
     icon: "PlugZap",

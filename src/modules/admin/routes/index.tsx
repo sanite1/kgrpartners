@@ -21,6 +21,7 @@ const Profile = lazy(() => import("../pages/Profile"));
 const Users = lazy(() => import("../pages/Users"));
 const Reports = lazy(() => import("../pages/Reports"));
 const Conversions = lazy(() => import("../pages/Conversions"));
+const Expenditures = lazy(() => import("../pages/Expenditures"));
 const TripPrice = lazy(() => import("../pages/TripPrice"));
 
 const LoadingFallback = () => (
@@ -64,6 +65,7 @@ export const AdminRoutes = () => {
               <Route path="/buses" element={<Buses />} />
               <Route path="/trip-price" element={<TripPrice />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/expenditures" element={<Expenditures />} />
               <Route path="/conversions" element={<Conversions />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/users" element={<Users />} />

@@ -29,6 +29,9 @@ interface SearchSelectProps {
 const listClasses =
   "max-h-[240px] overflow-y-auto rounded-xl border border-line bg-white";
 
+// leaves room for the 240px list; below this the panel flips upward
+const PANEL_SPACE = 264;
+
 const SearchSelect = ({
   id,
   placeholder,
@@ -42,14 +45,27 @@ const SearchSelect = ({
   inline,
 }: SearchSelectProps) => {
   const [open, setOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
+  // opens upward when there isn't room below and there is more room
+  // above (only for the floating panel; inline lives in the flow)
+  const decidePlacement = () => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    setOpenUp(spaceBelow < PANEL_SPACE && rect.top > spaceBelow);
+  };
+
   const setOpenState = (next: boolean) => {
+    if (next && !inline) decidePlacement();
     setOpen(next);
     onOpenChange(next);
   };
 
-  // clicking anywhere outside closes the list and clears unpicked text
+  // clicking outside closes and clears; scrolling/resizing re-checks
+  // which way the panel should open
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (e: PointerEvent) => {
@@ -59,8 +75,17 @@ const SearchSelect = ({
         onSearch("");
       }
     };
+    const onReflow = () => {
+      if (!inline) decidePlacement();
+    };
     document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
+    window.addEventListener("resize", onReflow);
+    window.addEventListener("scroll", onReflow, true);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("resize", onReflow);
+      window.removeEventListener("scroll", onReflow, true);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -69,6 +94,11 @@ const SearchSelect = ({
     setOpenState(false);
     onSearch("");
   };
+
+  const floatPlacement = openUp
+    ? "absolute inset-x-0 bottom-full mb-1.5 z-30 shadow-[0_-18px_44px_rgba(13,31,21,0.15)]"
+    : "absolute inset-x-0 top-full mt-1.5 z-30 shadow-[0_18px_44px_rgba(13,31,21,0.15)]";
+  const panelPlacement = inline ? "mt-1.5" : floatPlacement;
 
   return (
     <div ref={wrapRef} className="relative">
@@ -91,14 +121,7 @@ const SearchSelect = ({
         />
       </div>
       {open && options.length > 0 && (
-        <div
-          className={cn(
-            listClasses,
-            inline
-              ? "mt-1.5"
-              : "absolute inset-x-0 top-[52px] z-20 shadow-[0_18px_44px_rgba(13,31,21,0.15)]",
-          )}
-        >
+        <div className={cn(listClasses, panelPlacement)}>
           {options.map((option) => (
             <button
               key={option.key}
@@ -122,9 +145,7 @@ const SearchSelect = ({
         <div
           className={cn(
             "rounded-xl border border-line bg-white px-4 py-3 text-[13px] font-semibold text-fog",
-            inline
-              ? "mt-1.5"
-              : "absolute inset-x-0 top-[52px] z-20 shadow-[0_18px_44px_rgba(13,31,21,0.15)]",
+            panelPlacement,
           )}
         >
           {emptyText}
