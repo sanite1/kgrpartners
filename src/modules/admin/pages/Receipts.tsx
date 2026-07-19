@@ -3,6 +3,8 @@ import { Printer, Search } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
+import Pagination from "../components/console/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import StatusPill from "../components/console/StatusPill";
 import Modal from "../components/console/Modal";
 import TicketCard from "../components/receipts/TicketCard";
@@ -46,12 +48,13 @@ export default function Receipts() {
   const [date, setDate] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [selected, setSelected] = useState<Receipt | null>(null);
   const [voidReason, setVoidReason] = useState("");
 
   const { data, isLoading } = useGetReceipts({
     page,
-    pageSize: 20,
+    pageSize,
     status: status === "all" ? undefined : status,
     date: date || undefined,
     search: search || undefined,
@@ -243,33 +246,17 @@ export default function Receipts() {
           </div>
         )}
 
-        {pagination && pagination.totalItems > 0 && (
-          <div className="flex items-center justify-between border-t border-line px-5 py-3.5">
-            <span className="text-[13px] font-semibold text-fog">
-              {pagination.totalItems} receipt
-              {pagination.totalItems === 1 ? "" : "s"} · page {pagination.page}{" "}
-              of {pagination.totalPages}
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={!pagination.hasPrevPage}
-                onClick={() => setPage((p) => p - 1)}
-                className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                disabled={!pagination.hasNextPage}
-                onClick={() => setPage((p) => p + 1)}
-                className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          pagination={pagination}
+          page={page}
+          pageSize={pageSize}
+          onPage={setPage}
+          onPageSize={(s) => {
+            setPageSize(s);
+            setPage(1);
+          }}
+          className="border-t border-line px-5 pb-4"
+        />
       </div>
 
       {/* detail modal */}

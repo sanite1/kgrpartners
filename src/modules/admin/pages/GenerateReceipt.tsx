@@ -62,7 +62,10 @@ export default function GenerateReceipt() {
   const amount = price
     ? String(Math.round(tripsNum * Number(price.amount) * 100) / 100)
     : "0";
-  const percentNum = Math.max(0, Math.min(200, parseInt(batteryPercent, 10) || 0));
+  const percentNum = Math.max(
+    0,
+    Math.min(200, parseInt(batteryPercent, 10) || 0),
+  );
   const validTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(timeOut);
   // trips come in half-trip steps (a final one-way run counts as 0.5)
   const validTrips = tripsNum >= 0.5 && (tripsNum * 2) % 1 === 0;

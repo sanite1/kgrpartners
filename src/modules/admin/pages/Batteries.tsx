@@ -7,6 +7,8 @@ import StatusPill from "../components/console/StatusPill";
 import SearchSelect from "../components/console/SearchSelect";
 import Skeleton from "../components/console/Skeleton";
 import Modal from "../components/console/Modal";
+import Pagination from "../components/console/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import { useGetBuses } from "@/lib/network/api/bus.api";
 import {
   useGetBatteries,
@@ -128,6 +130,7 @@ export default function Batteries() {
   const { user } = useAuthStore();
   const canStock = canManageStock(user?.role);
 
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [statusFilter, setStatusFilter] = useState<BatteryStatus | "all">(
     "all",
   );
@@ -170,7 +173,7 @@ export default function Batteries() {
 
   const { data, isLoading } = useGetBatteries({
     page,
-    pageSize: 18,
+    pageSize,
     status: statusFilter === "all" ? undefined : statusFilter,
     search: search || undefined,
     isActive: "true",
@@ -243,10 +246,7 @@ export default function Batteries() {
         >
           {summaryLoading ? (
             <Skeleton
-              className={cn(
-                "h-6 w-9",
-                statusFilter === "all" && "bg-white/15",
-              )}
+              className={cn("h-6 w-9", statusFilter === "all" && "bg-white/15")}
             />
           ) : (
             <span
@@ -474,32 +474,16 @@ export default function Batteries() {
         </div>
       )}
 
-      {pagination && pagination.totalPages > 1 && (
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            disabled={!pagination.hasPrevPage}
-            onClick={() => setPage((p) => p - 1)}
-            className={cn(
-              smallBtn,
-              "px-3.5 py-2 text-[13px] disabled:cursor-not-allowed disabled:opacity-40",
-            )}
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            disabled={!pagination.hasNextPage}
-            onClick={() => setPage((p) => p + 1)}
-            className={cn(
-              smallBtn,
-              "px-3.5 py-2 text-[13px] disabled:cursor-not-allowed disabled:opacity-40",
-            )}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        pagination={pagination}
+        page={page}
+        pageSize={pageSize}
+        onPage={setPage}
+        onPageSize={(s) => {
+          setPageSize(s);
+          setPage(1);
+        }}
+      />
 
       {/* register modal */}
       <Modal

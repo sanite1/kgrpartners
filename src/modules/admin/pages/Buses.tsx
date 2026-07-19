@@ -6,6 +6,8 @@ import PageHead from "../components/console/PageHead";
 import StatusPill from "../components/console/StatusPill";
 import Modal from "../components/console/Modal";
 import BusForm from "../components/buses/BusForm";
+import Pagination from "../components/console/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import { useGetBuses } from "@/lib/network/api/bus.api";
 import type { Bus } from "@/lib/network/types/bus.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
@@ -28,11 +30,12 @@ export default function Buses() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>("all");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [modal, setModal] = useState<null | { bus?: Bus }>(null);
 
   const { data, isLoading } = useGetBuses({
     page,
-    pageSize: 20,
+    pageSize,
     search: search || undefined,
     isActive: activeFilter === "all" ? undefined : activeFilter,
   });
@@ -188,33 +191,17 @@ export default function Buses() {
           </div>
         )}
 
-        {pagination && pagination.totalItems > 0 && (
-          <div className="flex items-center justify-between border-t border-line px-5 py-3.5">
-            <span className="text-[13px] font-semibold text-fog">
-              {pagination.totalItems} bus
-              {pagination.totalItems === 1 ? "" : "es"} · page {pagination.page}{" "}
-              of {pagination.totalPages}
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={!pagination.hasPrevPage}
-                onClick={() => setPage((p) => p - 1)}
-                className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                disabled={!pagination.hasNextPage}
-                onClick={() => setPage((p) => p + 1)}
-                className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          pagination={pagination}
+          page={page}
+          pageSize={pageSize}
+          onPage={setPage}
+          onPageSize={(s) => {
+            setPageSize(s);
+            setPage(1);
+          }}
+          className="border-t border-line px-5 pb-4"
+        />
       </div>
 
       <Modal

@@ -3,6 +3,8 @@ import { Search } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
+import Pagination from "../components/console/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import Skeleton from "../components/console/Skeleton";
 import {
   useGetReceipts,
@@ -30,6 +32,7 @@ export default function Nyp() {
   const today = todayLagos();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const { data: summaryData, isLoading: summaryLoading } =
     useGetOutstandingSummary();
@@ -37,7 +40,7 @@ export default function Nyp() {
 
   const { data, isLoading } = useGetReceipts({
     page,
-    pageSize: 20,
+    pageSize,
     status: "awaiting_payment",
     sort: "oldest",
     search: search || undefined,
@@ -210,26 +213,16 @@ export default function Nyp() {
           </div>
         )}
 
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              disabled={!pagination.hasPrevPage}
-              onClick={() => setPage((p) => p - 1)}
-              className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              disabled={!pagination.hasNextPage}
-              onClick={() => setPage((p) => p + 1)}
-              className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Next
-            </button>
-          </div>
-        )}
+        <Pagination
+          pagination={pagination}
+          page={page}
+          pageSize={pageSize}
+          onPage={setPage}
+          onPageSize={(s) => {
+            setPageSize(s);
+            setPage(1);
+          }}
+        />
       </div>
     </>
   );

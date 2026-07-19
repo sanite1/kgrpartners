@@ -6,6 +6,8 @@ import PageHead from "../components/console/PageHead";
 import StatusPill from "../components/console/StatusPill";
 import Modal from "../components/console/Modal";
 import ItemForm from "../components/inventory/ItemForm";
+import Pagination from "../components/console/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import {
   useGetItems,
   useAdjustStock,
@@ -101,6 +103,7 @@ export default function Inventory() {
   const [filter, setFilter] = useState<CategoryFilter>("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [itemModal, setItemModal] = useState<null | { item?: InventoryItem }>(
     null,
   );
@@ -114,7 +117,7 @@ export default function Inventory() {
 
   const { data, isLoading } = useGetItems({
     page,
-    pageSize: 20,
+    pageSize,
     category: filter === "all" || filter === "low" ? undefined : filter,
     lowStock: filter === "low" ? "true" : undefined,
     search: search || undefined,
@@ -330,33 +333,17 @@ export default function Inventory() {
           </div>
         )}
 
-        {pagination && pagination.totalItems > 0 && (
-          <div className="flex items-center justify-between border-t border-line px-5 py-3.5">
-            <span className="text-[13px] font-semibold text-fog">
-              {pagination.totalItems} item
-              {pagination.totalItems === 1 ? "" : "s"} · page {pagination.page}{" "}
-              of {pagination.totalPages}
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={!pagination.hasPrevPage}
-                onClick={() => setPage((p) => p - 1)}
-                className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                disabled={!pagination.hasNextPage}
-                onClick={() => setPage((p) => p + 1)}
-                className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          pagination={pagination}
+          page={page}
+          pageSize={pageSize}
+          onPage={setPage}
+          onPageSize={(s) => {
+            setPageSize(s);
+            setPage(1);
+          }}
+          className="border-t border-line px-5 pb-4"
+        />
       </div>
 
       {/* add/edit item */}

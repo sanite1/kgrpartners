@@ -5,6 +5,8 @@ import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
 import StatusPill from "../components/console/StatusPill";
 import Modal from "../components/console/Modal";
+import Pagination from "../components/console/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import {
   useGetUsers,
   useCreateUser,
@@ -61,6 +63,7 @@ export default function Users() {
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const [modal, setModal] = useState<null | { user?: ConsoleUser }>(null);
   const [form, setForm] = useState<UserFormState>(emptyForm);
@@ -71,7 +74,7 @@ export default function Users() {
   const { data, isLoading } = useGetUsers(
     {
       page,
-      pageSize: 15,
+      pageSize,
       role: roleFilter === "all" ? undefined : roleFilter,
       search: search || undefined,
     },
@@ -347,26 +350,16 @@ export default function Users() {
         )}
       </div>
 
-      {pagination && pagination.totalPages > 1 && (
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            disabled={!pagination.hasPrevPage}
-            onClick={() => setPage((p) => p - 1)}
-            className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            disabled={!pagination.hasNextPage}
-            onClick={() => setPage((p) => p + 1)}
-            className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        pagination={pagination}
+        page={page}
+        pageSize={pageSize}
+        onPage={setPage}
+        onPageSize={(s) => {
+          setPageSize(s);
+          setPage(1);
+        }}
+      />
 
       <Modal
         title={modal?.user ? `Edit ${modal.user.firstName}` : "Add user"}
@@ -572,8 +565,8 @@ export default function Users() {
                   <strong className="text-ink">
                     {confirmToggle.firstName} {confirmToggle.lastName}
                   </strong>{" "}
-                  will no longer be able to sign in. Their history stays
-                  intact and you can re-enable them anytime.
+                  will no longer be able to sign in. Their history stays intact
+                  and you can re-enable them anytime.
                 </>
               ) : (
                 <>

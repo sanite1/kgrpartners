@@ -58,7 +58,10 @@ const StatCell = ({
   const cls =
     "flex h-[112px] flex-col justify-between rounded-[20px] border border-line bg-white p-5";
   return to ? (
-    <Link to={to} className={cn(cls, "transition-colors hover:border-brand-500")}>
+    <Link
+      to={to}
+      className={cn(cls, "transition-colors hover:border-brand-500")}
+    >
       {inner}
     </Link>
   ) : (
@@ -87,7 +90,9 @@ const TrendChart = ({
     <div className="mt-6 rounded-[20px] border border-line bg-white p-6 shadow-[0_12px_30px_rgba(13,31,21,0.05)]">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
         <span className="text-[12px] font-extrabold tracking-[1.5px] text-fog">
-          {personal ? "LAST 7 DAYS · MY COLLECTIONS" : "LAST 7 DAYS · EXPECTED VS COLLECTED"}
+          {personal
+            ? "LAST 7 DAYS · MY COLLECTIONS"
+            : "LAST 7 DAYS · EXPECTED VS COLLECTED"}
         </span>
         {!personal && (
           <span className="flex items-center gap-4 text-[11px] font-bold text-fog">
@@ -139,7 +144,9 @@ const TrendChart = ({
                   <div
                     className={cn(
                       "cta-gradient rounded-t-md",
-                      personal ? "w-[46%] max-w-[34px]" : "w-[38%] max-w-[26px]",
+                      personal
+                        ? "w-[46%] max-w-[34px]"
+                        : "w-[38%] max-w-[26px]",
                     )}
                     style={{ height: `${Math.max(2, collectedPct)}%` }}
                   />

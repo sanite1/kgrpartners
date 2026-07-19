@@ -35,11 +35,7 @@ const Drawer = ({
   }, [open, onClose]);
 
   return (
-    <div
-      className={cnOpen(open)}
-      aria-hidden={!open}
-      onClick={onClose}
-    >
+    <div className={cnOpen(open)} aria-hidden={!open} onClick={onClose}>
       {/* scrim */}
       <div
         className={`absolute inset-0 bg-forest-deep/50 transition-opacity duration-300 ${

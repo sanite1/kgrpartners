@@ -3,6 +3,8 @@ import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
+import Pagination from "../components/console/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import Modal from "../components/console/Modal";
 import SearchSelect from "../components/console/SearchSelect";
 import Skeleton from "../components/console/Skeleton";
@@ -99,6 +101,7 @@ export default function Expenditures() {
   const [to, setTo] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   // record / edit modal
   const [modal, setModal] = useState<null | { item?: Expenditure }>(null);
@@ -125,7 +128,7 @@ export default function Expenditures() {
   const categories = catData?.data ?? [];
 
   const { data, isLoading } = useGetExpenditures(
-    { ...filters, page, pageSize: 20 },
+    { ...filters, page, pageSize },
     { enabled: canView },
   );
   const expenditures = data?.data ?? [];
@@ -306,9 +309,7 @@ export default function Expenditures() {
           </span>
           <div className="mt-4 flex flex-col gap-3">
             {summaryLoading ? (
-              [0, 1, 2].map((i) => (
-                <Skeleton key={i} className="h-5 w-full" />
-              ))
+              [0, 1, 2].map((i) => <Skeleton key={i} className="h-5 w-full" />)
             ) : (summary?.byCategory ?? []).length === 0 ? (
               <p className="m-0 text-[13.5px] font-semibold text-fog">
                 No spending in this view.
@@ -457,7 +458,11 @@ export default function Expenditures() {
               setFrom(e.target.value);
               setPage(1);
             }}
-            className={cn(inputClasses, "py-2.5 sm:text-[14px]", !from && "date-empty")}
+            className={cn(
+              inputClasses,
+              "py-2.5 sm:text-[14px]",
+              !from && "date-empty",
+            )}
           />
         </div>
         <div className="flex flex-col gap-1.5 sm:w-[150px]">
@@ -470,7 +475,11 @@ export default function Expenditures() {
               setTo(e.target.value);
               setPage(1);
             }}
-            className={cn(inputClasses, "py-2.5 sm:text-[14px]", !to && "date-empty")}
+            className={cn(
+              inputClasses,
+              "py-2.5 sm:text-[14px]",
+              !to && "date-empty",
+            )}
           />
         </div>
         {hasFilter && (
@@ -597,30 +606,24 @@ export default function Expenditures() {
         )}
       </div>
 
-      {pagination && pagination.totalPages > 1 && (
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            disabled={!pagination.hasPrevPage}
-            onClick={() => setPage((p) => p - 1)}
-            className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            disabled={!pagination.hasNextPage}
-            onClick={() => setPage((p) => p + 1)}
-            className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        pagination={pagination}
+        page={page}
+        pageSize={pageSize}
+        onPage={setPage}
+        onPageSize={(s) => {
+          setPageSize(s);
+          setPage(1);
+        }}
+      />
 
       {/* record / edit modal */}
       <Modal
-        title={modal?.item ? `Edit #${modal.item.expenditureId}` : "Record expenditure"}
+        title={
+          modal?.item
+            ? `Edit #${modal.item.expenditureId}`
+            : "Record expenditure"
+        }
         open={modal !== null}
         onClose={() => setModal(null)}
       >
@@ -690,7 +693,9 @@ export default function Expenditures() {
                     {c.name}
                   </option>
                 ))}
-                {!modal.item && <option value={NEW_CATEGORY}>+ New category…</option>}
+                {!modal.item && (
+                  <option value={NEW_CATEGORY}>+ New category…</option>
+                )}
               </select>
               {form.categoryId === NEW_CATEGORY && (
                 <input
@@ -772,11 +777,7 @@ export default function Expenditures() {
                   : "transition-transform hover:scale-[1.02]",
               )}
             >
-              {isPending
-                ? "Saving…"
-                : modal.item
-                  ? "Save changes"
-                  : "Record →"}
+              {isPending ? "Saving…" : modal.item ? "Save changes" : "Record →"}
             </button>
           </div>
         )}

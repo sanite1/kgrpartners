@@ -3,6 +3,8 @@ import { Check, Plus, Search, Trash2, X as XIcon } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
+import Pagination from "../components/console/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import StatusPill from "../components/console/StatusPill";
 import SearchSelect from "../components/console/SearchSelect";
 import Modal from "../components/console/Modal";
@@ -70,6 +72,7 @@ export default function Repairs() {
   const [status, setStatus] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   // job actions state
   const [completeFor, setCompleteFor] = useState<RepairJob | null>(null);
@@ -101,7 +104,7 @@ export default function Repairs() {
 
   const { data, isLoading } = useGetRepairJobs({
     page,
-    pageSize: 12,
+    pageSize,
     status: status === "all" ? undefined : status,
     search: search || undefined,
   });
@@ -608,26 +611,16 @@ export default function Repairs() {
               </div>
             )}
 
-            {pagination && pagination.totalPages > 1 && (
-              <div className="flex justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  disabled={!pagination.hasPrevPage}
-                  onClick={() => setPage((p) => p - 1)}
-                  className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  disabled={!pagination.hasNextPage}
-                  onClick={() => setPage((p) => p + 1)}
-                  className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Next
-                </button>
-              </div>
-            )}
+            <Pagination
+              pagination={pagination}
+              page={page}
+              pageSize={pageSize}
+              onPage={setPage}
+              onPageSize={(s) => {
+                setPageSize(s);
+                setPage(1);
+              }}
+            />
           </div>
         </div>
       </div>

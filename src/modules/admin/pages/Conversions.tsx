@@ -3,6 +3,8 @@ import { Mail, Phone, Search } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
+import Pagination from "../components/console/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import StatusPill from "../components/console/StatusPill";
 import Drawer from "../components/console/Drawer";
 import {
@@ -55,13 +57,14 @@ export default function Conversions() {
   const [status, setStatus] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [selected, setSelected] = useState<ConversionRequest | null>(null);
   const [note, setNote] = useState("");
 
   const { data, isLoading } = useGetConversions(
     {
       page,
-      pageSize: 15,
+      pageSize,
       status: status === "all" ? undefined : status,
       search: search || undefined,
     },
@@ -88,8 +91,7 @@ export default function Conversions() {
   };
 
   const handledBy = selected?.handledBy as
-    | { firstName?: string; lastName?: string }
-    | undefined;
+    { firstName?: string; lastName?: string } | undefined;
 
   if (!canView) {
     return (
@@ -157,16 +159,22 @@ export default function Conversions() {
         <table className="w-full whitespace-nowrap border-collapse text-left">
           <thead>
             <tr className="border-b border-line">
-              {["#", "NAME", "EMAIL", "PHONE", "FIELDS", "STATUS", "SUBMITTED"].map(
-                (h) => (
-                  <th
-                    key={h}
-                    className="px-5 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                  >
-                    {h}
-                  </th>
-                ),
-              )}
+              {[
+                "#",
+                "NAME",
+                "EMAIL",
+                "PHONE",
+                "FIELDS",
+                "STATUS",
+                "SUBMITTED",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="px-5 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -221,26 +229,16 @@ export default function Conversions() {
         )}
       </div>
 
-      {pagination && pagination.totalPages > 1 && (
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            disabled={!pagination.hasPrevPage}
-            onClick={() => setPage((p) => p - 1)}
-            className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            disabled={!pagination.hasNextPage}
-            onClick={() => setPage((p) => p + 1)}
-            className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        pagination={pagination}
+        page={page}
+        pageSize={pageSize}
+        onPage={setPage}
+        onPageSize={(s) => {
+          setPageSize(s);
+          setPage(1);
+        }}
+      />
 
       <Drawer
         open={!!selected}
