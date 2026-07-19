@@ -58,13 +58,17 @@ export default function GenerateReceipt() {
 
   const createReceipt = useCreateReceipt();
 
-  const tripsNum = Math.max(0, parseInt(trips, 10) || 0);
-  const amount = price ? String(tripsNum * Number(price.amount)) : "0";
+  const tripsNum = Math.max(0, parseFloat(trips) || 0);
+  const amount = price
+    ? String(Math.round(tripsNum * Number(price.amount) * 100) / 100)
+    : "0";
   const percentNum = Math.max(0, Math.min(200, parseInt(batteryPercent, 10) || 0));
   const validTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(timeOut);
+  // trips come in half-trip steps (a final one-way run counts as 0.5)
+  const validTrips = tripsNum >= 0.5 && (tripsNum * 2) % 1 === 0;
   const canIssue =
     !!selectedBus &&
-    tripsNum >= 1 &&
+    validTrips &&
     !!price &&
     batteryName.trim().length > 0 &&
     validTime;
@@ -261,8 +265,9 @@ export default function GenerateReceipt() {
               <input
                 id="gr-trips"
                 type="number"
-                min={1}
+                min={0.5}
                 max={50}
+                step={0.5}
                 value={trips}
                 onChange={(e) => setTrips(e.target.value)}
                 className={inputClasses}
@@ -271,6 +276,11 @@ export default function GenerateReceipt() {
                 <span className="text-[12px] font-medium text-fog">
                   {tripsNum || 0} × {fmtNaira(price.amount)} ={" "}
                   <strong className="text-ink">{fmtNaira(amount)}</strong>
+                  {trips.trim() !== "" && !validTrips && (
+                    <span className="ml-1 text-red-600">
+                      · trips go in halves (0.5, 1, 1.5…)
+                    </span>
+                  )}
                 </span>
               )}
             </div>
