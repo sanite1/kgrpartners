@@ -38,14 +38,15 @@ export const getPaymentsFn = (
 ): Promise<PaginatedResponse<Payment>> =>
   api.get<PaginatedResponse<Payment>>(BASE, params);
 
-// GET /api/payments/daily-account?date=YYYY-MM-DD
+// GET /api/payments/daily-account?date=YYYY-MM-DD&page=N
 export const getDailyAccountFn = (
   date?: string,
+  page?: number,
 ): Promise<ApiResponse<DailyAccountData>> =>
-  api.get<ApiResponse<DailyAccountData>>(
-    `${BASE}/daily-account`,
-    date ? { date } : undefined,
-  );
+  api.get<ApiResponse<DailyAccountData>>(`${BASE}/daily-account`, {
+    ...(date ? { date } : {}),
+    ...(page ? { page } : {}),
+  });
 
 // GET /api/payments/export: CSV blob (shift report / daily export)
 export const downloadPaymentsCsvFn = async (
@@ -64,8 +65,8 @@ export const paymentKeys = {
   all: ["payments"] as const,
   list: (params?: PaymentsQueryParams) =>
     [...paymentKeys.all, "list", params ?? {}] as const,
-  dailyAccount: (date?: string) =>
-    [...paymentKeys.all, "dailyAccount", date ?? "today"] as const,
+  dailyAccount: (date?: string, page?: number) =>
+    [...paymentKeys.all, "dailyAccount", date ?? "today", page ?? 1] as const,
 } as const;
 
 // Error helper
@@ -92,11 +93,12 @@ export const useGetPayments = (
 
 export const useGetDailyAccount = (
   date?: string,
+  page?: number,
   options?: Partial<UseQueryOptions<ApiResponse<DailyAccountData>, AxiosError>>,
 ) =>
   useQuery<ApiResponse<DailyAccountData>, AxiosError>({
-    queryKey: paymentKeys.dailyAccount(date),
-    queryFn: () => getDailyAccountFn(date),
+    queryKey: paymentKeys.dailyAccount(date, page),
+    queryFn: () => getDailyAccountFn(date, page),
     ...options,
   });
 

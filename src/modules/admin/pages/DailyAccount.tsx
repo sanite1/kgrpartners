@@ -18,9 +18,11 @@ const fmtTime = (iso: string) =>
 
 export default function DailyAccount() {
   const [date, setDate] = useState(todayLagos());
+  const [page, setPage] = useState(1);
   const [downloading, setDownloading] = useState(false);
-  const { data, isLoading: accountLoading } = useGetDailyAccount(date);
+  const { data, isLoading: accountLoading } = useGetDailyAccount(date, page);
   const account = data?.data;
+  const pagination = account?.pagination;
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -44,7 +46,10 @@ export default function DailyAccount() {
             <input
               type="date"
               value={date}
-              onChange={(e) => setDate(e.target.value || todayLagos())}
+              onChange={(e) => {
+                setDate(e.target.value || todayLagos());
+                setPage(1);
+              }}
               className={cn(inputClasses, "w-[165px] py-2.5 sm:text-[14px]")}
             />
             <button
@@ -241,6 +246,33 @@ export default function DailyAccount() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between gap-2 border-t border-line px-5 py-3.5">
+              <span className="text-[12.5px] font-semibold text-fog">
+                Page {pagination.page} of {pagination.totalPages} ·{" "}
+                {pagination.totalItems} transactions
+              </span>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={!pagination.hasPrevPage}
+                  onClick={() => setPage((p) => p - 1)}
+                  className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  disabled={!pagination.hasNextPage}
+                  onClick={() => setPage((p) => p + 1)}
+                  className="cursor-pointer rounded-lg border border-line bg-white px-3.5 py-2 text-[13px] font-bold text-bark transition-colors hover:border-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -1,5 +1,6 @@
 // Mirrors kgr-backend interfaces/payment.interface.ts + payment.service.ts.
 import type { ReceiptUserRef } from "./receipt.types";
+import type { PaginationMeta } from "./api.types";
 
 export interface PaymentReceiptRef {
   _id: string;
@@ -55,6 +56,7 @@ export interface DailyAccountData {
   outstandingToday: string;
   cashiers: DailyAccountCashier[];
   payments: Payment[];
+  pagination: PaginationMeta;
 }
 
 export interface ExportPaymentsParams {
