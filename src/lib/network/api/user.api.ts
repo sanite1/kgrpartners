@@ -39,6 +39,9 @@ export const updateUserFn = (
 ): Promise<ApiResponse<ConsoleUser>> =>
   api.patch<ApiResponse<ConsoleUser>>(`${BASE}/${id}`, payload);
 
+export const deleteUserFn = (id: string): Promise<ApiResponse<undefined>> =>
+  api.delete<ApiResponse<undefined>>(`${BASE}/${id}`);
+
 // REACT QUERY: Query Keys
 
 export const userKeys = {
@@ -95,6 +98,20 @@ export const useUpdateUser = () => {
     { id: string; payload: UpdateUserPayload }
   >({
     mutationFn: ({ id, payload }) => updateUserFn(id, payload),
+    onSuccess: (data) => {
+      toast.success(data.message);
+      qc.invalidateQueries({ queryKey: userKeys.all });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+};
+
+export const useDeleteUser = () => {
+  const qc = useQueryClient();
+  return useMutation<ApiResponse<undefined>, AxiosError, string>({
+    mutationFn: (id) => deleteUserFn(id),
     onSuccess: (data) => {
       toast.success(data.message);
       qc.invalidateQueries({ queryKey: userKeys.all });
