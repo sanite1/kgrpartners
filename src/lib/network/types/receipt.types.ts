@@ -14,6 +14,10 @@ export interface Receipt {
   ticketId: string;
   bus: string;
   busNumber: string;
+  batteryName: string;
+  batteryPercent: number;
+  voltage: number;
+  timeOut: string; // HH:MM
   expectedTrips: number;
   unitPrice: string;
   expectedAmount: string;
@@ -34,6 +38,10 @@ export interface Receipt {
 
 export interface CreateReceiptPayload {
   busId: string;
+  batteryName: string;
+  batteryPercent: number;
+  voltage?: number;
+  timeOut: string; // HH:MM
   expectedTrips: number;
   checkIn?: boolean;
   allowDuplicate?: boolean;

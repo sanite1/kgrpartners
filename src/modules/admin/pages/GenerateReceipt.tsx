@@ -24,10 +24,23 @@ const todayString = () =>
     day: "2-digit",
   }).format(new Date());
 
+// current Lagos time as HH:MM for the default departure time
+const nowTimeString = () =>
+  new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Lagos",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date());
+
 export default function GenerateReceipt() {
   const [busSearch, setBusSearch] = useState("");
   const [busOpen, setBusOpen] = useState(false);
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
+  const [batteryName, setBatteryName] = useState("");
+  const [batteryPercent, setBatteryPercent] = useState("100");
+  const [voltage, setVoltage] = useState("");
+  const [timeOut, setTimeOut] = useState(nowTimeString);
   const [trips, setTrips] = useState("1");
   const [checkIn, setCheckIn] = useState(true);
   const [issued, setIssued] = useState<Receipt | null>(null);
@@ -47,13 +60,25 @@ export default function GenerateReceipt() {
 
   const tripsNum = Math.max(0, parseInt(trips, 10) || 0);
   const amount = price ? String(tripsNum * Number(price.amount)) : "0";
+  const percentNum = Math.max(0, Math.min(200, parseInt(batteryPercent, 10) || 0));
+  const validTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(timeOut);
+  const canIssue =
+    !!selectedBus &&
+    tripsNum >= 1 &&
+    !!price &&
+    batteryName.trim().length > 0 &&
+    validTime;
 
   const issue = (allowDuplicate: boolean) => {
-    if (!selectedBus || tripsNum < 1) return;
+    if (!canIssue || !selectedBus) return;
     setDupMessage(null);
     createReceipt.mutate(
       {
         busId: selectedBus._id,
+        batteryName: batteryName.trim(),
+        batteryPercent: percentNum,
+        voltage: voltage.trim() ? Number(voltage) : undefined,
+        timeOut,
         expectedTrips: tripsNum,
         checkIn,
         allowDuplicate,
@@ -76,6 +101,10 @@ export default function GenerateReceipt() {
     setIssued(null);
     setSelectedBus(null);
     setBusSearch("");
+    setBatteryName("");
+    setBatteryPercent("100");
+    setVoltage("");
+    setTimeOut(nowTimeString());
     setTrips("1");
     setCheckIn(true);
     setDupMessage(null);
@@ -164,6 +193,66 @@ export default function GenerateReceipt() {
               </button>
             </div>
 
+            {/* battery on the bus */}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="gr-battery" className={labelClasses}>
+                Battery name <span className="text-brand-500">*</span>
+              </label>
+              <input
+                id="gr-battery"
+                type="text"
+                placeholder="e.g. KAMILA 9"
+                value={batteryName}
+                onChange={(e) => setBatteryName(e.target.value)}
+                className={inputClasses}
+                autoComplete="off"
+              />
+            </div>
+
+            {/* battery %, voltage, time out */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="gr-percent" className={labelClasses}>
+                  Battery % <span className="text-brand-500">*</span>
+                </label>
+                <input
+                  id="gr-percent"
+                  type="number"
+                  min={0}
+                  max={200}
+                  value={batteryPercent}
+                  onChange={(e) => setBatteryPercent(e.target.value)}
+                  className={inputClasses}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="gr-voltage" className={labelClasses}>
+                  Voltage
+                </label>
+                <input
+                  id="gr-voltage"
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={voltage}
+                  onChange={(e) => setVoltage(e.target.value)}
+                  className={inputClasses}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="gr-timeout" className={labelClasses}>
+                  Time out <span className="text-brand-500">*</span>
+                </label>
+                <input
+                  id="gr-timeout"
+                  type="time"
+                  value={timeOut}
+                  onChange={(e) => setTimeOut(e.target.value)}
+                  className={inputClasses}
+                />
+              </div>
+            </div>
+
             {/* trips */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="gr-trips" className={labelClasses}>
@@ -225,19 +314,11 @@ export default function GenerateReceipt() {
             {!issued ? (
               <button
                 type="button"
-                disabled={
-                  !selectedBus ||
-                  tripsNum < 1 ||
-                  !price ||
-                  createReceipt.isPending
-                }
+                disabled={!canIssue || createReceipt.isPending}
                 onClick={() => issue(false)}
                 className={cn(
                   "cta-gradient cursor-pointer rounded-[10px] border-none px-8 py-4 text-[15px] font-extrabold text-forest-deep",
-                  !selectedBus ||
-                    tripsNum < 1 ||
-                    !price ||
-                    createReceipt.isPending
+                  !canIssue || createReceipt.isPending
                     ? "cursor-not-allowed opacity-50"
                     : "transition-transform hover:scale-[1.02]",
                 )}
@@ -275,6 +356,10 @@ export default function GenerateReceipt() {
                 ? null
                 : {
                     busNumber: selectedBus?.number ?? "",
+                    batteryName,
+                    batteryPercent: percentNum,
+                    voltage: voltage.trim() ? Number(voltage) : 0,
+                    timeOut,
                     expectedTrips: tripsNum,
                     unitPrice: price?.amount ?? "0",
                     expectedAmount: amount,

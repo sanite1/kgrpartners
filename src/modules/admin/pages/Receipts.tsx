@@ -151,6 +151,7 @@ export default function Receipts() {
                   "BILL",
                   "TICKET",
                   "BUS",
+                  "BATTERY",
                   "TRIPS",
                   "AMOUNT",
                   "DATE",
@@ -181,6 +182,9 @@ export default function Receipts() {
                   </td>
                   <td className="px-4 py-4 text-[14px] font-extrabold text-ink">
                     {receipt.busNumber}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-4 text-[13px] font-semibold text-bark">
+                    {receipt.batteryName || "—"}
                   </td>
                   <td className="px-4 py-4 text-[14px] font-semibold text-bark">
                     {receipt.expectedTrips}

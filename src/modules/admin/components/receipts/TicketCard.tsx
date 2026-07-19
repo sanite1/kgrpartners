@@ -9,6 +9,10 @@ const BARCODE = [2, 1, 3, 1, 2, 1, 1, 3, 2, 1, 2, 3, 1, 2];
 
 export interface TicketDraft {
   busNumber: string;
+  batteryName: string;
+  batteryPercent: number;
+  voltage: number;
+  timeOut: string;
   expectedTrips: number;
   unitPrice: string;
   expectedAmount: string;
@@ -37,6 +41,10 @@ const statusLabel: Record<ReceiptStatus, string> = {
 // notches, barcode flourish and a QR that encodes the ticket identity.
 const TicketCard = ({ receipt, draft, printable }: TicketCardProps) => {
   const busNumber = receipt?.busNumber ?? draft?.busNumber ?? "";
+  const batteryName = receipt?.batteryName ?? draft?.batteryName ?? "";
+  const batteryPercent = receipt?.batteryPercent ?? draft?.batteryPercent ?? 0;
+  const voltage = receipt?.voltage ?? draft?.voltage ?? 0;
+  const timeOut = receipt?.timeOut ?? draft?.timeOut ?? "";
   const trips = receipt?.expectedTrips ?? draft?.expectedTrips ?? 0;
   const unitPrice = receipt?.unitPrice ?? draft?.unitPrice ?? "0";
   const amount = receipt?.expectedAmount ?? draft?.expectedAmount ?? "0";
@@ -85,6 +93,9 @@ const TicketCard = ({ receipt, draft, printable }: TicketCardProps) => {
             <div className="mt-0.5 text-[30px] font-extrabold leading-none tracking-[-0.5px] text-ink">
               {busNumber || "—"}
             </div>
+            <div className="mt-1 text-[13px] font-bold text-bark">
+              {batteryName || "—"}
+            </div>
           </div>
           {receipt && (
             <StatusPill
@@ -95,6 +106,33 @@ const TicketCard = ({ receipt, draft, printable }: TicketCardProps) => {
         </div>
 
         <div className="mt-5 grid grid-cols-3 gap-3">
+          <div>
+            <div className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
+              BATTERY %
+            </div>
+            <div className="mt-0.5 text-[18px] font-extrabold text-ink">
+              {batteryPercent || "—"}
+            </div>
+          </div>
+          <div>
+            <div className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
+              VOLTAGE
+            </div>
+            <div className="mt-0.5 text-[18px] font-extrabold text-ink">
+              {voltage || "—"}
+            </div>
+          </div>
+          <div>
+            <div className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
+              TIME OUT
+            </div>
+            <div className="mt-0.5 text-[18px] font-extrabold text-ink">
+              {timeOut || "—"}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-3">
           <div>
             <div className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
               TRIPS
