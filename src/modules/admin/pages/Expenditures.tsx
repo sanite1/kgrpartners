@@ -490,7 +490,6 @@ export default function Expenditures() {
           <thead>
             <tr className="border-b border-line">
               {[
-                "#",
                 "DATE",
                 "DESCRIPTION",
                 "CATEGORY",
@@ -517,21 +516,23 @@ export default function Expenditures() {
                   e.status === "cancelled" && "opacity-55",
                 )}
               >
-                <td className="px-5 py-3.5 text-[13px] font-extrabold text-ink">
-                  #{e.expenditureId}
-                </td>
                 <td className="px-5 py-3.5 text-[13px] font-semibold text-fog">
                   {fmtDate(e.date)}
                 </td>
-                <td className="px-5 py-3.5">
-                  <span className="text-[14px] font-bold text-ink">
-                    {e.description}
-                  </span>
-                  {isAuto(e) && (
-                    <span className="ml-2 rounded-full bg-brand-50 px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-[0.5px] text-brand-600">
-                      Auto · {SOURCE_LABEL[e.source]}
+                <td className="max-w-[240px] px-5 py-3.5">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span
+                      className="truncate text-[14px] font-bold text-ink"
+                      title={e.description}
+                    >
+                      {e.description}
                     </span>
-                  )}
+                    {isAuto(e) && (
+                      <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-[0.5px] text-brand-600">
+                        Auto · {SOURCE_LABEL[e.source]}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-5 py-3.5">
                   <span className="rounded-full border border-line bg-haze px-2.5 py-1 text-[12px] font-extrabold text-bark">
