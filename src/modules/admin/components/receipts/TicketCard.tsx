@@ -78,7 +78,10 @@ const TicketCard = ({ receipt, draft, printable }: TicketCardProps) => {
 
       {/* perforation */}
       <div className="relative">
-        <div className="mx-5 border-t-2 border-dashed border-divider" />
+        <div
+          data-print="rule"
+          className="mx-5 border-t-2 border-dashed border-divider"
+        />
         <span className="absolute -left-2.5 -top-2.5 h-5 w-5 rounded-full border-r border-line bg-haze" />
         <span className="absolute -right-2.5 -top-2.5 h-5 w-5 rounded-full border-l border-line bg-haze" />
       </div>
@@ -159,7 +162,10 @@ const TicketCard = ({ receipt, draft, printable }: TicketCardProps) => {
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl bg-forest px-5 py-4">
+        <div
+          data-print="amount"
+          className="mt-5 rounded-2xl bg-forest px-5 py-4"
+        >
           <div className="text-[11px] font-extrabold tracking-[1.5px] text-mint-soft">
             AMOUNT EXPECTED
           </div>
@@ -171,7 +177,10 @@ const TicketCard = ({ receipt, draft, printable }: TicketCardProps) => {
 
       {/* perforation */}
       <div className="relative">
-        <div className="mx-5 border-t-2 border-dashed border-divider" />
+        <div
+          data-print="rule"
+          className="mx-5 border-t-2 border-dashed border-divider"
+        />
         <span className="absolute -left-2.5 -top-2.5 h-5 w-5 rounded-full border-r border-line bg-haze" />
         <span className="absolute -right-2.5 -top-2.5 h-5 w-5 rounded-full border-l border-line bg-haze" />
       </div>

@@ -122,9 +122,31 @@
     transform: translateX(-50%);
     width: 105mm;
     max-width: none;
+  }
+  /* print plain: strip every fill, tint, gradient and shadow and force
+     crisp black on white. Colour boxes (the dark amount panel, brand
+     green, the neon total) either smear or dump a solid ink slab on a
+     real printer, so on paper the ticket goes monochrome. */
+  #print-ticket,
+  #print-ticket * {
+    background: transparent !important;
+    background-image: none !important;
+    color: #000 !important;
     box-shadow: none !important;
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+  /* keep the ticket outline and internal rules as thin black lines */
+  #print-ticket {
+    border: 1px solid #000 !important;
+  }
+  #print-ticket [data-print="rule"] {
+    border-color: #000 !important;
+  }
+  /* the amount reads as a bordered box, not a filled black rectangle */
+  #print-ticket [data-print="amount"] {
+    border: 1.5px solid #000 !important;
+    border-radius: 10px !important;
   }
 }
 
