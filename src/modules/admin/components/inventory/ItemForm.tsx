@@ -98,6 +98,8 @@ const ItemForm = ({ item, onDone }: ItemFormProps) => {
             <option value="part">Part</option>
             <option value="battery">Battery</option>
             <option value="consumable">Consumable</option>
+            <option value="solar">Solar</option>
+            <option value="conversion">Conversion kit</option>
           </select>
         </div>
         <div className="flex flex-col gap-1.5">

@@ -15,6 +15,7 @@ import {
 } from "@/lib/network/api/inventory.api";
 import type {
   InventoryItem,
+  ItemCategory,
   StockMovementType,
 } from "@/lib/network/types/inventory.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
@@ -22,20 +23,22 @@ import { canManageStock } from "../permissions";
 import { cn, fmtNaira, fmtDate, fmtTime } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
-type CategoryFilter = "all" | "part" | "battery" | "consumable" | "low";
-
-const FILTERS: { id: CategoryFilter; label: string }[] = [
-  { id: "all", label: "Everything" },
+// a dropdown (not chips) so the list scales without wrapping the filter row
+const CATEGORY_OPTIONS: { id: "all" | ItemCategory; label: string }[] = [
+  { id: "all", label: "All categories" },
   { id: "part", label: "Parts" },
   { id: "battery", label: "Batteries" },
   { id: "consumable", label: "Consumables" },
-  { id: "low", label: "Low stock" },
+  { id: "solar", label: "Solar" },
+  { id: "conversion", label: "Conversion kits" },
 ];
 
 const categoryTone: Record<string, "success" | "warn" | "muted"> = {
   battery: "success",
   part: "muted",
   consumable: "warn",
+  solar: "success",
+  conversion: "warn",
 };
 
 const MovementsList = ({ itemId }: { itemId: string }) => {
@@ -100,7 +103,8 @@ export default function Inventory() {
   const { user } = useAuthStore();
   const canStock = canManageStock(user?.role);
 
-  const [filter, setFilter] = useState<CategoryFilter>("all");
+  const [category, setCategory] = useState<"all" | ItemCategory>("all");
+  const [lowStock, setLowStock] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -118,8 +122,8 @@ export default function Inventory() {
   const { data, isLoading } = useGetItems({
     page,
     pageSize,
-    category: filter === "all" || filter === "low" ? undefined : filter,
-    lowStock: filter === "low" ? "true" : undefined,
+    category: category === "all" ? undefined : category,
+    lowStock: lowStock ? "true" : undefined,
     search: search || undefined,
   });
   const items = data?.data ?? [];
@@ -171,25 +175,36 @@ export default function Inventory() {
 
       {/* filters */}
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap gap-2">
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => {
-                setFilter(f.id);
-                setPage(1);
-              }}
-              className={cn(
-                "cursor-pointer rounded-full border px-4 py-2 text-[13px] font-bold transition-colors",
-                filter === f.id
-                  ? "cta-gradient border-transparent text-forest-deep"
-                  : "border-line bg-white text-bark hover:border-brand-500 hover:text-brand-600",
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value as "all" | ItemCategory);
+              setPage(1);
+            }}
+            className={cn(inputClasses, "w-auto py-2.5 sm:text-[14px]")}
+          >
+            {CATEGORY_OPTIONS.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => {
+              setLowStock((v) => !v);
+              setPage(1);
+            }}
+            className={cn(
+              "cursor-pointer rounded-full border px-4 py-2.5 text-[13px] font-bold transition-colors",
+              lowStock
+                ? "cta-gradient border-transparent text-forest-deep"
+                : "border-line bg-white text-bark hover:border-brand-500 hover:text-brand-600",
+            )}
+          >
+            Low stock
+          </button>
         </div>
         <div className="relative sm:w-[240px]">
           <Search
@@ -320,7 +335,7 @@ export default function Inventory() {
           <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
             <BoltMark width={22} height={29} fill="#B5ECC2" />
             <p className="m-0 text-[15px] font-bold text-bark">
-              {search || filter !== "all"
+              {search || category !== "all" || lowStock
                 ? "Nothing in stock matches this view."
                 : "Stock is empty. Add the first item."}
             </p>
@@ -361,7 +376,8 @@ export default function Inventory() {
               // reveal a newly added item even if a category filter or
               // search was hiding it
               if (wasCreate) {
-                setFilter("all");
+                setCategory("all");
+                setLowStock(false);
                 setSearch("");
                 setPage(1);
               }
