@@ -84,7 +84,7 @@ export const useGetRepairJobs = (
   });
 
 // REACT QUERY: Mutations
-// Opening a job consumes stock and can flip a battery to in_repair,
+// Opening a job consumes stock and can flip a battery to faulty,
 // so repair mutations also invalidate inventory and batteries.
 
 export const useCreateRepairJob = () => {

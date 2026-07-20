@@ -229,7 +229,7 @@ export default function Dashboard() {
       />
       <StatCell
         label="BATTERIES ON BUSES"
-        value={batteryCounts?.on_bus ?? 0}
+        value={batterySummaryData?.data?.onBus ?? 0}
         loading={batteriesLoading}
         to="/batteries"
       />
@@ -414,8 +414,8 @@ export default function Dashboard() {
           {opsCells}
           <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
             <StatCell
-              label="IN STORE"
-              value={batteryCounts?.in_store ?? 0}
+              label="ACTIVE"
+              value={batteryCounts?.active ?? 0}
               loading={batteriesLoading}
               to="/batteries"
             />
@@ -426,17 +426,17 @@ export default function Dashboard() {
               to="/batteries"
             />
             <StatCell
+              label="FULLY CHARGED"
+              value={batteryCounts?.fully_charged ?? 0}
+              loading={batteriesLoading}
+              to="/batteries"
+            />
+            <StatCell
               label="FAULTY"
               value={batteryCounts?.faulty ?? 0}
               loading={batteriesLoading}
               warn
               to="/batteries"
-            />
-            <StatCell
-              label="IN REPAIR"
-              value={batteryCounts?.in_repair ?? 0}
-              loading={batteriesLoading}
-              to="/repairs"
             />
           </div>
         </>

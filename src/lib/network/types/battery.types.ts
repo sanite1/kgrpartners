@@ -2,7 +2,12 @@
 import type { ReceiptUserRef } from "./receipt.types";
 
 export type BatteryStatus =
-  "in_store" | "charging" | "on_bus" | "faulty" | "in_repair";
+  | "active"
+  | "faulty"
+  | "charging"
+  | "fully_charged"
+  | "not_charged"
+  | "not_in_use";
 
 export type BatteryMoveAction = "issue" | "collect" | "status";
 
@@ -36,11 +41,12 @@ export interface BatteryMovement {
 export interface BatterySummaryData {
   counts: Record<BatteryStatus, number>;
   total: number;
+  onBus: number; // packs currently assigned to a bus (any status)
 }
 
 export interface CreateBatteryPayload {
   code: string;
-  status?: "in_store" | "charging" | "faulty";
+  status?: BatteryStatus;
   notes?: string;
 }
 
@@ -56,12 +62,11 @@ export interface IssueBatteryPayload {
 }
 
 export interface CollectBatteryPayload {
-  to: "in_store" | "charging" | "faulty";
   note?: string;
 }
 
 export interface SetBatteryStatusPayload {
-  to: Exclude<BatteryStatus, "on_bus">;
+  to: BatteryStatus;
   note?: string;
 }
 

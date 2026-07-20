@@ -29,19 +29,33 @@ import { inputClasses, labelClasses } from "../components/console/form";
 type PillTone = "success" | "warn" | "muted" | "danger";
 
 const STATUS_META: Record<BatteryStatus, { label: string; tone: PillTone }> = {
-  in_store: { label: "In store", tone: "muted" },
-  charging: { label: "Charging", tone: "warn" },
-  on_bus: { label: "On bus", tone: "success" },
+  active: { label: "Active", tone: "success" },
   faulty: { label: "Faulty", tone: "danger" },
-  in_repair: { label: "In repair", tone: "warn" },
+  charging: { label: "Charging", tone: "warn" },
+  fully_charged: { label: "Fully charged", tone: "success" },
+  not_charged: { label: "Not charged", tone: "warn" },
+  not_in_use: { label: "Not in use", tone: "muted" },
 };
 
+const STATUS_OPTIONS = Object.entries(STATUS_META).map(
+  ([value, meta]) => [value as BatteryStatus, meta.label] as const,
+);
+
+// Legacy movement records may hold retired status strings (in_store, on_bus,
+// in_repair); fall back gracefully so old history never crashes the view.
+const metaFor = (status: string): { label: string; tone: PillTone } =>
+  STATUS_META[status as BatteryStatus] ?? {
+    label: status.replace(/_/g, " "),
+    tone: "muted",
+  };
+
 const BOARD: BatteryStatus[] = [
-  "in_store",
-  "charging",
-  "on_bus",
+  "active",
   "faulty",
-  "in_repair",
+  "charging",
+  "fully_charged",
+  "not_charged",
+  "not_in_use",
 ];
 
 const smallBtn =
@@ -76,8 +90,8 @@ const MovementsList = ({ battery }: { battery: Battery }) => {
           >
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <span className="text-[13.5px] font-extrabold text-ink">
-                {ACTION_LABEL[m.action]}: {STATUS_META[m.fromStatus].label} →{" "}
-                {STATUS_META[m.toStatus].label}
+                {ACTION_LABEL[m.action]}: {metaFor(m.fromStatus).label} →{" "}
+                {metaFor(m.toStatus).label}
                 {m.busNumber ? ` (${m.busNumber})` : ""}
               </span>
               <span className="shrink-0 text-[12px] font-semibold text-fog sm:text-right">
@@ -146,9 +160,7 @@ export default function Batteries() {
 
   // register form
   const [regCode, setRegCode] = useState("");
-  const [regStatus, setRegStatus] = useState<
-    "in_store" | "charging" | "faulty"
-  >("in_store");
+  const [regStatus, setRegStatus] = useState<BatteryStatus>("active");
   const [regNotes, setRegNotes] = useState("");
 
   // issue form
@@ -157,9 +169,6 @@ export default function Batteries() {
   const [issueNote, setIssueNote] = useState("");
 
   // collect form
-  const [collectTo, setCollectTo] = useState<
-    "in_store" | "charging" | "faulty"
-  >("charging");
   const [collectNote, setCollectNote] = useState("");
 
   // edit form
@@ -199,10 +208,8 @@ export default function Batteries() {
     setEditFor(battery);
   };
 
-  const quickStatus = (
-    battery: Battery,
-    to: "in_store" | "charging" | "faulty",
-  ) => setStatus.mutate({ id: battery._id, payload: { to } });
+  const quickStatus = (battery: Battery, to: BatteryStatus) =>
+    setStatus.mutate({ id: battery._id, payload: { to } });
 
   return (
     <>
@@ -217,7 +224,7 @@ export default function Batteries() {
               type="button"
               onClick={() => {
                 setRegCode("");
-                setRegStatus("in_store");
+                setRegStatus("active");
                 setRegNotes("");
                 setRegisterOpen(true);
               }}
@@ -339,15 +346,15 @@ export default function Batteries() {
                 <span className="text-[18px] font-extrabold tracking-[-0.3px] text-ink">
                   {battery.code}
                 </span>
-                {battery.status === "on_bus" && battery.busNumber && (
+                {battery.bus && battery.busNumber && (
                   <span className="ml-2 rounded-full bg-haze px-2.5 py-1 text-[11.5px] font-extrabold text-brand-600">
                     {battery.busNumber}
                   </span>
                 )}
               </div>
               <StatusPill
-                tone={STATUS_META[battery.status].tone}
-                label={STATUS_META[battery.status].label}
+                tone={metaFor(battery.status).tone}
+                label={metaFor(battery.status).label}
               />
             </div>
             {battery.notes && (
@@ -356,56 +363,23 @@ export default function Batteries() {
               </p>
             )}
             <div className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-line pt-3.5">
-              {canStock &&
-                (battery.status === "in_store" ||
-                  battery.status === "charging") && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setBusSearch("");
-                        setIssueNote("");
-                        setIssueFor(battery);
-                      }}
-                      className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
-                    >
-                      Issue to bus
-                    </button>
-                    <button
-                      type="button"
-                      disabled={setStatus.isPending}
-                      onClick={() =>
-                        quickStatus(
-                          battery,
-                          battery.status === "in_store"
-                            ? "charging"
-                            : "in_store",
-                        )
-                      }
-                      className={smallBtn}
-                    >
-                      {battery.status === "in_store"
-                        ? "Start charging"
-                        : "Back to store"}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={setStatus.isPending}
-                      onClick={() => quickStatus(battery, "faulty")}
-                      className={cn(
-                        smallBtn,
-                        "hover:border-red-300 hover:text-red-600",
-                      )}
-                    >
-                      Faulty
-                    </button>
-                  </>
-                )}
-              {canStock && battery.status === "on_bus" && (
+              {canStock && !battery.bus && battery.status !== "faulty" && (
                 <button
                   type="button"
                   onClick={() => {
-                    setCollectTo("charging");
+                    setBusSearch("");
+                    setIssueNote("");
+                    setIssueFor(battery);
+                  }}
+                  className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
+                >
+                  Issue to bus
+                </button>
+              )}
+              {canStock && battery.bus && (
+                <button
+                  type="button"
+                  onClick={() => {
                     setCollectNote("");
                     setCollectFor(battery);
                   }}
@@ -414,25 +388,22 @@ export default function Batteries() {
                   Collect from {battery.busNumber}
                 </button>
               )}
-              {canStock && battery.status === "faulty" && (
-                <>
-                  <button
-                    type="button"
-                    disabled={setStatus.isPending}
-                    onClick={() => quickStatus(battery, "in_store")}
-                    className={smallBtn}
-                  >
-                    Back to store
-                  </button>
-                  <span className="text-[12px] font-semibold text-fog">
-                    or open a repair job
-                  </span>
-                </>
-              )}
-              {battery.status === "in_repair" && (
-                <span className="text-[12px] font-semibold text-fog">
-                  Managed by its repair job
-                </span>
+              {canStock && (
+                <select
+                  aria-label={`Set status for ${battery.code}`}
+                  value={battery.status}
+                  disabled={setStatus.isPending}
+                  onChange={(e) =>
+                    quickStatus(battery, e.target.value as BatteryStatus)
+                  }
+                  className="cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none"
+                >
+                  {STATUS_OPTIONS.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               )}
               <span className="ml-auto flex gap-1.5">
                 <button
@@ -512,16 +483,14 @@ export default function Batteries() {
             <select
               id="bat-status"
               value={regStatus}
-              onChange={(e) =>
-                setRegStatus(
-                  e.target.value as "in_store" | "charging" | "faulty",
-                )
-              }
+              onChange={(e) => setRegStatus(e.target.value as BatteryStatus)}
               className={inputClasses}
             >
-              <option value="in_store">In store</option>
-              <option value="charging">Charging</option>
-              <option value="faulty">Faulty</option>
+              {STATUS_OPTIONS.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -622,32 +591,10 @@ export default function Batteries() {
         onClose={() => setCollectFor(null)}
       >
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <span className={labelClasses}>Where is it going?</span>
-            <div className="flex gap-2">
-              {(
-                [
-                  ["charging", "Charging"],
-                  ["in_store", "Store"],
-                  ["faulty", "Faulty"],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setCollectTo(value)}
-                  className={cn(
-                    "flex-1 cursor-pointer rounded-[10px] border px-3 py-2.5 text-[13px] font-extrabold transition-colors",
-                    collectTo === value
-                      ? "cta-gradient border-transparent text-forest-deep"
-                      : "border-line bg-white text-bark hover:border-brand-500",
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <p className="m-0 text-[13px] font-semibold text-fog">
+            This takes {collectFor?.code} off {collectFor?.busNumber}. Its status
+            stays as it is; update it separately if it needs charging.
+          </p>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="collect-note" className={labelClasses}>
               Note
@@ -669,7 +616,7 @@ export default function Batteries() {
               collectBattery.mutate(
                 {
                   id: collectFor._id,
-                  payload: { to: collectTo, note: collectNote || undefined },
+                  payload: { note: collectNote || undefined },
                 },
                 { onSuccess: () => setCollectFor(null) },
               );
