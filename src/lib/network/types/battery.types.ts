@@ -11,14 +11,30 @@ export type BatteryStatus =
 
 export type BatteryMoveAction = "issue" | "collect" | "status";
 
+export type BatteryLocation =
+  | "main_yard"
+  | "muhd_house"
+  | "kamila_house"
+  | "ubs";
+
+export type BatteryRetiredReason =
+  | "sold"
+  | "dismantled"
+  | "accident"
+  | "bms_burnt"
+  | "other";
+
 export interface Battery {
   _id: string;
   code: string;
   status: BatteryStatus;
+  location: BatteryLocation;
+  needsCheck: boolean;
   bus?: string;
   busNumber?: string;
   notes: string;
   isActive: boolean;
+  retiredReason?: BatteryRetiredReason;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -53,7 +69,10 @@ export interface CreateBatteryPayload {
 export interface UpdateBatteryPayload {
   code?: string;
   notes?: string;
+  location?: BatteryLocation;
+  needsCheck?: boolean;
   isActive?: boolean;
+  retiredReason?: BatteryRetiredReason;
 }
 
 export interface IssueBatteryPayload {

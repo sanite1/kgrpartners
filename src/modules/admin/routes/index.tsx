@@ -16,6 +16,7 @@ const DailyAccount = lazy(() => import("../pages/DailyAccount"));
 const Inventory = lazy(() => import("../pages/Inventory"));
 const Requests = lazy(() => import("../pages/Requests"));
 const Batteries = lazy(() => import("../pages/Batteries"));
+const BatteryExitFormPage = lazy(() => import("../pages/BatteryExitFormPage"));
 const Repairs = lazy(() => import("../pages/Repairs"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Users = lazy(() => import("../pages/Users"));
@@ -61,6 +62,7 @@ export const AdminRoutes = () => {
               <Route path="/inventory" element={<Inventory />} />
               <Route path="/requests" element={<Requests />} />
               <Route path="/batteries" element={<Batteries />} />
+              <Route path="/battery-form" element={<BatteryExitFormPage />} />
               <Route path="/repairs" element={<Repairs />} />
               <Route path="/buses" element={<Buses />} />
               <Route path="/trip-price" element={<TripPrice />} />

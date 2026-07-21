@@ -46,6 +46,8 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
     icon: "BatteryCharging",
     roles: STORE,
   },
+  // the roll-call is staff work: no roles, so everyone signed in sees it
+  { label: "Battery Form", to: "/battery-form", icon: "ClipboardCheck" },
   { label: "Repairs", to: "/repairs", icon: "Wrench", roles: STORE },
   { label: "Buses", to: "/buses", icon: "Bus" },
   { label: "Trip Price", to: "/trip-price", icon: "Tag", roles: MANAGERS },
