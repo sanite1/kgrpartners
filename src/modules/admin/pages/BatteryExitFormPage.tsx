@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, CheckCheck, Printer } from "lucide-react";
+import { ArrowLeft, CheckCheck, Plus, Printer } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
@@ -27,7 +27,7 @@ import type {
 import type { BatteryLocation } from "@/lib/network/types/battery.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { isAdminRole } from "../permissions";
-import { cn, fmtDate } from "@/lib/utils";
+import { cn, fmtDate, fmtTime } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
 interface Entry {
@@ -95,7 +95,11 @@ export default function BatteryExitFormPage() {
   const { user } = useAuthStore();
   const isAdmin = isAdminRole(user?.role);
 
-  const [tab, setTab] = useState<"roll" | "history">("roll");
+  // admins come here to review, so they land on the record of past runs;
+  // everyone else lands straight on a fresh roll-call
+  const [tab, setTab] = useState<"roll" | "history">(() =>
+    isAdmin ? "history" : "roll",
+  );
   const [entries, setEntries] = useState<Record<string, Entry>>({});
   const [seeded, setSeeded] = useState(false);
   const [comments, setComments] = useState("");
@@ -105,7 +109,9 @@ export default function BatteryExitFormPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [openForm, setOpenForm] = useState<string | null>(null);
 
-  const { data: rosterData, isLoading: rosterLoading } = useGetFleetRoster();
+  const { data: rosterData, isLoading: rosterLoading } = useGetFleetRoster({
+    enabled: tab === "roll",
+  });
   const roster = rosterData?.data;
 
   const { data: historyData, isLoading: historyLoading } = useGetExitForms(
@@ -191,16 +197,6 @@ export default function BatteryExitFormPage() {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setTab("roll")}
-                className={cn(
-                  smallBtn,
-                  tab === "roll" && "border-brand-500 text-brand-600",
-                )}
-              >
-                New roll-call
-              </button>
-              <button
-                type="button"
                 onClick={() => {
                   setTab("history");
                   setOpenForm(null);
@@ -211,6 +207,13 @@ export default function BatteryExitFormPage() {
                 )}
               >
                 History
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("roll")}
+                className="cta-gradient flex cursor-pointer items-center gap-2 rounded-[10px] border-none px-5 py-3 text-[14px] font-extrabold text-forest-deep transition-transform hover:scale-[1.02]"
+              >
+                <Plus size={16} strokeWidth={3} /> New roll-call
               </button>
             </div>
           ) : undefined
@@ -229,16 +232,23 @@ export default function BatteryExitFormPage() {
                   <table className="w-full border-collapse text-left">
                     <thead>
                       <tr className="border-b border-line bg-haze">
-                        {["DATE", "FORM", "ISSUED BY", "ACTIVE", "FAULTY", "NEEDS CHECK", "SOLD"].map(
-                          (h) => (
-                            <th
-                              key={h}
-                              className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                            >
-                              {h}
-                            </th>
-                          ),
-                        )}
+                        {[
+                          "DATE",
+                          "SUBMITTED",
+                          "FORM",
+                          "ISSUED BY",
+                          "ACTIVE",
+                          "FAULTY",
+                          "NEEDS CHECK",
+                          "SOLD",
+                        ].map((h) => (
+                          <th
+                            key={h}
+                            className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                          >
+                            {h}
+                          </th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody>
@@ -250,6 +260,9 @@ export default function BatteryExitFormPage() {
                         >
                           <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
                             {fmtDate(form.date)}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
+                            {fmtDate(form.createdAt)} · {fmtTime(form.createdAt)}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-bold tabular-nums text-bark">
                             #{form.formId}
@@ -407,9 +420,11 @@ export default function BatteryExitFormPage() {
                         return (
                           <div
                             key={battery._id}
-                            className="grid grid-cols-2 items-center gap-2 border-b border-line px-4 py-2.5 last:border-0 sm:grid-cols-[110px_1fr_1fr_1.2fr]"
+                            className="grid grid-cols-2 items-center gap-2 border-b border-line px-4 py-3 last:border-0 sm:grid-cols-[110px_1fr_1fr_1.2fr] sm:py-2.5"
                           >
-                            <span className="text-[13.5px] font-extrabold text-ink">
+                            {/* on mobile the code takes its own line so the two
+                                selects can sit side by side beneath it */}
+                            <span className="col-span-2 text-[13.5px] font-extrabold text-ink sm:col-span-1">
                               {battery.code}
                             </span>
                             <select

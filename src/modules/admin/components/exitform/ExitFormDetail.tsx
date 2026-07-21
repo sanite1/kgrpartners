@@ -1,7 +1,7 @@
 import BoltMark from "@/components/shared/BoltMark";
 import type { BatteryExitForm } from "@/lib/network/types/batteryExitForm.types";
 import type { BatteryLocation } from "@/lib/network/types/battery.types";
-import { fmtDate } from "@/lib/utils";
+import { fmtDate, fmtTime } from "@/lib/utils";
 import {
   CHECK_LABEL,
   LOCATION_LABEL,
@@ -28,7 +28,7 @@ const ExitFormDetail = ({ form }: { form: BatteryExitForm }) => (
 
     <div
       data-print="rule"
-      className="mt-4 grid grid-cols-2 gap-3 border-t border-divider pt-4 sm:grid-cols-3"
+      className="mt-4 grid grid-cols-2 gap-3 border-t border-divider pt-4 sm:grid-cols-4"
     >
       <div>
         <div className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
@@ -44,6 +44,14 @@ const ExitFormDetail = ({ form }: { form: BatteryExitForm }) => (
         </div>
         <div className="mt-0.5 text-[15px] font-extrabold text-ink">
           {fmtDate(form.date)}
+        </div>
+      </div>
+      <div>
+        <div className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
+          SUBMITTED
+        </div>
+        <div className="mt-0.5 text-[15px] font-extrabold text-ink">
+          {fmtDate(form.createdAt)} · {fmtTime(form.createdAt)}
         </div>
       </div>
       <div>
