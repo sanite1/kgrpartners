@@ -469,21 +469,27 @@ export default function Batteries() {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">
                     <div className="flex items-center gap-2">
-                      {canStock &&
-                        !battery.bus &&
-                        battery.status !== "faulty" && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setBusSearch("");
-                              setIssueNote("");
-                              setIssueFor(battery);
-                            }}
-                            className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
-                          >
-                            Issue to bus
-                          </button>
-                        )}
+                      {canStock && (
+                        <button
+                          type="button"
+                          disabled={!!battery.bus || battery.status === "faulty"}
+                          title={
+                            battery.bus
+                              ? `${battery.code} is already on ${battery.busNumber}`
+                              : battery.status === "faulty"
+                                ? "Faulty packs cannot be issued"
+                                : undefined
+                          }
+                          onClick={() => {
+                            setBusSearch("");
+                            setIssueNote("");
+                            setIssueFor(battery);
+                          }}
+                          className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Issue to bus
+                        </button>
+                      )}
                       {canStock && battery.bus && (
                         <button
                           type="button"
