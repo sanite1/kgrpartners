@@ -135,6 +135,8 @@ export const useCreateReceipt = () => {
     onSuccess: (data) => {
       toast.success(data.message);
       qc.invalidateQueries({ queryKey: receiptKeys.all });
+      // the dashboard's batteries-on-buses count comes from today's receipts
+      qc.invalidateQueries({ queryKey: ["batteries", "summary"] });
     },
     onError: (error) => {
       // 409 duplicate is handled by the form (confirm and resend)

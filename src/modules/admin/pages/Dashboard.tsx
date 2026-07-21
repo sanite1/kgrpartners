@@ -228,7 +228,7 @@ export default function Dashboard() {
         to="/repairs"
       />
       <StatCell
-        label="BATTERIES ON BUSES"
+        label="BATTERIES ON BUSES TODAY"
         value={batterySummaryData?.data?.onBus ?? 0}
         loading={batteriesLoading}
         to="/batteries"

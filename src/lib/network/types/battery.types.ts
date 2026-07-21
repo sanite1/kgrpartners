@@ -57,7 +57,7 @@ export interface BatteryMovement {
 export interface BatterySummaryData {
   counts: Record<BatteryStatus, number>;
   total: number;
-  onBus: number; // packs currently assigned to a bus (any status)
+  onBus: number; // distinct batteries named on today's live receipts
 }
 
 export interface CreateBatteryPayload {
