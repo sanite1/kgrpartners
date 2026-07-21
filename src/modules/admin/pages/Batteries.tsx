@@ -320,8 +320,9 @@ export default function Batteries() {
         </div>
       )}
 
-      {/* status board */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      {/* status board: all-packs spans 2 cells so the 6 statuses fill the
+          rest of an 8-column row evenly at every breakpoint */}
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         <button
           type="button"
           onClick={() => {
@@ -329,7 +330,7 @@ export default function Batteries() {
             setPage(1);
           }}
           className={cn(
-            "cursor-pointer rounded-2xl border p-4 text-left transition-colors",
+            "col-span-2 cursor-pointer rounded-2xl border p-4 text-left transition-colors",
             statusFilter === "all"
               ? "border-forest-border bg-forest-deep"
               : "border-line bg-white hover:border-brand-500",
@@ -418,101 +419,130 @@ export default function Batteries() {
         </div>
       </div>
 
-      {/* battery cards */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {batteries.map((battery) => (
-          <div
-            key={battery._id}
-            className="rounded-2xl border border-line bg-white p-5"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <span className="text-[18px] font-extrabold tracking-[-0.3px] text-ink">
-                  {battery.code}
-                </span>
-                {battery.bus && battery.busNumber && (
-                  <span className="ml-2 rounded-full bg-haze px-2.5 py-1 text-[11.5px] font-extrabold text-brand-600">
-                    {battery.busNumber}
-                  </span>
-                )}
-              </div>
-              <StatusPill
-                tone={metaFor(battery.status).tone}
-                label={metaFor(battery.status).label}
-              />
-            </div>
-            {battery.notes && (
-              <p className="m-0 mt-1.5 truncate text-[12.5px] font-semibold text-fog">
-                {battery.notes}
-              </p>
-            )}
-            <div className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-line pt-3.5">
-              {canStock && !battery.bus && battery.status !== "faulty" && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBusSearch("");
-                    setIssueNote("");
-                    setIssueFor(battery);
-                  }}
-                  className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
-                >
-                  Issue to bus
-                </button>
-              )}
-              {canStock && battery.bus && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCollectNote("");
-                    setCollectFor(battery);
-                  }}
-                  className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
-                >
-                  Collect from {battery.busNumber}
-                </button>
-              )}
-              {canStock && (
-                <select
-                  aria-label={`Set status for ${battery.code}`}
-                  value={battery.status}
-                  disabled={setStatus.isPending}
-                  onChange={(e) =>
-                    quickStatus(battery, e.target.value as BatteryStatus)
-                  }
-                  className="cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none"
-                >
-                  {STATUS_OPTIONS.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              )}
-              <span className="ml-auto flex gap-1.5">
-                <button
-                  type="button"
-                  aria-label={`History for ${battery.code}`}
-                  onClick={() => setHistoryFor(battery)}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
-                >
-                  <History size={14} />
-                </button>
-                {canStock && (
-                  <button
-                    type="button"
-                    aria-label={`Edit ${battery.code}`}
-                    onClick={() => openEdit(battery)}
-                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
+      {/* battery table */}
+      {batteries.length > 0 && (
+      <div className="overflow-hidden rounded-2xl border border-line bg-white">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-line bg-haze">
+                {["BATTERY", "STATE", "BUS", "NOTES", "ACTIONS"].map((h) => (
+                  <th
+                    key={h}
+                    className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
                   >
-                    <Pencil size={14} />
-                  </button>
-                )}
-              </span>
-            </div>
-          </div>
-        ))}
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {batteries.map((battery) => (
+                <tr
+                  key={battery._id}
+                  className="border-b border-line last:border-0"
+                >
+                  <td className="whitespace-nowrap px-4 py-3 text-[14px] font-extrabold tracking-[-0.2px] text-ink">
+                    {battery.code}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <StatusPill
+                      tone={metaFor(battery.status).tone}
+                      label={metaFor(battery.status).label}
+                    />
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    {battery.bus && battery.busNumber ? (
+                      <span className="rounded-full bg-haze px-2.5 py-1 text-[11.5px] font-extrabold text-brand-600">
+                        {battery.busNumber}
+                      </span>
+                    ) : (
+                      <span className="text-[13px] font-semibold text-fog">
+                        —
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="block max-w-[220px] truncate text-[12.5px] font-semibold text-fog">
+                      {battery.notes || "—"}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      {canStock &&
+                        !battery.bus &&
+                        battery.status !== "faulty" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBusSearch("");
+                              setIssueNote("");
+                              setIssueFor(battery);
+                            }}
+                            className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
+                          >
+                            Issue to bus
+                          </button>
+                        )}
+                      {canStock && battery.bus && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCollectNote("");
+                            setCollectFor(battery);
+                          }}
+                          className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
+                        >
+                          Collect from {battery.busNumber}
+                        </button>
+                      )}
+                      {canStock && (
+                        <select
+                          aria-label={`Set status for ${battery.code}`}
+                          value={battery.status}
+                          disabled={setStatus.isPending}
+                          onChange={(e) =>
+                            quickStatus(
+                              battery,
+                              e.target.value as BatteryStatus,
+                            )
+                          }
+                          className="cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none"
+                        >
+                          {STATUS_OPTIONS.map(([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <button
+                        type="button"
+                        aria-label={`History for ${battery.code}`}
+                        onClick={() => setHistoryFor(battery)}
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
+                      >
+                        <History size={14} />
+                      </button>
+                      {canStock && (
+                        <button
+                          type="button"
+                          aria-label={`Edit ${battery.code}`}
+                          onClick={() => openEdit(battery)}
+                          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+      )}
 
       {isLoading && (
         <div className="flex justify-center py-12">
