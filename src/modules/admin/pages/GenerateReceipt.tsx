@@ -8,9 +8,11 @@ import Modal from "../components/console/Modal";
 import BusForm from "../components/buses/BusForm";
 import TicketCard from "../components/receipts/TicketCard";
 import { useGetBuses } from "@/lib/network/api/bus.api";
+import { useGetBatteries } from "@/lib/network/api/battery.api";
 import { useGetCurrentTripPrice } from "@/lib/network/api/tripPrice.api";
 import { useCreateReceipt } from "@/lib/network/api/receipt.api";
 import type { Bus } from "@/lib/network/types/bus.types";
+import type { BatteryStatus } from "@/lib/network/types/battery.types";
 import type { Receipt } from "@/lib/network/types/receipt.types";
 import type { ApiErrorResponse } from "@/lib/network/types/api.types";
 import { cn, fmtNaira } from "@/lib/utils";
@@ -33,10 +35,21 @@ const nowTimeString = () =>
     hour12: false,
   }).format(new Date());
 
+const BATTERY_STATUS_LABEL: Record<BatteryStatus, string> = {
+  active: "Active",
+  faulty: "Faulty",
+  charging: "Charging",
+  fully_charged: "Fully charged",
+  not_charged: "Not charged",
+  not_in_use: "Not in use",
+};
+
 export default function GenerateReceipt() {
   const [busSearch, setBusSearch] = useState("");
   const [busOpen, setBusOpen] = useState(false);
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
+  const [batterySearch, setBatterySearch] = useState("");
+  const [batteryOpen, setBatteryOpen] = useState(false);
   const [batteryName, setBatteryName] = useState("");
   const [batteryPercent, setBatteryPercent] = useState("100");
   const [voltage, setVoltage] = useState("");
@@ -55,6 +68,12 @@ export default function GenerateReceipt() {
     { enabled: busOpen && !selectedBus },
   );
   const busResults = busData?.data ?? [];
+
+  const { data: batteryData } = useGetBatteries(
+    { search: batterySearch, isActive: "true", pageSize: 8 },
+    { enabled: batteryOpen && !batteryName },
+  );
+  const batteryResults = batteryData?.data ?? [];
 
   const createReceipt = useCreateReceipt();
 
@@ -109,6 +128,7 @@ export default function GenerateReceipt() {
     setSelectedBus(null);
     setBusSearch("");
     setBatteryName("");
+    setBatterySearch("");
     setBatteryPercent("100");
     setVoltage("");
     setTimeOut(nowTimeString());
@@ -200,20 +220,48 @@ export default function GenerateReceipt() {
               </button>
             </div>
 
-            {/* battery on the bus */}
+            {/* battery on the bus: picked from the registered fleet so the
+                name always matches a real pack */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="gr-battery" className={labelClasses}>
-                Battery name <span className="text-brand-500">*</span>
+                Battery <span className="text-brand-500">*</span>
               </label>
-              <input
-                id="gr-battery"
-                type="text"
-                placeholder="e.g. KAMILA 9"
-                value={batteryName}
-                onChange={(e) => setBatteryName(e.target.value)}
-                className={inputClasses}
-                autoComplete="off"
-              />
+              {batteryName ? (
+                <div className="flex items-center justify-between rounded-[10px] border border-brand-200 bg-haze px-4 py-3">
+                  <span className="text-[16px] font-extrabold text-ink">
+                    {batteryName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBatteryName("");
+                      setBatterySearch("");
+                    }}
+                    className="cursor-pointer border-none bg-transparent text-[13px] font-extrabold text-brand-600 hover:text-brand-500"
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <SearchSelect
+                  id="gr-battery"
+                  placeholder="Search the fleet, e.g. KAMILA 9"
+                  icon
+                  search={batterySearch}
+                  onSearch={setBatterySearch}
+                  onOpenChange={setBatteryOpen}
+                  options={batteryResults.map((battery) => ({
+                    key: battery._id,
+                    title: battery.code,
+                    subtitle: BATTERY_STATUS_LABEL[battery.status] ?? "",
+                  }))}
+                  onPick={(key) => {
+                    const battery = batteryResults.find((b) => b._id === key);
+                    if (battery) setBatteryName(battery.code);
+                  }}
+                  emptyText="No registered battery matches."
+                />
+              )}
             </div>
 
             {/* battery %, voltage, time out */}
