@@ -9,9 +9,9 @@ import { useGetReceipts } from "@/lib/network/api/receipt.api";
 import { useGetReceiptSummary } from "@/lib/network/api/receipt.api";
 import {
   useGetPayments,
-  usePayReceipt,
   downloadPaymentsCsvFn,
 } from "@/lib/network/api/payment.api";
+import PayModal from "../components/receipts/PayModal";
 import type { Receipt } from "@/lib/network/types/receipt.types";
 import { cn, fmtNaira, fmtDate, todayLagos, downloadBlob } from "@/lib/utils";
 import { inputClasses } from "../components/console/form";
@@ -59,7 +59,7 @@ export default function PayPoint() {
   });
   const payments = todayPayments?.data ?? [];
 
-  const payReceipt = usePayReceipt();
+  const [payFor, setPayFor] = useState<Receipt | null>(null);
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -97,14 +97,8 @@ export default function PayPoint() {
       {receipt.status === "awaiting_payment" ? (
         <button
           type="button"
-          disabled={payReceipt.isPending}
-          onClick={() => payReceipt.mutate({ receiptId: receipt._id })}
-          className={cn(
-            "cta-gradient cursor-pointer rounded-[10px] border-none px-6 py-3 text-[15px] font-extrabold text-forest-deep",
-            payReceipt.isPending
-              ? "cursor-not-allowed opacity-60"
-              : "transition-transform hover:scale-[1.02]",
-          )}
+          onClick={() => setPayFor(receipt)}
+          className="cta-gradient cursor-pointer rounded-[10px] border-none px-6 py-3 text-[15px] font-extrabold text-forest-deep transition-transform hover:scale-[1.02]"
         >
           Collect {fmtNaira(receipt.expectedAmount)}
         </button>
@@ -225,8 +219,19 @@ export default function PayPoint() {
                           <td className="px-5 py-3 text-[14px] font-extrabold text-ink">
                             {receipt?.busNumber}
                           </td>
-                          <td className="px-5 py-3 text-[14px] font-extrabold text-brand-600">
+                          <td
+                            title={p.reason || undefined}
+                            className={cn(
+                              "px-5 py-3 text-[14px] font-extrabold",
+                              p.reason ? "text-solar-700" : "text-brand-600",
+                            )}
+                          >
                             {fmtNaira(p.amount)}
+                            {p.reason && (
+                              <span className="ml-1.5 rounded-full bg-[#FDF6E3] px-2 py-0.5 text-[10.5px] font-extrabold text-solar-700">
+                                SHORT
+                              </span>
+                            )}
                           </td>
                           <td className="px-5 py-3 text-[13px] font-semibold text-fog">
                             {collector?.firstName} {collector?.lastName}
@@ -363,6 +368,8 @@ export default function PayPoint() {
           </div>
         </div>
       </div>
+
+      <PayModal receipt={payFor} onClose={() => setPayFor(null)} />
     </>
   );
 }

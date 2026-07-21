@@ -10,7 +10,8 @@ import {
   useGetReceipts,
   useGetOutstandingSummary,
 } from "@/lib/network/api/receipt.api";
-import { usePayReceipt } from "@/lib/network/api/payment.api";
+import type { Receipt } from "@/lib/network/types/receipt.types";
+import PayModal from "../components/receipts/PayModal";
 import { cn, fmtNaira, fmtDate, todayLagos } from "@/lib/utils";
 import { inputClasses } from "../components/console/form";
 
@@ -48,7 +49,7 @@ export default function Nyp() {
   const receipts = data?.data ?? [];
   const pagination = data?.pagination;
 
-  const payReceipt = usePayReceipt();
+  const [payFor, setPayFor] = useState<Receipt | null>(null);
 
   return (
     <>
@@ -180,14 +181,8 @@ export default function Nyp() {
                 </span>
                 <button
                   type="button"
-                  disabled={payReceipt.isPending}
-                  onClick={() => payReceipt.mutate({ receiptId: receipt._id })}
-                  className={cn(
-                    "cta-gradient cursor-pointer rounded-[10px] border-none px-5 py-2.5 text-[13px] font-extrabold text-forest-deep",
-                    payReceipt.isPending
-                      ? "cursor-not-allowed opacity-60"
-                      : "transition-transform hover:scale-[1.02]",
-                  )}
+                  onClick={() => setPayFor(receipt)}
+                  className="cta-gradient cursor-pointer rounded-[10px] border-none px-5 py-2.5 text-[13px] font-extrabold text-forest-deep transition-transform hover:scale-[1.02]"
                 >
                   Pay
                 </button>
@@ -224,6 +219,8 @@ export default function Nyp() {
           }}
         />
       </div>
+
+      <PayModal receipt={payFor} onClose={() => setPayFor(null)} />
     </>
   );
 }

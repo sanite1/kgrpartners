@@ -235,8 +235,19 @@ export default function DailyAccount() {
                             {arrears && " (arrears)"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-[14px] font-extrabold text-brand-600">
+                        <td
+                          title={p.reason || undefined}
+                          className={cn(
+                            "whitespace-nowrap px-4 py-3 text-[14px] font-extrabold",
+                            p.reason ? "text-solar-700" : "text-brand-600",
+                          )}
+                        >
                           {fmtNaira(p.amount)}
+                          {p.reason && (
+                            <span className="ml-1.5 rounded-full bg-[#FDF6E3] px-2 py-0.5 text-[10.5px] font-extrabold text-solar-700">
+                              SHORT
+                            </span>
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
                           {collector?.firstName} {collector?.lastName}

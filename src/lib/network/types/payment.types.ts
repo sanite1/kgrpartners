@@ -19,12 +19,15 @@ export interface Payment {
   collectedBy: ReceiptUserRef | string;
   date: string; // day the cash was collected
   receiptDate: string; // the receipt's own day (arrears when older)
+  reason?: string; // set when less than the expected amount was collected
   createdAt: string;
   updatedAt: string;
 }
 
 export interface PayReceiptPayload {
   receiptId: string;
+  amount?: string; // omitted = pay in full
+  reason?: string; // required when amount is below the expected amount
 }
 
 export interface PayReceiptData {

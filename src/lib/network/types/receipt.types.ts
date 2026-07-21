@@ -29,6 +29,8 @@ export interface Receipt {
   checkedInBy?: ReceiptUserRef | string;
   paidAt?: string;
   paidBy?: ReceiptUserRef | string;
+  amountPaid?: string; // below expectedAmount = short payment
+  payReason?: string;
   voidedAt?: string;
   voidedBy?: ReceiptUserRef | string;
   voidReason?: string;
