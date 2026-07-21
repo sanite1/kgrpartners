@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { History, Pencil, Plus, Search } from "lucide-react";
+import {
+  ChevronDown,
+  History,
+  Pencil,
+  Plus,
+  Search,
+  TriangleAlert,
+} from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
@@ -14,6 +21,7 @@ import {
   useGetBatteries,
   useGetBatterySummary,
   useGetBatteryMovements,
+  useGetIdleBatteries,
   useCreateBattery,
   useUpdateBattery,
   useIssueBattery,
@@ -22,7 +30,7 @@ import {
 } from "@/lib/network/api/battery.api";
 import type { Battery, BatteryStatus } from "@/lib/network/types/battery.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { canManageStock } from "../permissions";
+import { canApprove, canManageStock } from "../permissions";
 import { cn, fmtDate, fmtTime } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
@@ -143,6 +151,8 @@ const MovementsList = ({ battery }: { battery: Battery }) => {
 export default function Batteries() {
   const { user } = useAuthStore();
   const canStock = canManageStock(user?.role);
+  const isManager = canApprove(user?.role);
+  const [idleOpen, setIdleOpen] = useState(false);
 
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [statusFilter, setStatusFilter] = useState<BatteryStatus | "all">(
@@ -179,6 +189,9 @@ export default function Batteries() {
   const { data: summaryData, isLoading: summaryLoading } =
     useGetBatterySummary();
   const summary = summaryData?.data;
+
+  const { data: idleData } = useGetIdleBatteries({ enabled: isManager });
+  const idleBatteries = idleData?.data?.batteries ?? [];
 
   const { data, isLoading } = useGetBatteries({
     page,
@@ -235,6 +248,77 @@ export default function Batteries() {
           ) : undefined
         }
       />
+
+      {/* packs that have not worked in 48h+ (managers) */}
+      {isManager && idleBatteries.length > 0 && (
+        <div className="mb-6 overflow-hidden rounded-2xl border border-solar/40 bg-[#FDF6E3]">
+          <button
+            type="button"
+            onClick={() => setIdleOpen((o) => !o)}
+            className="flex w-full cursor-pointer items-center justify-between gap-3 border-none bg-transparent px-5 py-4 text-left"
+          >
+            <span className="flex items-center gap-2.5 text-[14px] font-extrabold text-solar-700">
+              <TriangleAlert size={17} className="flex-none" />
+              {idleBatteries.length}{" "}
+              {idleBatteries.length === 1 ? "battery has" : "batteries have"}{" "}
+              not worked in 48 hours or more
+            </span>
+            <ChevronDown
+              size={17}
+              className={cn(
+                "flex-none text-solar-700 transition-transform",
+                idleOpen && "rotate-180",
+              )}
+            />
+          </button>
+          {idleOpen && (
+            <div className="max-h-72 overflow-y-auto border-t border-solar/30">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left">
+                  <thead>
+                    <tr className="border-b border-solar/30">
+                      {["BATTERY", "IDLE FOR", "LAST WORKED", "STATE", "LOCATION"].map(
+                        (h) => (
+                          <th
+                            key={h}
+                            className="whitespace-nowrap px-5 py-2.5 text-[10.5px] font-extrabold tracking-[1.5px] text-solar-700"
+                          >
+                            {h}
+                          </th>
+                        ),
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {idleBatteries.map((b) => (
+                      <tr
+                        key={b._id}
+                        className="border-b border-solar/20 last:border-0"
+                      >
+                        <td className="whitespace-nowrap px-5 py-2.5 text-[13.5px] font-extrabold text-ink">
+                          {b.code}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-2.5 text-[13.5px] font-extrabold text-solar-700">
+                          {b.idleDays} {b.idleDays === 1 ? "day" : "days"}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-2.5 text-[13px] font-semibold text-bark">
+                          {b.lastWorkedDate ? fmtDate(b.lastWorkedDate) : "Never"}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-2.5 text-[13px] font-semibold text-bark">
+                          {metaFor(b.status).label}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-2.5 text-[13px] font-semibold text-bark">
+                          {b.location.replace(/_/g, " ")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* status board */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">

@@ -60,6 +60,23 @@ export interface BatterySummaryData {
   onBus: number; // distinct batteries named on today's live receipts
 }
 
+// a pack that has not appeared on any receipt for 48h or more
+export interface IdleBattery {
+  _id: string;
+  code: string;
+  status: BatteryStatus;
+  location: BatteryLocation;
+  needsCheck: boolean;
+  lastWorkedDate: string | null; // null = never on a receipt
+  idleDays: number;
+}
+
+export interface IdleBatteriesData {
+  batteries: IdleBattery[];
+  count: number;
+  thresholdHours: number;
+}
+
 export interface CreateBatteryPayload {
   code: string;
   status?: BatteryStatus;

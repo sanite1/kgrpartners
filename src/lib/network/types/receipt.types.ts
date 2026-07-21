@@ -103,6 +103,8 @@ export interface ReceiptSummary {
   busesActive?: number;
   busesWorkingToday?: number;
   busesIdleToday?: number;
+  batteriesWorkingToday?: number;
+  batteriesIdleToday?: number;
   // personal (cashier and other non-managers)
   myCollectedToday?: string;
   myReceiptsToday?: number;

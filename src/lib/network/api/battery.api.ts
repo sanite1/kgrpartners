@@ -8,6 +8,7 @@ import type {
   Battery,
   BatteryMovement,
   BatterySummaryData,
+  IdleBatteriesData,
   CreateBatteryPayload,
   UpdateBatteryPayload,
   IssueBatteryPayload,
@@ -36,6 +37,9 @@ export const getBatteriesFn = (
 export const getBatterySummaryFn = (): Promise<
   ApiResponse<BatterySummaryData>
 > => api.get<ApiResponse<BatterySummaryData>>(`${BASE}/summary`);
+
+export const getIdleBatteriesFn = (): Promise<ApiResponse<IdleBatteriesData>> =>
+  api.get<ApiResponse<IdleBatteriesData>>(`${BASE}/idle`);
 
 export const createBatteryFn = (
   payload: CreateBatteryPayload,
@@ -82,6 +86,7 @@ export const batteryKeys = {
   list: (params?: BatteriesQueryParams) =>
     [...batteryKeys.all, "list", params ?? {}] as const,
   summary: () => [...batteryKeys.all, "summary"] as const,
+  idle: () => [...batteryKeys.all, "idle"] as const,
   movements: (id: string, page?: number) =>
     [...batteryKeys.all, "movements", id, page ?? 1] as const,
 } as const;
@@ -116,6 +121,15 @@ export const useGetBatterySummary = (
   useQuery<ApiResponse<BatterySummaryData>, AxiosError>({
     queryKey: batteryKeys.summary(),
     queryFn: () => getBatterySummaryFn(),
+    ...options,
+  });
+
+export const useGetIdleBatteries = (
+  options?: Partial<UseQueryOptions<ApiResponse<IdleBatteriesData>, AxiosError>>,
+) =>
+  useQuery<ApiResponse<IdleBatteriesData>, AxiosError>({
+    queryKey: batteryKeys.idle(),
+    queryFn: () => getIdleBatteriesFn(),
     ...options,
   });
 

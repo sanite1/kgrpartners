@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { TicketPlus } from "lucide-react";
+import { TicketPlus, TriangleAlert } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import PageHead from "../components/console/PageHead";
 import Skeleton from "../components/console/Skeleton";
@@ -9,7 +9,10 @@ import {
 } from "@/lib/network/api/receipt.api";
 import { useGetBuses } from "@/lib/network/api/bus.api";
 import { useGetItems } from "@/lib/network/api/inventory.api";
-import { useGetBatterySummary } from "@/lib/network/api/battery.api";
+import {
+  useGetBatterySummary,
+  useGetIdleBatteries,
+} from "@/lib/network/api/battery.api";
 import { useGetRepairJobs } from "@/lib/network/api/repair.api";
 import { useGetPartRequests } from "@/lib/network/api/partRequest.api";
 import type { ReceiptSummarySeriesPoint } from "@/lib/network/types/receipt.types";
@@ -202,6 +205,9 @@ export default function Dashboard() {
       { enabled: isManager || isStore },
     );
 
+  const { data: idleData } = useGetIdleBatteries({ enabled: isManager });
+  const idleCount = idleData?.data?.count ?? 0;
+
   const batteryCounts = batterySummaryData?.data?.counts;
   const series = summary?.series ?? [];
 
@@ -266,6 +272,21 @@ export default function Dashboard() {
       {/* MANAGER / ADMIN: the whole yard */}
       {isManager && (
         <>
+          {idleCount > 0 && (
+            <Link
+              to="/batteries"
+              className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-solar/40 bg-[#FDF6E3] px-5 py-4 no-underline transition-colors hover:border-solar"
+            >
+              <span className="flex items-center gap-2.5 text-[14px] font-extrabold text-solar-700">
+                <TriangleAlert size={17} className="flex-none" />
+                {idleCount} {idleCount === 1 ? "battery has" : "batteries have"}{" "}
+                not worked in 48 hours or more
+              </span>
+              <span className="flex-none text-[13px] font-extrabold text-solar-700">
+                View →
+              </span>
+            </Link>
+          )}
           <div className="grid auto-rows-[124px] grid-cols-2 gap-4 lg:grid-cols-4">
             <div className="col-span-2 flex flex-col justify-between rounded-[20px] bg-forest p-5">
               <span className="flex items-center gap-2 text-[11px] font-extrabold tracking-[1.5px] text-mint-soft">
@@ -334,7 +355,7 @@ export default function Dashboard() {
           </div>
 
           {/* today's work: who went out and how many trips */}
-          <div className="mt-4 grid auto-rows-[124px] grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="mt-4 grid auto-rows-[124px] grid-cols-2 gap-4 lg:grid-cols-6">
             <StatCell
               label="BUSES WORKING TODAY"
               value={summary?.busesWorkingToday ?? 0}
@@ -343,6 +364,17 @@ export default function Dashboard() {
             <StatCell
               label="BUSES IDLE TODAY"
               value={summary?.busesIdleToday ?? 0}
+              loading={summaryLoading}
+              warn
+            />
+            <StatCell
+              label="BATTERIES WORKING TODAY"
+              value={summary?.batteriesWorkingToday ?? 0}
+              loading={summaryLoading}
+            />
+            <StatCell
+              label="BATTERIES IDLE TODAY"
+              value={summary?.batteriesIdleToday ?? 0}
               loading={summaryLoading}
               warn
             />
