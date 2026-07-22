@@ -268,7 +268,11 @@ export default function TrackerReportPage() {
   const [method, setMethod] = useState<"paste" | "manual">("paste");
   const [rawText, setRawText] = useState("");
   const [date, setDate] = useState("");
-  const [rows, setRows] = useState<GridRow[]>([]);
+  // each input method keeps its own rows so switching never mixes them
+  const [pasteRows, setPasteRows] = useState<GridRow[]>([]);
+  const [manualRows, setManualRows] = useState<GridRow[]>([]);
+  const rows = method === "paste" ? pasteRows : manualRows;
+  const setRows = method === "paste" ? setPasteRows : setManualRows;
   const [reportIssues, setReportIssues] = useState<string[]>([]);
   const [askReplace, setAskReplace] = useState(false);
 
@@ -315,7 +319,7 @@ export default function TrackerReportPage() {
             : ["No date detected; confirm the date below"]),
           ...parsed.issues,
         ]);
-        setRows(
+        setPasteRows(
           parsed.rows.map((r: ParsedRow) => ({
             busId: r.busId,
             busNumber: r.busNumber,
@@ -455,7 +459,18 @@ export default function TrackerReportPage() {
                 onClick={() => {
                   setMethod(value);
                   // manual entry starts with a first row ready to fill
-                  if (value === "manual" && rows.length === 0) addRow();
+                  if (value === "manual" && manualRows.length === 0) {
+                    setManualRows([
+                      {
+                        busNumber: "",
+                        status: "active",
+                        startTime: "",
+                        endTime: "",
+                        mileage: "",
+                        issues: [],
+                      },
+                    ]);
+                  }
                 }}
                 className={cn(
                   "cursor-pointer rounded-lg border-none px-4 py-2 text-[13px] font-extrabold transition-colors",
@@ -552,6 +567,9 @@ export default function TrackerReportPage() {
                   )}
                 >
                   <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-haze text-[12px] font-extrabold tabular-nums text-fog">
+                      {i + 1}
+                    </span>
                     <select
                       aria-label={`Bus for entry ${i + 1}`}
                       value={row.busId ?? ""}
@@ -657,16 +675,22 @@ export default function TrackerReportPage() {
                 <table className="w-full border-collapse text-left">
                   <thead>
                     <tr className="border-b border-line bg-haze">
-                      {["BUS", "STATUS", "START", "END", "MILEAGE (KM)", ""].map(
-                        (h, i) => (
-                          <th
-                            key={i}
-                            className="whitespace-nowrap px-3 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                          >
-                            {h}
-                          </th>
-                        ),
-                      )}
+                      {[
+                        "S/N",
+                        "BUS",
+                        "STATUS",
+                        "START",
+                        "END",
+                        "MILEAGE (KM)",
+                        "",
+                      ].map((h, i) => (
+                        <th
+                          key={i}
+                          className="whitespace-nowrap px-3 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                        >
+                          {h}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -678,6 +702,9 @@ export default function TrackerReportPage() {
                           !row.busId && row.busNumber && "bg-[#FDF6E3]/60",
                         )}
                       >
+                        <td className="whitespace-nowrap px-3 py-2 text-[13px] font-bold tabular-nums text-fog">
+                          {i + 1}
+                        </td>
                         <td className="whitespace-nowrap px-3 py-2">
                           <select
                             aria-label={`Bus for row ${i + 1}`}
