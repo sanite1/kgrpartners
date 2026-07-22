@@ -11,6 +11,7 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   isActive: boolean;
+  access?: string[] | null; // per-user module overrides
   lastLoginAt?: string;
   createdAt?: string;
   updatedAt?: string;

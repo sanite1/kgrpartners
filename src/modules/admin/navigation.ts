@@ -1,14 +1,14 @@
 // Console sidebar navigation. Icons are lucide names resolved in AdminLayout.
-// Items without roles are visible to everyone; the backend enforces the
-// real permissions either way.
+// Each item names the access module that unlocks it; the backend enforces
+// the real permissions either way. Dashboard has no module: always visible.
 import type { UserRole } from "@/lib/network/types/auth.types";
-import { MANAGERS, FRONT_DESK, STORE } from "./permissions";
+import { effectiveAccess, type ModuleKey } from "./access";
 
 export interface ConsoleNavItem {
   label: string;
   to: string;
   icon: string;
-  roles?: UserRole[];
+  module?: ModuleKey;
 }
 
 export const CONSOLE_NAV: ConsoleNavItem[] = [
@@ -17,59 +17,84 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
     label: "Generate Receipt",
     to: "/generate",
     icon: "TicketPlus",
-    roles: FRONT_DESK,
+    module: "generate",
   },
-  { label: "PayPoint", to: "/paypoint", icon: "HandCoins", roles: FRONT_DESK },
-  { label: "NYP List", to: "/nyp", icon: "Hourglass", roles: FRONT_DESK },
+  { label: "PayPoint", to: "/paypoint", icon: "HandCoins", module: "paypoint" },
+  { label: "NYP List", to: "/nyp", icon: "Hourglass", module: "nyp" },
   {
     label: "Receipts",
     to: "/receipts",
     icon: "ReceiptText",
-    roles: FRONT_DESK,
+    module: "receipts",
   },
   {
     label: "Daily Account",
     to: "/daily-account",
     icon: "BookText",
-    roles: MANAGERS,
+    module: "daily_account",
   },
+  { label: "Inventory", to: "/inventory", icon: "Boxes", module: "inventory" },
   {
-    label: "Inventory",
-    to: "/inventory",
-    icon: "Boxes",
-    roles: [...STORE, "staff"],
+    label: "Requests",
+    to: "/requests",
+    icon: "ClipboardList",
+    module: "requests",
   },
-  { label: "Requests", to: "/requests", icon: "ClipboardList" },
   {
     label: "Batteries",
     to: "/batteries",
     icon: "BatteryCharging",
-    roles: STORE,
+    module: "batteries",
   },
-  // the roll-call is staff work: no roles, so everyone signed in sees it
-  { label: "Battery Form", to: "/battery-form", icon: "ClipboardCheck" },
-  { label: "Repairs", to: "/repairs", icon: "Wrench", roles: STORE },
-  { label: "Buses", to: "/buses", icon: "Bus" },
-  // keying in the daily tracker message is staff work: everyone sees it
-  { label: "Tracker Report", to: "/tracker-report", icon: "Radar" },
-  { label: "Trip Price", to: "/trip-price", icon: "Tag", roles: MANAGERS },
-  { label: "Reports", to: "/reports", icon: "ChartColumn", roles: MANAGERS },
+  {
+    label: "Battery Form",
+    to: "/battery-form",
+    icon: "ClipboardCheck",
+    module: "battery_form",
+  },
+  { label: "Repairs", to: "/repairs", icon: "Wrench", module: "repairs" },
+  { label: "Buses", to: "/buses", icon: "Bus", module: "buses" },
+  {
+    label: "Tracker Report",
+    to: "/tracker-report",
+    icon: "Radar",
+    module: "tracker_report",
+  },
+  {
+    label: "Trip Price",
+    to: "/trip-price",
+    icon: "Tag",
+    module: "trip_price",
+  },
+  {
+    label: "Reports",
+    to: "/reports",
+    icon: "ChartColumn",
+    module: "reports",
+  },
   {
     label: "Expenditures",
     to: "/expenditures",
     icon: "Wallet",
-    roles: MANAGERS,
+    module: "expenditures",
   },
   {
     label: "Conversions",
     to: "/conversions",
     icon: "PlugZap",
-    roles: MANAGERS,
+    module: "conversions",
   },
-  { label: "Users", to: "/users", icon: "UsersRound", roles: ["admin"] },
+  { label: "Users", to: "/users", icon: "UsersRound", module: "users" },
 ];
 
-export const navForRole = (role?: UserRole): ConsoleNavItem[] =>
-  CONSOLE_NAV.filter(
-    (item) => !item.roles || (role && item.roles.includes(role)),
+interface NavUser {
+  role: UserRole;
+  access?: string[] | null;
+}
+
+export const navForUser = (user?: NavUser | null): ConsoleNavItem[] => {
+  const allowed = effectiveAccess(user);
+  return CONSOLE_NAV.filter(
+    (item) => !item.module || allowed.includes(item.module),
   );
+};

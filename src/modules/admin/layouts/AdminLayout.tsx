@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Outlet, NavLink, Link } from "react-router-dom";
+import { Outlet, NavLink, Link, Navigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Bus,
@@ -24,7 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { navForRole } from "../navigation";
+import { navForUser, CONSOLE_NAV } from "../navigation";
 import { cn } from "@/lib/utils";
 import TopBar, {
   NotificationBell,
@@ -57,7 +57,16 @@ const ICON_MAP: Record<string, LucideIcon> = {
 const AdminLayout = () => {
   const user = useAuthStore((s) => s.user);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const navItems = navForRole(user?.role);
+  const location = useLocation();
+  const navItems = navForUser(user);
+
+  // deep links into a module the user cannot access bounce to the dashboard
+  const blocked = CONSOLE_NAV.some(
+    (item) =>
+      item.to !== "/" &&
+      location.pathname.startsWith(item.to) &&
+      !navItems.some((allowed) => allowed.to === item.to),
+  );
 
   // lock the page while the drawer is open: background scroll on iOS
   // shifts the browser toolbar and exposes content beside the scrim
@@ -67,6 +76,8 @@ const AdminLayout = () => {
       document.body.style.overflow = "";
     };
   }, [drawerOpen]);
+
+  if (blocked) return <Navigate to="/" replace />;
 
   const sidebarContent = (
     <>

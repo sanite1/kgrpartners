@@ -17,6 +17,11 @@ import type { ConsoleUser } from "@/lib/network/types/user.types";
 import type { UserRole } from "@/lib/network/types/auth.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { ROLE_LABEL, ROLE_DESCRIPTION, isAdminRole } from "../permissions";
+import {
+  ACCESS_MODULES,
+  ROLE_DEFAULT_ACCESS,
+  type ModuleKey,
+} from "../access";
 import { cn, fmtDate } from "@/lib/utils";
 import {
   inputClasses,
@@ -45,6 +50,7 @@ interface UserFormState {
   password: string;
   role: UserRole;
   isActive: boolean;
+  access: ModuleKey[];
 }
 
 const emptyForm: UserFormState = {
@@ -54,7 +60,11 @@ const emptyForm: UserFormState = {
   password: "",
   role: "staff",
   isActive: true,
+  access: [...ROLE_DEFAULT_ACCESS.staff],
 };
+
+const sameAccess = (a: ModuleKey[], b: ModuleKey[]) =>
+  a.length === b.length && a.every((k) => b.includes(k));
 
 export default function Users() {
   const me = useAuthStore((s) => s.user);
@@ -67,6 +77,7 @@ export default function Users() {
 
   const [modal, setModal] = useState<null | { user?: ConsoleUser }>(null);
   const [form, setForm] = useState<UserFormState>(emptyForm);
+  const [accessTouched, setAccessTouched] = useState(false);
   const [error, setError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmToggle, setConfirmToggle] = useState<ConsoleUser | null>(null);
@@ -89,13 +100,15 @@ export default function Users() {
   const isPending = createUser.isPending || updateUser.isPending;
 
   const openCreate = () => {
-    setForm(emptyForm);
+    setForm({ ...emptyForm, access: [...ROLE_DEFAULT_ACCESS.staff] });
+    setAccessTouched(false);
     setError("");
     setConfirmDelete(false);
     setModal({});
   };
 
   const openEdit = (user: ConsoleUser) => {
+    const hasOverride = Array.isArray(user.access);
     setForm({
       firstName: user.firstName,
       lastName: user.lastName,
@@ -103,10 +116,24 @@ export default function Users() {
       password: "",
       role: user.role,
       isActive: user.isActive,
+      access: hasOverride
+        ? (user.access as ModuleKey[])
+        : [...(ROLE_DEFAULT_ACCESS[user.role] ?? [])],
     });
+    setAccessTouched(hasOverride);
     setError("");
     setConfirmDelete(false);
     setModal({ user });
+  };
+
+  const toggleModule = (key: ModuleKey) => {
+    setAccessTouched(true);
+    setForm((f) => ({
+      ...f,
+      access: f.access.includes(key)
+        ? f.access.filter((k) => k !== key)
+        : [...f.access, key],
+    }));
   };
 
   const set = (patch: Partial<UserFormState>) =>
@@ -145,6 +172,11 @@ export default function Users() {
             lastName: form.lastName.trim(),
             role: form.role,
             isActive: form.isActive,
+            access:
+              form.role === "admin" ||
+              sameAccess(form.access, ROLE_DEFAULT_ACCESS[form.role] ?? [])
+                ? null
+                : form.access,
           },
         },
         { onSuccess: () => setModal(null) },
@@ -157,6 +189,11 @@ export default function Users() {
           email: form.email.trim(),
           password: form.password,
           role: form.role,
+          access:
+            form.role === "admin" ||
+            sameAccess(form.access, ROLE_DEFAULT_ACCESS[form.role] ?? [])
+              ? undefined
+              : form.access,
         },
         {
           onSuccess: () => {
@@ -433,7 +470,14 @@ export default function Users() {
             <select
               id="u-role"
               value={form.role}
-              onChange={(e) => set({ role: e.target.value as UserRole })}
+              onChange={(e) => {
+                const role = e.target.value as UserRole;
+                // untouched toggles follow the role's defaults
+                set({ role });
+                if (!accessTouched) {
+                  set({ access: [...(ROLE_DEFAULT_ACCESS[role] ?? [])] });
+                }
+              }}
               className={inputClasses}
             >
               {ROLES.map((r) => (
@@ -446,6 +490,48 @@ export default function Users() {
               {ROLE_DESCRIPTION[form.role]}
             </p>
           </div>
+
+          {form.role !== "admin" && (
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <span className={labelClasses}>
+                  Tabs this user can see and use
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    set({
+                      access: [...(ROLE_DEFAULT_ACCESS[form.role] ?? [])],
+                    });
+                    setAccessTouched(false);
+                  }}
+                  className="cursor-pointer border-none bg-transparent p-0 text-[12px] font-extrabold text-brand-600 hover:text-brand-500"
+                >
+                  Reset to role defaults
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-xl border border-line bg-haze p-4 sm:grid-cols-2">
+                {ACCESS_MODULES.filter((m) => m.key !== "users").map((m) => (
+                  <label
+                    key={m.key}
+                    className="flex cursor-pointer items-center gap-2.5 text-[13.5px] font-bold text-ink"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={form.access.includes(m.key)}
+                      onChange={() => toggleModule(m.key)}
+                      className="h-4 w-4 accent-[#0FA53A]"
+                    />
+                    {m.label}
+                  </label>
+                ))}
+              </div>
+              <p className="m-0 text-[12px] font-semibold text-fog">
+                Dashboard is always available. Sensitive actions also require
+                the right access level above.
+              </p>
+            </div>
+          )}
 
           {modal?.user && modal.user._id !== me?._id && (
             <div className="flex flex-col gap-1.5">

@@ -8,6 +8,7 @@ export interface ConsoleUser {
   email: string;
   role: UserRole;
   isActive: boolean;
+  access?: string[] | null; // per-user module overrides
   lastLoginAt?: string;
   createdBy?: string;
   updatedBy?: string;
@@ -21,6 +22,7 @@ export interface CreateUserPayload {
   email: string;
   password: string;
   role?: UserRole;
+  access?: string[]; // per-user module overrides; absent = role defaults
 }
 
 export interface UpdateUserPayload {
@@ -28,6 +30,7 @@ export interface UpdateUserPayload {
   lastName?: string;
   role?: UserRole;
   isActive?: boolean;
+  access?: string[] | null; // null resets to role defaults
 }
 
 export interface UsersQueryParams {
