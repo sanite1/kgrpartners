@@ -52,6 +52,13 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
     icon: "ClipboardCheck",
     module: "battery_form",
   },
+  {
+    label: "Battery Closing",
+    to: "/battery-closing",
+    icon: "BatteryFull",
+    module: "battery_closing",
+  },
+  { label: "Swaps", to: "/swaps", icon: "ArrowLeftRight", module: "swaps" },
   { label: "Repairs", to: "/repairs", icon: "Wrench", module: "repairs" },
   { label: "Buses", to: "/buses", icon: "Bus", module: "buses" },
   {
