@@ -265,6 +265,7 @@ export default function TrackerReportPage() {
   );
 
   // new-report state
+  const [method, setMethod] = useState<"paste" | "manual">("paste");
   const [rawText, setRawText] = useState("");
   const [date, setDate] = useState("");
   const [rows, setRows] = useState<GridRow[]>([]);
@@ -440,43 +441,76 @@ export default function TrackerReportPage() {
       {/* NEW REPORT */}
       {tab === "new" && (
         <div className="flex flex-col gap-5">
-          <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="tr-paste" className={labelClasses}>
-                Paste the tracker message
-              </label>
-              <textarea
-                id="tr-paste"
-                rows={12}
-                placeholder={EXAMPLE}
-                value={rawText}
-                onChange={(e) => setRawText(e.target.value)}
-                className={cn(inputClasses, "resize-y font-mono text-[13px]")}
-              />
+          {/* input method: one at a time */}
+          <div className="flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
+            {(
+              [
+                ["paste", "Paste message"],
+                ["manual", "Enter manually"],
+              ] as const
+            ).map(([value, label]) => (
               <button
+                key={value}
                 type="button"
-                disabled={rawText.trim().length < 10 || parseText.isPending}
-                onClick={handleParse}
-                className="cta-gradient flex w-fit cursor-pointer items-center gap-2 rounded-[10px] border-none px-6 py-3 text-[14px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={() => {
+                  setMethod(value);
+                  // manual entry starts with a first row ready to fill
+                  if (value === "manual" && rows.length === 0) addRow();
+                }}
+                className={cn(
+                  "cursor-pointer rounded-lg border-none px-4 py-2 text-[13px] font-extrabold transition-colors",
+                  method === value
+                    ? "cta-gradient text-forest-deep"
+                    : "bg-transparent text-fog hover:text-bark",
+                )}
               >
-                <ClipboardPaste size={15} />
-                {parseText.isPending ? "Reading…" : "Parse message"}
+                {label}
               </button>
-            </div>
-            <div className="rounded-2xl border border-line bg-haze p-5">
-              <span className="text-[12px] font-extrabold tracking-[1.5px] text-fog">
-                THE FORMAT TO FOLLOW
-              </span>
-              <pre className="m-0 mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-[12.5px] font-semibold leading-relaxed text-bark">
-                {EXAMPLE}
-              </pre>
-              <p className="m-0 mt-2 text-[12px] font-semibold text-fog">
-                Small mistakes are fine: extra spaces, lowercase, km or Km,
-                and : - or = after labels all parse. You can also skip the
-                paste and add rows by hand below.
-              </p>
-            </div>
+            ))}
           </div>
+
+          {method === "paste" && (
+            <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="tr-paste" className={labelClasses}>
+                  Paste the tracker message
+                </label>
+                <textarea
+                  id="tr-paste"
+                  rows={12}
+                  placeholder={EXAMPLE}
+                  value={rawText}
+                  onChange={(e) => setRawText(e.target.value)}
+                  className={cn(
+                    inputClasses,
+                    "resize-y font-mono text-[13px]",
+                  )}
+                />
+                <button
+                  type="button"
+                  disabled={rawText.trim().length < 10 || parseText.isPending}
+                  onClick={handleParse}
+                  className="cta-gradient flex w-fit cursor-pointer items-center gap-2 rounded-[10px] border-none px-6 py-3 text-[14px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <ClipboardPaste size={15} />
+                  {parseText.isPending ? "Reading…" : "Parse message"}
+                </button>
+              </div>
+              <div className="rounded-2xl border border-line bg-haze p-5">
+                <span className="text-[12px] font-extrabold tracking-[1.5px] text-fog">
+                  THE FORMAT TO FOLLOW
+                </span>
+                <pre className="m-0 mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-[12.5px] font-semibold leading-relaxed text-bark">
+                  {EXAMPLE}
+                </pre>
+                <p className="m-0 mt-2 text-[12px] font-semibold text-fog">
+                  Small mistakes are fine: extra spaces, lowercase, km or Km,
+                  and : - or = after labels all parse. Prefer typing it in
+                  yourself? Switch to "Enter manually" above.
+                </p>
+              </div>
+            </div>
+          )}
 
           {reportIssues.length > 0 && (
             <div className="rounded-2xl border border-solar/40 bg-[#FDF6E3] px-5 py-4">
@@ -491,7 +525,7 @@ export default function TrackerReportPage() {
             </div>
           )}
 
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          {(method === "manual" || rows.length > 0) && (
             <div className="flex flex-col gap-1.5">
               <label htmlFor="tr-date" className={labelClasses}>
                 Report date <span className="text-brand-500">*</span>
@@ -501,18 +535,124 @@ export default function TrackerReportPage() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className={inputClasses}
+                className={cn(inputClasses, "w-fit")}
               />
             </div>
-            <button type="button" onClick={addRow} className={smallBtn}>
-              <span className="flex items-center gap-1.5">
-                <Plus size={14} /> Add bus row
-              </span>
-            </button>
-          </div>
+          )}
 
+          {/* mobile: one card per bus, no sideways typing */}
           {rows.length > 0 && (
-            <div className="overflow-hidden rounded-2xl border border-line bg-white">
+            <div className="flex flex-col gap-3 sm:hidden">
+              {rows.map((row, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "rounded-2xl border border-line bg-white p-4",
+                    !row.busId && row.busNumber && "border-solar/50 bg-[#FDF6E3]/60",
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <select
+                      aria-label={`Bus for entry ${i + 1}`}
+                      value={row.busId ?? ""}
+                      onChange={(e) => {
+                        const bus = activeBuses.find(
+                          (b) => b._id === e.target.value,
+                        );
+                        setRow(i, {
+                          busId: bus?._id,
+                          busNumber: bus?.number ?? row.busNumber,
+                          issues: [],
+                        });
+                      }}
+                      className={cn(cellInput, "flex-1 cursor-pointer py-2.5")}
+                    >
+                      <option value="">
+                        {row.busNumber
+                          ? `${row.busNumber} (unmatched)`
+                          : "Pick bus"}
+                      </option>
+                      {activeBuses.map((bus) => (
+                        <option key={bus._id} value={bus._id}>
+                          {bus.number}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      aria-label={`Remove entry ${i + 1}`}
+                      onClick={() => removeRow(i)}
+                      className="flex h-10 w-10 flex-none cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-red-300 hover:text-red-600"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10.5px] font-extrabold tracking-[1px] text-fog">
+                        START TIME
+                      </span>
+                      <input
+                        aria-label={`Start time for entry ${i + 1}`}
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="00:00:00"
+                        value={row.startTime}
+                        onChange={(e) =>
+                          setRow(i, { startTime: e.target.value })
+                        }
+                        className={cn(cellInput, "py-2.5 tabular-nums")}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10.5px] font-extrabold tracking-[1px] text-fog">
+                        END TIME
+                      </span>
+                      <input
+                        aria-label={`End time for entry ${i + 1}`}
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="23:59:59"
+                        value={row.endTime}
+                        onChange={(e) => setRow(i, { endTime: e.target.value })}
+                        className={cn(cellInput, "py-2.5 tabular-nums")}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10.5px] font-extrabold tracking-[1px] text-fog">
+                        MILEAGE (KM)
+                      </span>
+                      <input
+                        aria-label={`Mileage for entry ${i + 1}`}
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0.0"
+                        value={row.mileage}
+                        onChange={(e) => setRow(i, { mileage: e.target.value })}
+                        className={cn(cellInput, "py-2.5 tabular-nums")}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10.5px] font-extrabold tracking-[1px] text-fog">
+                        STATUS
+                      </span>
+                      <input
+                        aria-label={`Status for entry ${i + 1}`}
+                        type="text"
+                        value={row.status}
+                        onChange={(e) => setRow(i, { status: e.target.value })}
+                        className={cn(cellInput, "py-2.5")}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* desktop: the grid */}
+          {rows.length > 0 && (
+            <div className="hidden overflow-hidden rounded-2xl border border-line bg-white sm:block">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-left">
                   <thead>
@@ -630,6 +770,18 @@ export default function TrackerReportPage() {
                 </table>
               </div>
             </div>
+          )}
+
+          {(method === "manual" || rows.length > 0) && (
+            <button
+              type="button"
+              onClick={addRow}
+              className={cn(smallBtn, "w-fit")}
+            >
+              <span className="flex items-center gap-1.5">
+                <Plus size={14} /> Add bus row
+              </span>
+            </button>
           )}
 
           {askReplace && (
