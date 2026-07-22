@@ -50,6 +50,8 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
   { label: "Battery Form", to: "/battery-form", icon: "ClipboardCheck" },
   { label: "Repairs", to: "/repairs", icon: "Wrench", roles: STORE },
   { label: "Buses", to: "/buses", icon: "Bus" },
+  // keying in the daily tracker message is staff work: everyone sees it
+  { label: "Tracker Report", to: "/tracker-report", icon: "Radar" },
   { label: "Trip Price", to: "/trip-price", icon: "Tag", roles: MANAGERS },
   { label: "Reports", to: "/reports", icon: "ChartColumn", roles: MANAGERS },
   {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useCreateBus, useUpdateBus } from "@/lib/network/api/bus.api";
-import type { Bus } from "@/lib/network/types/bus.types";
+import type { Bus, TrackerHealth } from "@/lib/network/types/bus.types";
 import { inputClasses, labelClasses, errorClasses } from "../console/form";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +15,10 @@ const BusForm = ({ bus, onDone }: BusFormProps) => {
   const [driverPhone, setDriverPhone] = useState(bus?.driverPhone ?? "");
   const [notes, setNotes] = useState(bus?.notes ?? "");
   const [isActive, setIsActive] = useState(bus?.isActive ?? true);
+  const [hasTracker, setHasTracker] = useState(bus?.hasTracker ?? true);
+  const [trackerHealth, setTrackerHealth] = useState<TrackerHealth>(
+    bus?.trackerHealth ?? "ok",
+  );
   const [numberError, setNumberError] = useState("");
 
   const createBus = useCreateBus();
@@ -30,7 +34,10 @@ const BusForm = ({ bus, onDone }: BusFormProps) => {
     const base = { number: number.trim(), driverName, driverPhone, notes };
     if (bus) {
       updateBus.mutate(
-        { id: bus._id, payload: { ...base, isActive } },
+        {
+          id: bus._id,
+          payload: { ...base, isActive, hasTracker, trackerHealth },
+        },
         { onSuccess: onDone },
       );
     } else {
@@ -102,15 +109,47 @@ const BusForm = ({ bus, onDone }: BusFormProps) => {
       </div>
 
       {bus && (
-        <label className="flex cursor-pointer items-center gap-2.5 text-[14px] font-bold text-ink">
-          <input
-            type="checkbox"
-            checked={isActive}
-            onChange={(e) => setIsActive(e.target.checked)}
-            className="h-4 w-4 accent-[#0FA53A]"
-          />
-          Active (can receive receipts)
-        </label>
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="flex cursor-pointer items-center gap-2.5 text-[14px] font-bold text-ink">
+              <input
+                type="checkbox"
+                checked={hasTracker}
+                onChange={(e) => setHasTracker(e.target.checked)}
+                className="h-4 w-4 accent-[#0FA53A]"
+              />
+              GPS tracker fitted
+            </label>
+            {hasTracker && (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="bus-tracker-health" className={labelClasses}>
+                  Tracker health
+                </label>
+                <select
+                  id="bus-tracker-health"
+                  value={trackerHealth}
+                  onChange={(e) =>
+                    setTrackerHealth(e.target.value as TrackerHealth)
+                  }
+                  className={inputClasses}
+                >
+                  <option value="ok">Working</option>
+                  <option value="no_power">No 12V supply</option>
+                  <option value="no_data">No data</option>
+                </select>
+              </div>
+            )}
+          </div>
+          <label className="flex cursor-pointer items-center gap-2.5 text-[14px] font-bold text-ink">
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              className="h-4 w-4 accent-[#0FA53A]"
+            />
+            Active (can receive receipts)
+          </label>
+        </>
       )}
 
       <button
