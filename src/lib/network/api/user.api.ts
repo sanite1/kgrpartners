@@ -42,12 +42,16 @@ export const updateUserFn = (
 export const deleteUserFn = (id: string): Promise<ApiResponse<undefined>> =>
   api.delete<ApiResponse<undefined>>(`${BASE}/${id}`);
 
+export const getUserFn = (id: string): Promise<ApiResponse<ConsoleUser>> =>
+  api.get<ApiResponse<ConsoleUser>>(`${BASE}/${id}`);
+
 // REACT QUERY: Query Keys
 
 export const userKeys = {
   all: ["users"] as const,
   list: (params?: UsersQueryParams) =>
     [...userKeys.all, "list", params ?? {}] as const,
+  detail: (id: string) => [...userKeys.all, "detail", id] as const,
 } as const;
 
 // Error helper
@@ -71,6 +75,17 @@ export const useGetUsers = (
   useQuery<PaginatedResponse<ConsoleUser>, AxiosError>({
     queryKey: userKeys.list(params),
     queryFn: () => getUsersFn(params),
+    ...options,
+  });
+
+export const useGetUser = (
+  id: string,
+  options?: Partial<UseQueryOptions<ApiResponse<ConsoleUser>, AxiosError>>,
+) =>
+  useQuery<ApiResponse<ConsoleUser>, AxiosError>({
+    queryKey: userKeys.detail(id),
+    queryFn: () => getUserFn(id),
+    enabled: !!id,
     ...options,
   });
 

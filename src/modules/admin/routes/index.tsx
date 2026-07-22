@@ -21,6 +21,7 @@ const TrackerReportPage = lazy(() => import("../pages/TrackerReportPage"));
 const Repairs = lazy(() => import("../pages/Repairs"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Users = lazy(() => import("../pages/Users"));
+const UserFormPage = lazy(() => import("../pages/UserFormPage"));
 const Reports = lazy(() => import("../pages/Reports"));
 const Conversions = lazy(() => import("../pages/Conversions"));
 const Expenditures = lazy(() => import("../pages/Expenditures"));
@@ -73,6 +74,8 @@ export const AdminRoutes = () => {
               <Route path="/conversions" element={<Conversions />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/users" element={<Users />} />
+              <Route path="/users/new" element={<UserFormPage />} />
+              <Route path="/users/:id/edit" element={<UserFormPage />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

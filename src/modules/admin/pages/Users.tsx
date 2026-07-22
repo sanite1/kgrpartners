@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Pencil, Plus, Search, Trash2, UserCheck, UserX } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Pencil, Plus, Search, UserCheck, UserX } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
@@ -7,27 +8,13 @@ import StatusPill from "../components/console/StatusPill";
 import Modal from "../components/console/Modal";
 import Pagination from "../components/console/Pagination";
 import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
-import {
-  useGetUsers,
-  useCreateUser,
-  useUpdateUser,
-  useDeleteUser,
-} from "@/lib/network/api/user.api";
+import { useGetUsers, useUpdateUser } from "@/lib/network/api/user.api";
 import type { ConsoleUser } from "@/lib/network/types/user.types";
 import type { UserRole } from "@/lib/network/types/auth.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { ROLE_LABEL, ROLE_DESCRIPTION, isAdminRole } from "../permissions";
-import {
-  ACCESS_MODULES,
-  ROLE_DEFAULT_ACCESS,
-  type ModuleKey,
-} from "../access";
+import { ROLE_LABEL, isAdminRole } from "../permissions";
 import { cn, fmtDate } from "@/lib/utils";
-import {
-  inputClasses,
-  labelClasses,
-  errorClasses,
-} from "../components/console/form";
+import { inputClasses } from "../components/console/form";
 
 const ROLES: UserRole[] = [
   "staff",
@@ -43,30 +30,8 @@ const roleTone = (role: UserRole): "success" | "warn" | "muted" =>
 const initials = (first: string, last: string) =>
   `${first[0] ?? ""}${last[0] ?? ""}`.toUpperCase();
 
-interface UserFormState {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  role: UserRole;
-  isActive: boolean;
-  access: ModuleKey[];
-}
-
-const emptyForm: UserFormState = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  password: "",
-  role: "staff",
-  isActive: true,
-  access: [...ROLE_DEFAULT_ACCESS.staff],
-};
-
-const sameAccess = (a: ModuleKey[], b: ModuleKey[]) =>
-  a.length === b.length && a.every((k) => b.includes(k));
-
 export default function Users() {
+  const navigate = useNavigate();
   const me = useAuthStore((s) => s.user);
   const isAdmin = isAdminRole(me?.role);
 
@@ -75,11 +40,6 @@ export default function Users() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  const [modal, setModal] = useState<null | { user?: ConsoleUser }>(null);
-  const [form, setForm] = useState<UserFormState>(emptyForm);
-  const [accessTouched, setAccessTouched] = useState(false);
-  const [error, setError] = useState("");
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmToggle, setConfirmToggle] = useState<ConsoleUser | null>(null);
 
   const { data, isLoading } = useGetUsers(
@@ -94,116 +54,7 @@ export default function Users() {
   const users = data?.data ?? [];
   const pagination = data?.pagination;
 
-  const createUser = useCreateUser();
   const updateUser = useUpdateUser();
-  const deleteUser = useDeleteUser();
-  const isPending = createUser.isPending || updateUser.isPending;
-
-  const openCreate = () => {
-    setForm({ ...emptyForm, access: [...ROLE_DEFAULT_ACCESS.staff] });
-    setAccessTouched(false);
-    setError("");
-    setConfirmDelete(false);
-    setModal({});
-  };
-
-  const openEdit = (user: ConsoleUser) => {
-    const hasOverride = Array.isArray(user.access);
-    setForm({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      password: "",
-      role: user.role,
-      isActive: user.isActive,
-      access: hasOverride
-        ? (user.access as ModuleKey[])
-        : [...(ROLE_DEFAULT_ACCESS[user.role] ?? [])],
-    });
-    setAccessTouched(hasOverride);
-    setError("");
-    setConfirmDelete(false);
-    setModal({ user });
-  };
-
-  const toggleModule = (key: ModuleKey) => {
-    setAccessTouched(true);
-    setForm((f) => ({
-      ...f,
-      access: f.access.includes(key)
-        ? f.access.filter((k) => k !== key)
-        : [...f.access, key],
-    }));
-  };
-
-  const set = (patch: Partial<UserFormState>) =>
-    setForm((f) => ({ ...f, ...patch }));
-
-  // clear any active filter/search so a newly created record is never
-  // hidden behind the view the admin happened to be looking at
-  const revealAll = () => {
-    setRoleFilter("all");
-    setSearch("");
-    setPage(1);
-  };
-
-  const submit = () => {
-    if (form.firstName.trim().length < 2 || form.lastName.trim().length < 2) {
-      setError("Enter the first and last name");
-      return;
-    }
-    if (!modal?.user) {
-      if (!/^\S+@\S+\.\S+$/.test(form.email)) {
-        setError("Enter a valid email address");
-        return;
-      }
-      if (form.password.length < 8) {
-        setError("Password must be at least 8 characters");
-        return;
-      }
-    }
-    setError("");
-    if (modal?.user) {
-      updateUser.mutate(
-        {
-          id: modal.user._id,
-          payload: {
-            firstName: form.firstName.trim(),
-            lastName: form.lastName.trim(),
-            role: form.role,
-            isActive: form.isActive,
-            access:
-              form.role === "admin" ||
-              sameAccess(form.access, ROLE_DEFAULT_ACCESS[form.role] ?? [])
-                ? null
-                : form.access,
-          },
-        },
-        { onSuccess: () => setModal(null) },
-      );
-    } else {
-      createUser.mutate(
-        {
-          firstName: form.firstName.trim(),
-          lastName: form.lastName.trim(),
-          email: form.email.trim(),
-          password: form.password,
-          role: form.role,
-          access:
-            form.role === "admin" ||
-            sameAccess(form.access, ROLE_DEFAULT_ACCESS[form.role] ?? [])
-              ? undefined
-              : form.access,
-        },
-        {
-          onSuccess: () => {
-            setModal(null);
-            revealAll();
-          },
-        },
-      );
-    }
-  };
 
   if (!isAdmin) {
     return (
@@ -229,7 +80,7 @@ export default function Users() {
         actions={
           <button
             type="button"
-            onClick={openCreate}
+            onClick={() => navigate("/users/new")}
             className="cta-gradient flex cursor-pointer items-center gap-2 rounded-[10px] border-none px-5 py-3 text-[14px] font-extrabold text-forest-deep transition-transform hover:scale-[1.02]"
           >
             <Plus size={16} strokeWidth={3} /> Add user
@@ -359,7 +210,7 @@ export default function Users() {
                     <button
                       type="button"
                       aria-label={`Edit ${user.firstName}`}
-                      onClick={() => openEdit(user)}
+                      onClick={() => navigate(`/users/${user._id}/edit`)}
                       className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
                     >
                       <Pencil size={14} />
@@ -397,239 +248,6 @@ export default function Users() {
           setPage(1);
         }}
       />
-
-      <Modal
-        title={modal?.user ? `Edit ${modal.user.firstName}` : "Add user"}
-        open={!!modal}
-        onClose={() => setModal(null)}
-      >
-        <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="u-first" className={labelClasses}>
-                First name <span className="text-brand-500">*</span>
-              </label>
-              <input
-                id="u-first"
-                type="text"
-                value={form.firstName}
-                onChange={(e) => set({ firstName: e.target.value })}
-                className={inputClasses}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="u-last" className={labelClasses}>
-                Last name <span className="text-brand-500">*</span>
-              </label>
-              <input
-                id="u-last"
-                type="text"
-                value={form.lastName}
-                onChange={(e) => set({ lastName: e.target.value })}
-                className={inputClasses}
-              />
-            </div>
-          </div>
-
-          {!modal?.user && (
-            <>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="u-email" className={labelClasses}>
-                  Email <span className="text-brand-500">*</span>
-                </label>
-                <input
-                  id="u-email"
-                  type="email"
-                  placeholder="name@kgrpartnersltd.com"
-                  value={form.email}
-                  onChange={(e) => set({ email: e.target.value })}
-                  className={inputClasses}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="u-password" className={labelClasses}>
-                  Starting password <span className="text-brand-500">*</span>
-                </label>
-                <input
-                  id="u-password"
-                  type="text"
-                  placeholder="They can change it later"
-                  value={form.password}
-                  onChange={(e) => set({ password: e.target.value })}
-                  className={inputClasses}
-                  autoComplete="off"
-                />
-              </div>
-            </>
-          )}
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="u-role" className={labelClasses}>
-              Access level
-            </label>
-            <select
-              id="u-role"
-              value={form.role}
-              onChange={(e) => {
-                const role = e.target.value as UserRole;
-                // untouched toggles follow the role's defaults
-                set({ role });
-                if (!accessTouched) {
-                  set({ access: [...(ROLE_DEFAULT_ACCESS[role] ?? [])] });
-                }
-              }}
-              className={inputClasses}
-            >
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {ROLE_LABEL[r]}
-                </option>
-              ))}
-            </select>
-            <p className="m-0 text-[12.5px] font-semibold text-fog">
-              {ROLE_DESCRIPTION[form.role]}
-            </p>
-          </div>
-
-          {form.role !== "admin" && (
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between gap-3">
-                <span className={labelClasses}>
-                  Tabs this user can see and use
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    set({
-                      access: [...(ROLE_DEFAULT_ACCESS[form.role] ?? [])],
-                    });
-                    setAccessTouched(false);
-                  }}
-                  className="cursor-pointer border-none bg-transparent p-0 text-[12px] font-extrabold text-brand-600 hover:text-brand-500"
-                >
-                  Reset to role defaults
-                </button>
-              </div>
-              <div className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-xl border border-line bg-haze p-4 sm:grid-cols-2">
-                {ACCESS_MODULES.filter((m) => m.key !== "users").map((m) => (
-                  <label
-                    key={m.key}
-                    className="flex cursor-pointer items-center gap-2.5 text-[13.5px] font-bold text-ink"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={form.access.includes(m.key)}
-                      onChange={() => toggleModule(m.key)}
-                      className="h-4 w-4 accent-[#0FA53A]"
-                    />
-                    {m.label}
-                  </label>
-                ))}
-              </div>
-              <p className="m-0 text-[12px] font-semibold text-fog">
-                Dashboard is always available. Sensitive actions also require
-                the right access level above.
-              </p>
-            </div>
-          )}
-
-          {modal?.user && modal.user._id !== me?._id && (
-            <div className="flex flex-col gap-1.5">
-              <span className={labelClasses}>Account access</span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => set({ isActive: true })}
-                  className={cn(
-                    "flex-1 cursor-pointer rounded-[10px] border px-3 py-2.5 text-[13px] font-extrabold transition-colors",
-                    form.isActive
-                      ? "border-brand-500 bg-brand-50 text-brand-600"
-                      : "border-line bg-white text-fog hover:border-brand-500",
-                  )}
-                >
-                  Active · can sign in
-                </button>
-                <button
-                  type="button"
-                  onClick={() => set({ isActive: false })}
-                  className={cn(
-                    "flex-1 cursor-pointer rounded-[10px] border px-3 py-2.5 text-[13px] font-extrabold transition-colors",
-                    !form.isActive
-                      ? "border-red-300 bg-red-50 text-red-600"
-                      : "border-line bg-white text-fog hover:border-red-300",
-                  )}
-                >
-                  Disabled · blocked
-                </button>
-              </div>
-            </div>
-          )}
-
-          {error && <span className={errorClasses}>{error}</span>}
-
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={submit}
-            className={cn(
-              "cta-gradient mt-1 cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep",
-              isPending
-                ? "cursor-not-allowed opacity-60"
-                : "transition-transform hover:scale-[1.02]",
-            )}
-          >
-            {isPending
-              ? "Saving…"
-              : modal?.user
-                ? "Save changes"
-                : "Create user →"}
-          </button>
-
-          {/* danger zone: hard delete, only for other people's accounts */}
-          {modal?.user && modal.user._id !== me?._id && (
-            <div className="mt-2 border-t border-line pt-4">
-              {confirmDelete ? (
-                <div className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
-                  <p className="m-0 text-[13px] font-semibold text-red-700">
-                    Delete {modal.user.firstName} {modal.user.lastName}? This
-                    cannot be undone. Accounts with any history can't be
-                    deleted, only disabled.
-                  </p>
-                  <div className="flex gap-2.5">
-                    <button
-                      type="button"
-                      disabled={deleteUser.isPending}
-                      onClick={() =>
-                        deleteUser.mutate(modal.user!._id, {
-                          onSuccess: () => setModal(null),
-                        })
-                      }
-                      className="cursor-pointer rounded-lg border-none bg-red-600 px-4 py-2 text-[13px] font-extrabold text-white disabled:opacity-50"
-                    >
-                      {deleteUser.isPending ? "Deleting…" : "Yes, delete"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDelete(false)}
-                      className="cursor-pointer rounded-lg border border-line bg-white px-4 py-2 text-[13px] font-bold text-bark"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(true)}
-                  className="flex cursor-pointer items-center gap-2 border-none bg-transparent p-0 text-[13px] font-bold text-red-600 hover:text-red-700"
-                >
-                  <Trash2 size={14} /> Delete this user
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      </Modal>
 
       {/* confirm enable / disable */}
       <Modal
