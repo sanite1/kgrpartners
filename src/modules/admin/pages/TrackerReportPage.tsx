@@ -60,7 +60,7 @@ const smallBtn =
   "cursor-pointer rounded-lg border border-line bg-white px-3 py-1.5 text-[12.5px] font-bold text-bark transition-colors hover:border-brand-500 hover:text-brand-600";
 
 const cellInput =
-  "w-full rounded-lg border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-bold text-bark transition-colors focus:border-brand-500 focus:outline-none";
+  "w-full rounded-lg border border-line bg-white px-2.5 py-1.5 text-base font-bold text-bark transition-colors focus:border-brand-500 focus:outline-none sm:text-[12.5px]";
 
 // renders the operator-style summary message for a saved report
 const summaryText = (date: string, s: TrackerSummary): string =>
@@ -498,7 +498,7 @@ export default function TrackerReportPage() {
                   onChange={(e) => setRawText(e.target.value)}
                   className={cn(
                     inputClasses,
-                    "resize-y font-mono text-[13px]",
+                    "resize-y font-mono sm:text-[13px]",
                   )}
                 />
                 <button

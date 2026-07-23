@@ -40,7 +40,7 @@ const Pagination = ({
           <select
             value={pageSize}
             onChange={(e) => onPageSize(Number(e.target.value))}
-            className="cursor-pointer rounded-lg border border-line bg-white px-2 py-1.5 text-[13px] font-bold text-ink outline-none focus:border-brand-500"
+            className="cursor-pointer rounded-lg border border-line bg-white px-2 py-1.5 text-base font-bold text-ink outline-none sm:text-[13px] focus:border-brand-500"
           >
             {PAGE_SIZES.map((s) => (
               <option key={s} value={s}>

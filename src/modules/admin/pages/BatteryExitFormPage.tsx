@@ -40,7 +40,7 @@ const smallBtn =
   "cursor-pointer rounded-lg border border-line bg-white px-3 py-1.5 text-[12.5px] font-bold text-bark transition-colors hover:border-brand-500 hover:text-brand-600";
 
 const cellSelect =
-  "w-full cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none";
+  "w-full cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-base font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none sm:text-[12.5px]";
 
 // A pack's row opens on whatever the fleet already believes about it, so a
 // clean run means the staff only touches what actually changed.

@@ -513,7 +513,7 @@ export default function Batteries() {
                               e.target.value as BatteryStatus,
                             )
                           }
-                          className="cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none"
+                          className="cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-base font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none sm:text-[12.5px]"
                         >
                           {STATUS_OPTIONS.map(([value, label]) => (
                             <option key={value} value={value}>

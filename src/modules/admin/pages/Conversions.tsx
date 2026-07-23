@@ -257,7 +257,7 @@ export default function Conversions() {
                 placeholder="Internal note (saved with the next status change)"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className={cn(inputClasses, "resize-y text-[13.5px]")}
+                className={cn(inputClasses, "resize-y sm:text-[13.5px]")}
               />
               <div className="flex flex-wrap gap-2">
                 {NEXT_STATUS.filter((s) => s !== selected.status).map((s) => (
