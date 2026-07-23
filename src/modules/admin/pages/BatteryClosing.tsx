@@ -46,6 +46,7 @@ export default function BatteryClosing() {
   const [voltage, setVoltage] = useState("");
   const [percent, setPercent] = useState<ClosingPercent>(100);
   const [location, setLocation] = useState<BatteryLocation>("main_yard");
+  const [trips, setTrips] = useState("");
   const [error, setError] = useState("");
 
   const { data, isLoading } = useGetClosingReport(viewDate || undefined);
@@ -70,6 +71,7 @@ export default function BatteryClosing() {
     setVoltage("");
     setPercent(100);
     setLocation("main_yard");
+    setTrips("");
     setError("");
     setAddOpen(true);
   };
@@ -83,6 +85,12 @@ export default function BatteryClosing() {
       setError("Voltage must be a figure like 81.7");
       return;
     }
+    const tripsNum = parseFloat(trips);
+    const hasTrips = trips.trim() !== "";
+    if (hasTrips && (!(tripsNum >= 0) || (tripsNum * 2) % 1 !== 0)) {
+      setError("Trips go in halves (0.5, 1, 1.5...)");
+      return;
+    }
     setError("");
     createEntry.mutate(
       {
@@ -90,6 +98,7 @@ export default function BatteryClosing() {
         voltage: voltage.trim(),
         percent,
         location,
+        trips: hasTrips ? tripsNum : undefined,
       },
       { onSuccess: () => setAddOpen(false) },
     );
@@ -138,7 +147,7 @@ export default function BatteryClosing() {
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="border-b border-line bg-haze">
-                    {["DATE", "BATTERIES", "FULLY CHARGED"].map((h) => (
+                    {["DATE", "BATTERIES", "FULLY CHARGED", "TOTAL TRIPS"].map((h) => (
                       <th
                         key={h}
                         className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
@@ -166,6 +175,9 @@ export default function BatteryClosing() {
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-bold tabular-nums text-brand-600">
                         {day.fullyCharged}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold tabular-nums text-ink">
+                        {day.totalTrips ?? 0}
                       </td>
                     </tr>
                   ))}
@@ -216,13 +228,21 @@ export default function BatteryClosing() {
           </div>
 
           {/* footer totals, computed live */}
-          <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
             <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
               <span className="block text-[24px] font-extrabold leading-none text-neon">
                 {totals?.count ?? 0}
               </span>
               <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
                 BATTERIES AT YARD
+              </span>
+            </div>
+            <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
+              <span className="block text-[24px] font-extrabold leading-none text-neon">
+                {totals?.totalTrips ?? 0}
+              </span>
+              <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
+                TOTAL TRIPS
               </span>
             </div>
             <div className="rounded-2xl border border-line bg-white p-4">
@@ -260,6 +280,7 @@ export default function BatteryClosing() {
                         "BATTERY",
                         "PERCENT",
                         "VOLTAGE",
+                        "TRIPS",
                         "LOCATION",
                         "ADDED BY",
                         "TIME",
@@ -302,6 +323,21 @@ export default function BatteryClosing() {
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-bold tabular-nums text-bark">
                           {entry.voltage}V
+                        </td>
+                        <td
+                          title={
+                            entry.tripsAuto
+                              ? "Counted from today's receipts and swaps"
+                              : "Entered by hand"
+                          }
+                          className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold tabular-nums text-ink"
+                        >
+                          {entry.trips ?? 0}
+                          {entry.tripsAuto && (
+                            <span className="ml-1 text-[10.5px] font-extrabold text-fog">
+                              auto
+                            </span>
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-bark">
                           {LOCATION_LABEL[entry.location]}
@@ -415,6 +451,26 @@ export default function BatteryClosing() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="bc-trips" className={labelClasses}>
+              Trips today
+            </label>
+            <input
+              id="bc-trips"
+              type="number"
+              min={0}
+              max={100}
+              step={0.5}
+              placeholder="Leave empty to count automatically"
+              value={trips}
+              onChange={(e) => setTrips(e.target.value)}
+              className={inputClasses}
+            />
+            <span className="text-[12px] font-semibold text-fog">
+              Empty = the system counts it from today's receipts and swaps.
+            </span>
           </div>
 
           <div className="flex flex-col gap-1.5">

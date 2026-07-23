@@ -10,6 +10,8 @@ export interface BatteryClosingEntry {
   percent: ClosingPercent;
   voltage: string;
   location: BatteryLocation;
+  trips: number;
+  tripsAuto: boolean; // derived from receipts and swaps, not typed
   addedBy: string;
   addedByName: string;
   createdAt: string;
@@ -19,6 +21,7 @@ export interface BatteryClosingEntry {
 export interface ClosingTotals {
   count: number;
   fullyCharged: number;
+  totalTrips: number;
   byLocation: Record<string, number>;
 }
 
@@ -33,10 +36,12 @@ export interface CreateClosingEntryPayload {
   percent: ClosingPercent;
   voltage: string;
   location: BatteryLocation;
+  trips?: number; // omitted = system derives from receipts and swaps
 }
 
 export interface ClosingDayRow {
   date: string;
   count: number;
   fullyCharged: number;
+  totalTrips: number;
 }
