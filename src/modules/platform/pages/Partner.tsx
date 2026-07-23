@@ -2,6 +2,7 @@ import PageMeta from "@/components/shared/PageMeta";
 import PageHeader from "@/components/shared/PageHeader";
 import QuoteBand from "@/components/shared/QuoteBand";
 import PartnerAreas from "../components/partner/PartnerAreas";
+import PartnershipForm from "../components/partner/PartnershipForm";
 import { PARTNER_HEADER_IMAGE } from "@/data/partner-data";
 
 export default function Partner() {
@@ -18,6 +19,7 @@ export default function Partner() {
         image={PARTNER_HEADER_IMAGE}
       />
       <PartnerAreas />
+      <PartnershipForm />
       <QuoteBand ctaLabel="See our impact" ctaTo="/technology#impact" />
     </main>
   );

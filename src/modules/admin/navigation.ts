@@ -91,6 +91,12 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
     icon: "PlugZap",
     module: "conversions",
   },
+  {
+    label: "Partnerships",
+    to: "/partnerships",
+    icon: "Handshake",
+    module: "partnerships",
+  },
   { label: "Users", to: "/users", icon: "UsersRound", module: "users" },
 ];
 

@@ -20,6 +20,7 @@ import {
   ChartColumn,
   UsersRound,
   PlugZap,
+  Handshake,
   Wallet,
   Menu,
   X,
@@ -55,6 +56,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   ChartColumn,
   UsersRound,
   PlugZap,
+  Handshake,
   Wallet,
 };
 
