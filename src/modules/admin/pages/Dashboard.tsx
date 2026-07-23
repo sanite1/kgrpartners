@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { TicketPlus, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import PageHead from "../components/console/PageHead";
 import Skeleton from "../components/console/Skeleton";
@@ -17,7 +17,7 @@ import { useGetRepairJobs } from "@/lib/network/api/repair.api";
 import { useGetPartRequests } from "@/lib/network/api/partRequest.api";
 import type { ReceiptSummarySeriesPoint } from "@/lib/network/types/receipt.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { canApprove, canIssue } from "../permissions";
+import { canApprove } from "../permissions";
 import { cn, fmtNaira } from "@/lib/utils";
 
 const dayLabel = (iso: string) =>
@@ -257,16 +257,6 @@ export default function Dashboard() {
         eyebrow="OVERVIEW"
         title={`Welcome back, ${user?.firstName ?? ""}`}
         subtitle={subtitle}
-        actions={
-          canIssue(role) ? (
-            <Link
-              to="/generate"
-              className="cta-gradient flex items-center gap-2 rounded-[10px] px-5 py-3 text-[14px] font-extrabold text-forest-deep transition-transform hover:scale-[1.02] hover:text-forest-deep"
-            >
-              <TicketPlus size={16} strokeWidth={2.4} /> Generate receipt
-            </Link>
-          ) : undefined
-        }
       />
 
       {/* MANAGER / ADMIN: the whole yard */}
