@@ -69,11 +69,15 @@ export interface IdleBattery {
   needsCheck: boolean;
   lastWorkedDate: string | null; // null = never on a receipt
   idleDays: number;
+  snoozedUntil: string | null;
+  snoozedByName: string;
 }
 
 export interface IdleBatteriesData {
   batteries: IdleBattery[];
   count: number;
+  snoozed: IdleBattery[];
+  snoozedCount: number;
   thresholdHours: number;
 }
 

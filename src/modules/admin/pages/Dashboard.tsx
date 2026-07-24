@@ -207,6 +207,7 @@ export default function Dashboard() {
 
   const { data: idleData } = useGetIdleBatteries({ enabled: isManager });
   const idleCount = idleData?.data?.count ?? 0;
+  const snoozedCount = idleData?.data?.snoozedCount ?? 0;
 
   const batteryCounts = batterySummaryData?.data?.counts;
   const series = summary?.series ?? [];
@@ -262,15 +263,20 @@ export default function Dashboard() {
       {/* MANAGER / ADMIN: the whole yard */}
       {isManager && (
         <>
-          {idleCount > 0 && (
+          {(idleCount > 0 || snoozedCount > 0) && (
             <Link
               to="/batteries"
               className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-solar/40 bg-[#FDF6E3] px-5 py-4 no-underline transition-colors hover:border-solar"
             >
-              <span className="flex items-center gap-2.5 text-[14px] font-extrabold text-solar-700">
+              <span className="flex flex-wrap items-center gap-2.5 text-[14px] font-extrabold text-solar-700">
                 <TriangleAlert size={17} className="flex-none" />
                 {idleCount} {idleCount === 1 ? "battery has" : "batteries have"}{" "}
                 not worked in 48 hours or more
+                {snoozedCount > 0 && (
+                  <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-[11.5px] font-extrabold text-bark">
+                    {snoozedCount} snoozed
+                  </span>
+                )}
               </span>
               <span className="flex-none text-[13px] font-extrabold text-solar-700">
                 View →

@@ -22,6 +22,7 @@ import {
   useGetBatterySummary,
   useGetBatteryMovements,
   useGetIdleBatteries,
+  useSnoozeBattery,
   useCreateBattery,
   useUpdateBattery,
   useIssueBattery,
@@ -192,6 +193,8 @@ export default function Batteries() {
 
   const { data: idleData } = useGetIdleBatteries({ enabled: isManager });
   const idleBatteries = idleData?.data?.batteries ?? [];
+  const snoozedBatteries = idleData?.data?.snoozed ?? [];
+  const snoozeBattery = useSnoozeBattery();
 
   const { data, isLoading } = useGetBatteries({
     page,
@@ -250,7 +253,7 @@ export default function Batteries() {
       />
 
       {/* packs that have not worked in 48h+ (managers) */}
-      {isManager && idleBatteries.length > 0 && (
+      {isManager && (idleBatteries.length > 0 || snoozedBatteries.length > 0) && (
         <div className="mb-6 overflow-hidden rounded-2xl border border-solar/40 bg-[#FDF6E3]">
           <button
             type="button"
@@ -262,6 +265,11 @@ export default function Batteries() {
               {idleBatteries.length}{" "}
               {idleBatteries.length === 1 ? "battery has" : "batteries have"}{" "}
               not worked in 48 hours or more
+              {snoozedBatteries.length > 0 && (
+                <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-[11.5px] font-extrabold text-bark">
+                  {snoozedBatteries.length} snoozed
+                </span>
+              )}
             </span>
             <ChevronDown
               size={17}
@@ -277,16 +285,21 @@ export default function Batteries() {
                 <table className="w-full border-collapse text-left">
                   <thead>
                     <tr className="border-b border-solar/30">
-                      {["BATTERY", "IDLE FOR", "LAST WORKED", "STATE", "LOCATION"].map(
-                        (h) => (
+                      {[
+                        "BATTERY",
+                        "IDLE FOR",
+                        "LAST WORKED",
+                        "STATE",
+                        "LOCATION",
+                        "SNOOZE",
+                      ].map((h) => (
                           <th
                             key={h}
                             className="whitespace-nowrap px-5 py-2.5 text-[10.5px] font-extrabold tracking-[1.5px] text-solar-700"
                           >
                             {h}
                           </th>
-                        ),
-                      )}
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -310,11 +323,64 @@ export default function Batteries() {
                         <td className="whitespace-nowrap px-5 py-2.5 text-[13px] font-semibold text-bark">
                           {b.location.replace(/_/g, " ")}
                         </td>
+                        <td className="whitespace-nowrap px-5 py-2.5">
+                          <select
+                            aria-label={`Snooze ${b.code}`}
+                            value=""
+                            disabled={snoozeBattery.isPending}
+                            onChange={(e) => {
+                              const days = Number(e.target.value);
+                              if (days > 0) {
+                                snoozeBattery.mutate({ id: b._id, days });
+                              }
+                            }}
+                            className="cursor-pointer rounded-lg border border-solar/50 bg-white px-2.5 py-1.5 text-base font-bold text-solar-700 outline-none transition-colors hover:border-solar sm:text-[12.5px]"
+                          >
+                            <option value="">Snooze…</option>
+                            <option value="1">1 day</option>
+                            <option value="3">3 days</option>
+                            <option value="7">1 week</option>
+                            <option value="14">2 weeks</option>
+                            <option value="31">1 month</option>
+                          </select>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
+              {snoozedBatteries.length > 0 && (
+                <div className="border-t border-solar/30 px-5 py-4">
+                  <span className="text-[10.5px] font-extrabold tracking-[1.5px] text-solar-700">
+                    SNOOZED ({snoozedBatteries.length})
+                  </span>
+                  <div className="mt-2 flex flex-col gap-1.5">
+                    {snoozedBatteries.map((b) => (
+                      <div
+                        key={b._id}
+                        className="flex flex-wrap items-center justify-between gap-2 text-[13px] font-semibold text-bark"
+                      >
+                        <span>
+                          <strong className="text-ink">{b.code}</strong> · idle{" "}
+                          {b.idleDays} days · snoozed by{" "}
+                          {b.snoozedByName || "—"} until{" "}
+                          {b.snoozedUntil ? fmtDate(b.snoozedUntil) : "—"}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={snoozeBattery.isPending}
+                          onClick={() =>
+                            snoozeBattery.mutate({ id: b._id, days: 0 })
+                          }
+                          className="cursor-pointer rounded-lg border border-line bg-white px-3 py-1 text-[12px] font-extrabold text-bark transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-50"
+                        >
+                          Wake now
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

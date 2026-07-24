@@ -70,6 +70,12 @@ export const setBatteryStatusFn = (
 ): Promise<ApiResponse<Battery>> =>
   api.post<ApiResponse<Battery>>(`${BASE}/${id}/status`, payload);
 
+export const snoozeBatteryFn = (
+  id: string,
+  days: number,
+): Promise<ApiResponse<Battery>> =>
+  api.post<ApiResponse<Battery>>(`${BASE}/${id}/snooze`, { days });
+
 export const getBatteryMovementsFn = (
   id: string,
   params?: { page?: number; pageSize?: number },
@@ -213,6 +219,20 @@ export const useCollectBattery = () => {
     { id: string; payload: CollectBatteryPayload }
   >({
     mutationFn: ({ id, payload }) => collectBatteryFn(id, payload),
+    onSuccess: (data) => {
+      toast.success(data.message);
+      qc.invalidateQueries({ queryKey: batteryKeys.all });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+};
+
+export const useSnoozeBattery = () => {
+  const qc = useQueryClient();
+  return useMutation<ApiResponse<Battery>, AxiosError, { id: string; days: number }>({
+    mutationFn: ({ id, days }) => snoozeBatteryFn(id, days),
     onSuccess: (data) => {
       toast.success(data.message);
       qc.invalidateQueries({ queryKey: batteryKeys.all });
