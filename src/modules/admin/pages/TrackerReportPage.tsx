@@ -364,6 +364,15 @@ export default function TrackerReportPage() {
 
   const submit = (replace: boolean) => {
     if (!date || validRows.length === 0) return;
+    // catch impossible figures here, with the row named, instead of a
+    // server rejection after the whole report is typed
+    const bad = validRows.findIndex((r) => Number(r.mileage) > 10000);
+    if (bad !== -1) {
+      toast.error(
+        `Row ${bad + 1} (${validRows[bad].busNumber || "no bus"}): ${validRows[bad].mileage} km in one day cannot be right. Correct the mileage.`,
+      );
+      return;
+    }
     setAskReplace(false);
     createReport.mutate(
       {

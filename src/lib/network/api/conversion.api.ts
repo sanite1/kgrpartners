@@ -54,6 +54,12 @@ export const conversionKeys = {
 const getErrorMessage = (error: unknown): string => {
   if (error instanceof AxiosError) {
     const data = error.response?.data as ApiErrorResponse | undefined;
+    // field-level detail beats the generic headline message
+    if (data?.fields?.length) {
+      const first = data.fields[0].message;
+      const extra = data.fields.length - 1;
+      return extra > 0 ? `${first} (+${extra} more)` : first;
+    }
     return data?.message || error.message;
   }
   return "An unexpected error occurred";
