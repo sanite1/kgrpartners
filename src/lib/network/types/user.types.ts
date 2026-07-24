@@ -20,6 +20,7 @@ export interface CreateUserPayload {
   firstName: string;
   lastName: string;
   email: string;
+  password?: string; // omitted = backend generates and emails one
   role?: UserRole;
   access?: string[]; // per-user module overrides; absent = role defaults
 }

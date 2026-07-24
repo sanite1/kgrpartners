@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Dices, Trash2 } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
@@ -37,6 +37,14 @@ const ROLES: UserRole[] = [
 const sameAccess = (a: ModuleKey[], b: ModuleKey[]) =>
   a.length === b.length && a.every((k) => b.includes(k));
 
+// readable characters only, same alphabet the backend uses
+const generatePassword = (): string => {
+  const alphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const bytes = new Uint32Array(12);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+};
+
 // Create (/users/new) and edit (/users/:id/edit) share this page.
 export default function UserFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -48,6 +56,7 @@ export default function UserFormPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>("staff");
   const [isActive, setIsActive] = useState(true);
   const [access, setAccess] = useState<ModuleKey[]>([
@@ -108,6 +117,10 @@ export default function UserFormPage() {
         setError("Enter a valid email address");
         return;
       }
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters, or tap Generate");
+        return;
+      }
     }
     setError("");
     if (isEdit && user) {
@@ -130,6 +143,7 @@ export default function UserFormPage() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           email: email.trim(),
+          password,
           role,
           access: accessPayload() ?? undefined,
         },
@@ -224,22 +238,48 @@ export default function UserFormPage() {
                 </span>
               </div>
             ) : (
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="u-email" className={labelClasses}>
-                  Email <span className="text-brand-500">*</span>
-                </label>
-                <input
-                  id="u-email"
-                  type="email"
-                  placeholder="name@kgrpartnersltd.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={inputClasses}
-                />
-                <span className="text-[12px] font-medium text-fog">
-                  A starting password is generated automatically and emailed
-                  to them with a sign-in link.
-                </span>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="u-email" className={labelClasses}>
+                    Email <span className="text-brand-500">*</span>
+                  </label>
+                  <input
+                    id="u-email"
+                    type="email"
+                    placeholder="name@kgrpartnersltd.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={inputClasses}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="u-password" className={labelClasses}>
+                    Starting password <span className="text-brand-500">*</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      id="u-password"
+                      type="text"
+                      placeholder="Type one or tap Generate"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={cn(inputClasses, "min-w-0 flex-1")}
+                      autoComplete="off"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPassword(generatePassword())}
+                      title="Generate a strong password"
+                      className="flex flex-none cursor-pointer items-center gap-1.5 rounded-[10px] border border-line bg-white px-3.5 text-[13px] font-extrabold text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
+                    >
+                      <Dices size={15} /> Generate
+                    </button>
+                  </div>
+                  <span className="text-[12px] font-medium text-fog">
+                    It is emailed to them either way; they can change it after
+                    signing in.
+                  </span>
+                </div>
               </div>
             )}
 
