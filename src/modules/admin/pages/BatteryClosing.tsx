@@ -147,7 +147,13 @@ export default function BatteryClosing() {
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="border-b border-line bg-haze">
-                    {["DATE", "BATTERIES", "FULLY CHARGED", "TOTAL TRIPS"].map((h) => (
+                    {[
+                      "DATE",
+                      "ISSUED BY",
+                      "BATTERIES",
+                      "FULLY CHARGED",
+                      "TOTAL TRIPS",
+                    ].map((h) => (
                       <th
                         key={h}
                         className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
@@ -160,7 +166,7 @@ export default function BatteryClosing() {
                 <tbody>
                   {days.map((day) => (
                     <tr
-                      key={day.date}
+                      key={day.date + day.issuedByName}
                       onClick={() => {
                         setViewDate(day.date);
                         setHistoryOpen(false);
@@ -169,6 +175,9 @@ export default function BatteryClosing() {
                     >
                       <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
                         {fmtDate(day.date)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-semibold text-bark">
+                        {day.issuedByName || "—"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-bold tabular-nums text-bark">
                         {day.count}

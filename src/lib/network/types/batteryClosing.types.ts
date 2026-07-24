@@ -39,8 +39,10 @@ export interface CreateClosingEntryPayload {
   trips?: number; // omitted = system derives from receipts and swaps
 }
 
+// one row per person per day, mirroring the exit form history
 export interface ClosingDayRow {
   date: string;
+  issuedByName: string;
   count: number;
   fullyCharged: number;
   totalTrips: number;
