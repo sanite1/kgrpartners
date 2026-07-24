@@ -333,20 +333,8 @@ export default function BatteryClosing() {
                         <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-bold tabular-nums text-bark">
                           {entry.voltage}V
                         </td>
-                        <td
-                          title={
-                            entry.tripsAuto
-                              ? "Counted from today's receipts and swaps"
-                              : "Entered by hand"
-                          }
-                          className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold tabular-nums text-ink"
-                        >
+                        <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold tabular-nums text-ink">
                           {entry.trips ?? 0}
-                          {entry.tripsAuto && (
-                            <span className="ml-1 text-[10.5px] font-extrabold text-fog">
-                              auto
-                            </span>
-                          )}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-bark">
                           {LOCATION_LABEL[entry.location]}
@@ -464,7 +452,7 @@ export default function BatteryClosing() {
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="bc-trips" className={labelClasses}>
-              Trips today
+              Trips
             </label>
             <input
               id="bc-trips"
@@ -472,14 +460,11 @@ export default function BatteryClosing() {
               min={0}
               max={100}
               step={0.5}
-              placeholder="Leave empty to count automatically"
+              placeholder="0"
               value={trips}
               onChange={(e) => setTrips(e.target.value)}
               className={inputClasses}
             />
-            <span className="text-[12px] font-semibold text-fog">
-              Empty = the system counts it from today's receipts and swaps.
-            </span>
           </div>
 
           <div className="flex flex-col gap-1.5">
