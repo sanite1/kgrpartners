@@ -60,6 +60,7 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
   },
   { label: "Swaps", to: "/swaps", icon: "ArrowLeftRight", module: "swaps" },
   { label: "Gate Pass", to: "/gate-pass", icon: "DoorOpen", module: "gate_pass" },
+  { label: "Purchases", to: "/purchases", icon: "Package", module: "purchases" },
   { label: "Repairs", to: "/repairs", icon: "Wrench", module: "repairs" },
   { label: "Buses", to: "/buses", icon: "Bus", module: "buses" },
   {
