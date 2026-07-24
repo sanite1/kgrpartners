@@ -20,6 +20,7 @@ const ROLES: UserRole[] = [
   "staff",
   "cashier",
   "storekeeper",
+  "security",
   "manager",
   "admin",
 ];
@@ -105,7 +106,7 @@ export default function Users() {
                   : "border-line bg-white text-bark hover:border-brand-500 hover:text-brand-600",
               )}
             >
-              {r === "all" ? "Everyone" : ROLE_LABEL[r as UserRole]}
+              {r === "all" ? "Everyone" : (ROLE_LABEL[r as UserRole] ?? r)}
             </button>
           ))}
         </div>
@@ -175,7 +176,7 @@ export default function Users() {
                 <td className="px-5 py-3.5">
                   <StatusPill
                     tone={roleTone(user.role)}
-                    label={ROLE_LABEL[user.role]}
+                    label={ROLE_LABEL[user.role] ?? user.role}
                   />
                 </td>
                 <td className="px-5 py-3.5">

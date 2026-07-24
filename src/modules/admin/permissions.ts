@@ -8,6 +8,7 @@ export const ROLE_LABEL: Record<UserRole, string> = {
   manager: "Manager",
   cashier: "Cashier",
   storekeeper: "Storekeeper",
+  security: "Security",
   staff: "Staff",
 };
 
@@ -19,6 +20,8 @@ export const ROLE_DESCRIPTION: Record<UserRole, string> = {
     "Issues receipts, checks buses in, collects payments and works the NYP list.",
   storekeeper:
     "Runs the store: stock items, battery swaps, repair jobs and parts.",
+  security:
+    "The gate: sees approved gate passes and confirms items leaving the premises.",
   staff: "Views the console and raises part requests.",
 };
 

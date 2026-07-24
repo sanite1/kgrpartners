@@ -29,6 +29,7 @@ const ROLES: UserRole[] = [
   "staff",
   "cashier",
   "storekeeper",
+  "security",
   "manager",
   "admin",
 ];
@@ -47,7 +48,6 @@ export default function UserFormPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>("staff");
   const [isActive, setIsActive] = useState(true);
   const [access, setAccess] = useState<ModuleKey[]>([
@@ -108,10 +108,6 @@ export default function UserFormPage() {
         setError("Enter a valid email address");
         return;
       }
-      if (password.length < 8) {
-        setError("Password must be at least 8 characters");
-        return;
-      }
     }
     setError("");
     if (isEdit && user) {
@@ -134,7 +130,6 @@ export default function UserFormPage() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           email: email.trim(),
-          password,
           role,
           access: accessPayload() ?? undefined,
         },
@@ -229,34 +224,22 @@ export default function UserFormPage() {
                 </span>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="u-email" className={labelClasses}>
-                    Email <span className="text-brand-500">*</span>
-                  </label>
-                  <input
-                    id="u-email"
-                    type="email"
-                    placeholder="name@kgrpartnersltd.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={inputClasses}
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="u-password" className={labelClasses}>
-                    Starting password <span className="text-brand-500">*</span>
-                  </label>
-                  <input
-                    id="u-password"
-                    type="text"
-                    placeholder="They can change it later"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={inputClasses}
-                    autoComplete="off"
-                  />
-                </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="u-email" className={labelClasses}>
+                  Email <span className="text-brand-500">*</span>
+                </label>
+                <input
+                  id="u-email"
+                  type="email"
+                  placeholder="name@kgrpartnersltd.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={inputClasses}
+                />
+                <span className="text-[12px] font-medium text-fog">
+                  A starting password is generated automatically and emailed
+                  to them with a sign-in link.
+                </span>
               </div>
             )}
 
@@ -279,12 +262,12 @@ export default function UserFormPage() {
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>
-                    {ROLE_LABEL[r]}
+                    {ROLE_LABEL[r] ?? r}
                   </option>
                 ))}
               </select>
               <p className="m-0 text-[12.5px] font-semibold text-fog">
-                {ROLE_DESCRIPTION[role]}
+                {ROLE_DESCRIPTION[role] ?? ""}
               </p>
             </div>
 

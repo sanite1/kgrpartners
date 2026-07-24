@@ -4,6 +4,8 @@ import { Bell, ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { useGetItems } from "@/lib/network/api/inventory.api";
 import { useGetPartRequests } from "@/lib/network/api/partRequest.api";
+import { useGetGatePasses } from "@/lib/network/api/gatePass.api";
+import { canApprove } from "../../permissions";
 import { cn } from "@/lib/utils";
 
 const initials = (first: string, last: string) =>
@@ -30,6 +32,8 @@ const useOutsideClose = (open: boolean, onClose: () => void) => {
 export const NotificationBell = () => {
   const [open, setOpen] = useState(false);
   const ref = useOutsideClose(open, () => setOpen(false));
+  const role = useAuthStore((s) => s.user?.role);
+  const isSecurity = role === "security";
 
   // real signals, refreshed each minute: stock running low, requests waiting
   const { data: lowStockData } = useGetItems(
@@ -38,12 +42,19 @@ export const NotificationBell = () => {
   );
   const { data: pendingData } = useGetPartRequests(
     { status: "pending", pageSize: 1 },
+    { refetchInterval: 60_000, enabled: !isSecurity },
+  );
+  // gate passes: managers see what waits for a decision (and staff their
+  // own pending); the gate sees what has been cleared for release
+  const { data: gatePassData } = useGetGatePasses(
+    { status: isSecurity ? "approved" : "pending", pageSize: 1 },
     { refetchInterval: 60_000 },
   );
 
-  const lowStock = lowStockData?.pagination?.totalItems ?? 0;
-  const pending = pendingData?.pagination?.totalItems ?? 0;
-  const count = lowStock + pending;
+  const lowStock = isSecurity ? 0 : (lowStockData?.pagination?.totalItems ?? 0);
+  const pending = isSecurity ? 0 : (pendingData?.pagination?.totalItems ?? 0);
+  const gatePasses = gatePassData?.pagination?.totalItems ?? 0;
+  const count = lowStock + pending + gatePasses;
 
   return (
     <div ref={ref} className="relative">
@@ -87,6 +98,22 @@ export const NotificationBell = () => {
               {pending} request{pending === 1 ? "" : "s"} awaiting decision
               <span className="text-[12px] font-extrabold text-brand-600">
                 Requests →
+              </span>
+            </Link>
+          )}
+          {gatePasses > 0 && (
+            <Link
+              to="/gate-pass"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between px-4 py-3 text-[13.5px] font-bold text-ink transition-colors hover:bg-haze"
+            >
+              {isSecurity
+                ? `${gatePasses} approved pass${gatePasses === 1 ? "" : "es"} at the gate`
+                : canApprove(role)
+                  ? `${gatePasses} gate pass${gatePasses === 1 ? "" : "es"} awaiting approval`
+                  : `${gatePasses} of your gate pass${gatePasses === 1 ? "" : "es"} still pending`}
+              <span className="text-[12px] font-extrabold text-brand-600">
+                Gate Pass →
               </span>
             </Link>
           )}
