@@ -370,12 +370,14 @@ export default function GatePassPage() {
                   </span>
                   {selected.department}
                 </p>
-                <p className="m-0">
-                  <span className="block text-[10.5px] font-extrabold tracking-[1px] text-fog">
-                    DESIGNATION
-                  </span>
-                  {selected.designation || "—"}
-                </p>
+                {selected.designation && (
+                  <p className="m-0">
+                    <span className="block text-[10.5px] font-extrabold tracking-[1px] text-fog">
+                      DESIGNATION
+                    </span>
+                    {selected.designation}
+                  </p>
+                )}
                 <p className="m-0 col-span-2">
                   <span className="block text-[10.5px] font-extrabold tracking-[1px] text-fog">
                     PLANNED EXIT

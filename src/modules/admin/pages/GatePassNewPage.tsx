@@ -34,7 +34,6 @@ export default function GatePassNewPage() {
   const navigate = useNavigate();
 
   const [department, setDepartment] = useState("");
-  const [designation, setDesignation] = useState("");
   const [exitAt, setExitAt] = useState("");
   const [items, setItems] = useState<ItemRow[]>([emptyItem()]);
   const [error, setError] = useState("");
@@ -66,8 +65,8 @@ export default function GatePassNewPage() {
   };
 
   const submit = () => {
-    if (department.trim().length < 2) {
-      setError("Enter your department");
+    if (!department) {
+      setError("Pick your department");
       return;
     }
     if (!exitAt) {
@@ -89,8 +88,7 @@ export default function GatePassNewPage() {
     setError("");
     createPass.mutate(
       {
-        department: department.trim(),
-        designation: designation.trim() || undefined,
+        department,
         exitAt: formatExit(exitAt),
         items: filled.map((item) => ({
           description: item.description.trim(),
@@ -123,32 +121,22 @@ export default function GatePassNewPage() {
 
       <div className="mx-auto max-w-[860px] rounded-[20px] border border-line bg-white p-6 shadow-[0_12px_30px_rgba(13,31,21,0.05)] sm:p-8">
         <div className="flex flex-col gap-5">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="gp-dept" className={labelClasses}>
                 Department <span className="text-brand-500">*</span>
               </label>
-              <input
+              <select
                 id="gp-dept"
-                type="text"
-                placeholder="Workshop"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 className={inputClasses}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="gp-desig" className={labelClasses}>
-                Designation
-              </label>
-              <input
-                id="gp-desig"
-                type="text"
-                placeholder="Technician"
-                value={designation}
-                onChange={(e) => setDesignation(e.target.value)}
-                className={inputClasses}
-              />
+              >
+                <option value="">Select department</option>
+                <option value="Workshop">Workshop</option>
+                <option value="Main Yard">Main Yard</option>
+                <option value="Muhd House">Muhd House</option>
+              </select>
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="gp-exit" className={labelClasses}>
