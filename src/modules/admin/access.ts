@@ -17,6 +17,7 @@ export const ACCESS_MODULES = [
   { key: "swaps", label: "Battery Swaps" },
   { key: "gate_pass", label: "Gate Pass" },
   { key: "purchases", label: "Purchases" },
+  { key: "checklists", label: "Checklist" },
   { key: "repairs", label: "Repairs" },
   { key: "buses", label: "Buses" },
   { key: "tracker_report", label: "Tracker Report" },
@@ -39,6 +40,7 @@ const EVERYONE: ModuleKey[] = [
   "swaps",
   "gate_pass",
   "purchases",
+  "checklists",
   "buses",
   "tracker_report",
 ];
@@ -47,7 +49,7 @@ export const ROLE_DEFAULT_ACCESS: Record<UserRole, ModuleKey[]> = {
   staff: [...EVERYONE, "inventory"],
   cashier: [...EVERYONE, "generate", "paypoint", "nyp", "receipts"],
   storekeeper: [...EVERYONE, "inventory", "batteries", "repairs"],
-  security: ["gate_pass"], // the gate desk sees only the gate desk
+  security: ["gate_pass", "checklists"], // the gate desk plus its tally
   manager: MODULE_KEYS.filter((k) => k !== "users"),
   admin: [...MODULE_KEYS],
 };
