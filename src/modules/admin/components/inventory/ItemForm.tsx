@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { useCreateItem, useUpdateItem } from "@/lib/network/api/inventory.api";
+import {
+  useCreateWarehouseItem,
+  useUpdateWarehouseItem,
+} from "@/lib/network/api/warehouse.api";
 import type {
   InventoryItem,
   ItemCategory,
@@ -9,10 +13,11 @@ import { cn } from "@/lib/utils";
 
 interface ItemFormProps {
   item?: InventoryItem; // present = edit
+  warehouse?: boolean; // save to the off-site warehouse instead
   onDone: () => void;
 }
 
-const ItemForm = ({ item, onDone }: ItemFormProps) => {
+const ItemForm = ({ item, warehouse, onDone }: ItemFormProps) => {
   const [name, setName] = useState(item?.name ?? "");
   const [category, setCategory] = useState<ItemCategory>(
     item?.category ?? "part",
@@ -24,8 +29,12 @@ const ItemForm = ({ item, onDone }: ItemFormProps) => {
   const [isActive, setIsActive] = useState(item?.isActive ?? true);
   const [error, setError] = useState("");
 
-  const createItem = useCreateItem();
-  const updateItem = useUpdateItem();
+  const createInventoryItem = useCreateItem();
+  const updateInventoryItem = useUpdateItem();
+  const createWarehouseItem = useCreateWarehouseItem();
+  const updateWarehouseItem = useUpdateWarehouseItem();
+  const createItem = warehouse ? createWarehouseItem : createInventoryItem;
+  const updateItem = warehouse ? updateWarehouseItem : updateInventoryItem;
   const isPending = createItem.isPending || updateItem.isPending;
 
   const handleSubmit = () => {

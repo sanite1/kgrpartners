@@ -14,6 +14,7 @@ const PayPoint = lazy(() => import("../pages/PayPoint"));
 const Nyp = lazy(() => import("../pages/Nyp"));
 const DailyAccount = lazy(() => import("../pages/DailyAccount"));
 const Inventory = lazy(() => import("../pages/Inventory"));
+const WarehousePage = lazy(() => import("../pages/Warehouse"));
 const Requests = lazy(() => import("../pages/Requests"));
 const Batteries = lazy(() => import("../pages/Batteries"));
 const BatteryExitFormPage = lazy(() => import("../pages/BatteryExitFormPage"));
@@ -69,6 +70,7 @@ export const AdminRoutes = () => {
               <Route path="/nyp" element={<Nyp />} />
               <Route path="/daily-account" element={<DailyAccount />} />
               <Route path="/inventory" element={<Inventory />} />
+              <Route path="/warehouse" element={<WarehousePage />} />
               <Route path="/requests" element={<Requests />} />
               <Route path="/batteries" element={<Batteries />} />
               <Route path="/battery-form" element={<BatteryExitFormPage />} />

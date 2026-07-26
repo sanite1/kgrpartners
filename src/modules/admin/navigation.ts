@@ -35,6 +35,12 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
   },
   { label: "Inventory", to: "/inventory", icon: "Boxes", module: "inventory" },
   {
+    label: "Warehouse",
+    to: "/warehouse",
+    icon: "Warehouse",
+    module: "warehouse",
+  },
+  {
     label: "Requests",
     to: "/requests",
     icon: "ClipboardList",
