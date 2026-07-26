@@ -26,7 +26,7 @@ import {
   errorClasses,
 } from "../components/console/form";
 
-const TRIP_OPTIONS = [1, 1.5, 2, 3];
+const TRIP_OPTIONS = [1, 1.5, 2, 2.5, 3];
 
 const KIND_LABEL: Record<ChecklistKind, string> = {
   security: "Security checklist",
