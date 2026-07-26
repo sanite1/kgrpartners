@@ -235,23 +235,30 @@ export default function Checklist() {
         <>
           {/* which list, which day */}
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
-              {(["security", "admin"] as const).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setKind(value)}
-                  className={cn(
-                    "cursor-pointer rounded-lg border-none px-4 py-2 text-[13px] font-extrabold transition-colors",
-                    kind === value
-                      ? "cta-gradient text-forest-deep"
-                      : "bg-transparent text-fog hover:text-bark",
-                  )}
-                >
-                  {KIND_LABEL[value]}
-                </button>
-              ))}
-            </div>
+            {isSecurity ? (
+              // security lives on one list; the admin list is not theirs
+              <span className="rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-extrabold text-ink">
+                {KIND_LABEL.security}
+              </span>
+            ) : (
+              <div className="flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
+                {(["security", "admin"] as const).map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setKind(value)}
+                    className={cn(
+                      "cursor-pointer rounded-lg border-none px-4 py-2 text-[13px] font-extrabold transition-colors",
+                      kind === value
+                        ? "cta-gradient text-forest-deep"
+                        : "bg-transparent text-fog hover:text-bark",
+                    )}
+                  >
+                    {KIND_LABEL[value]}
+                  </button>
+                ))}
+              </div>
+            )}
             <span className="text-[14px] font-extrabold text-ink">
               {sheet ? fmtDate(sheet.date) : ""}
               {!isToday && (

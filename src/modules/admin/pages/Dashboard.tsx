@@ -15,6 +15,8 @@ import {
 } from "@/lib/network/api/battery.api";
 import { useGetRepairJobs } from "@/lib/network/api/repair.api";
 import { useGetPartRequests } from "@/lib/network/api/partRequest.api";
+import { useGetGatePasses } from "@/lib/network/api/gatePass.api";
+import { useGetChecklist } from "@/lib/network/api/checklist.api";
 import type { ReceiptSummarySeriesPoint } from "@/lib/network/types/receipt.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canApprove } from "../permissions";
@@ -172,6 +174,7 @@ export default function Dashboard() {
   const isManager = canApprove(role); // admin + manager: global view
   const isCashier = role === "cashier";
   const isStore = role === "storekeeper";
+  const isSecurity = role === "security";
   const showMoney = isManager || isCashier;
   const showOps = isManager || isStore;
 
@@ -204,6 +207,19 @@ export default function Dashboard() {
       { status: "pending", pageSize: 1 },
       { enabled: isManager || isStore },
     );
+
+  // SECURITY: what is waiting at the gate and today's clearance sheet
+  const { data: approvedPassesData, isLoading: passesLoading } =
+    useGetGatePasses(
+      { status: "approved", pageSize: 1 },
+      { enabled: isSecurity },
+    );
+  const { data: securitySheetData, isLoading: sheetLoading } = useGetChecklist(
+    "security",
+    undefined,
+    { enabled: isSecurity },
+  );
+  const sheetTotals = securitySheetData?.data?.totals;
 
   const { data: idleData } = useGetIdleBatteries({ enabled: isManager });
   const idleCount = idleData?.data?.count ?? 0;
@@ -249,7 +265,9 @@ export default function Dashboard() {
       ? "Your day so far. Only your own collections."
       : isStore
         ? "The store and workshop at a glance."
-        : "Your workspace. Raise a part request or browse inventory.";
+        : isSecurity
+          ? "The gate at a glance. Release approved passes and clear every bus."
+          : "Your workspace. Raise a part request or browse inventory.";
 
   return (
     <>
@@ -470,8 +488,61 @@ export default function Dashboard() {
         </>
       )}
 
+      {/* SECURITY: the gate desk */}
+      {isSecurity && (
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCell
+            label="PASSES AWAITING RELEASE"
+            value={approvedPassesData?.pagination?.totalItems ?? 0}
+            loading={passesLoading}
+            warn
+            to="/gate-pass"
+          />
+          <StatCell
+            label="BUSES CLEARED · MORNING"
+            value={sheetTotals?.morningBuses ?? 0}
+            loading={sheetLoading}
+            to="/checklist"
+          />
+          <StatCell
+            label="BUSES CLEARED · EVENING"
+            value={sheetTotals?.eveningBuses ?? 0}
+            loading={sheetLoading}
+            to="/checklist"
+          />
+          <StatCell
+            label="TRIPS TODAY"
+            value={sheetTotals?.totalTrips ?? 0}
+            loading={sheetLoading}
+            to="/checklist"
+          />
+          <Link
+            to="/checklist"
+            className="col-span-2 flex h-[112px] flex-col justify-center gap-1 rounded-[20px] bg-forest p-5 transition-transform hover:scale-[1.01]"
+          >
+            <span className="text-[11px] font-extrabold tracking-[1.5px] text-mint-soft">
+              BUS GOING OUT?
+            </span>
+            <span className="text-[18px] font-extrabold leading-tight text-neon">
+              Clear a bus →
+            </span>
+          </Link>
+          <Link
+            to="/gate-pass"
+            className="col-span-2 flex h-[112px] flex-col justify-center gap-1 rounded-[20px] bg-forest p-5 transition-transform hover:scale-[1.01]"
+          >
+            <span className="text-[11px] font-extrabold tracking-[1.5px] text-mint-soft">
+              ITEMS LEAVING THE YARD?
+            </span>
+            <span className="text-[18px] font-extrabold leading-tight text-neon">
+              Open gate passes →
+            </span>
+          </Link>
+        </div>
+      )}
+
       {/* STAFF: minimal workspace */}
-      {!isManager && !isCashier && !isStore && (
+      {!isManager && !isCashier && !isStore && !isSecurity && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatCell
             label="PENDING REQUESTS"
