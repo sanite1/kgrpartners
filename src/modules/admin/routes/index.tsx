@@ -19,6 +19,7 @@ const Requests = lazy(() => import("../pages/Requests"));
 const Batteries = lazy(() => import("../pages/Batteries"));
 const BatteryExitFormPage = lazy(() => import("../pages/BatteryExitFormPage"));
 const BatteryClosing = lazy(() => import("../pages/BatteryClosing"));
+const HouseClosing = lazy(() => import("../pages/HouseClosing"));
 const Swaps = lazy(() => import("../pages/Swaps"));
 const GatePassPage = lazy(() => import("../pages/GatePass"));
 const GatePassNewPage = lazy(() => import("../pages/GatePassNewPage"));
@@ -75,6 +76,7 @@ export const AdminRoutes = () => {
               <Route path="/batteries" element={<Batteries />} />
               <Route path="/battery-form" element={<BatteryExitFormPage />} />
               <Route path="/battery-closing" element={<BatteryClosing />} />
+              <Route path="/house-closing" element={<HouseClosing />} />
               <Route path="/swaps" element={<Swaps />} />
               <Route path="/gate-pass" element={<GatePassPage />} />
               <Route path="/gate-pass/new" element={<GatePassNewPage />} />

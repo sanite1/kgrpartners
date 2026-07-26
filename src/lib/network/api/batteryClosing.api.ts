@@ -9,6 +9,7 @@ import type {
   ClosingReportData,
   CreateClosingEntryPayload,
   ClosingDayRow,
+  ClosingSheetKey,
 } from "../types/batteryClosing.types";
 import {
   useQuery,
@@ -19,39 +20,52 @@ import {
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 
-const BASE = "/api/battery-closing";
+// each sheet lives behind its own base URL and access toggle
+const SHEET_BASE: Record<ClosingSheetKey, string> = {
+  main: "/api/battery-closing",
+  muhd_kamila: "/api/house-closing",
+};
 
 // RAW API FUNCTIONS
 
 export const getClosingReportFn = (
+  sheet: ClosingSheetKey,
   date?: string,
 ): Promise<ApiResponse<ClosingReportData>> =>
-  api.get<ApiResponse<ClosingReportData>>(BASE, { date });
+  api.get<ApiResponse<ClosingReportData>>(SHEET_BASE[sheet], { date });
 
 export const createClosingEntryFn = (
+  sheet: ClosingSheetKey,
   payload: CreateClosingEntryPayload,
 ): Promise<ApiResponse<BatteryClosingEntry>> =>
-  api.post<ApiResponse<BatteryClosingEntry>>(BASE, payload);
+  api.post<ApiResponse<BatteryClosingEntry>>(SHEET_BASE[sheet], payload);
 
-export const getClosingDaysFn = (params?: {
-  page?: number;
-  pageSize?: number;
-}): Promise<PaginatedResponse<ClosingDayRow>> =>
-  api.get<PaginatedResponse<ClosingDayRow>>(`${BASE}/days`, params);
+export const getClosingDaysFn = (
+  sheet: ClosingSheetKey,
+  params?: {
+    page?: number;
+    pageSize?: number;
+  },
+): Promise<PaginatedResponse<ClosingDayRow>> =>
+  api.get<PaginatedResponse<ClosingDayRow>>(
+    `${SHEET_BASE[sheet]}/days`,
+    params,
+  );
 
 export const deleteClosingEntryFn = (
+  sheet: ClosingSheetKey,
   id: string,
 ): Promise<ApiResponse<undefined>> =>
-  api.delete<ApiResponse<undefined>>(`${BASE}/${id}`);
+  api.delete<ApiResponse<undefined>>(`${SHEET_BASE[sheet]}/${id}`);
 
 // REACT QUERY: Query Keys
 
 export const closingKeys = {
   all: ["battery-closing"] as const,
-  report: (date?: string) =>
-    [...closingKeys.all, "report", date ?? "today"] as const,
-  days: (page?: number, pageSize?: number) =>
-    [...closingKeys.all, "days", page ?? 1, pageSize ?? 20] as const,
+  report: (sheet: ClosingSheetKey, date?: string) =>
+    [...closingKeys.all, "report", sheet, date ?? "today"] as const,
+  days: (sheet: ClosingSheetKey, page?: number, pageSize?: number) =>
+    [...closingKeys.all, "days", sheet, page ?? 1, pageSize ?? 20] as const,
 } as const;
 
 // Error helper
@@ -73,16 +87,18 @@ const getErrorMessage = (error: unknown): string => {
 // REACT QUERY: Queries
 
 export const useGetClosingReport = (
+  sheet: ClosingSheetKey,
   date?: string,
   options?: Partial<UseQueryOptions<ApiResponse<ClosingReportData>, AxiosError>>,
 ) =>
   useQuery<ApiResponse<ClosingReportData>, AxiosError>({
-    queryKey: closingKeys.report(date),
-    queryFn: () => getClosingReportFn(date),
+    queryKey: closingKeys.report(sheet, date),
+    queryFn: () => getClosingReportFn(sheet, date),
     ...options,
   });
 
 export const useGetClosingDays = (
+  sheet: ClosingSheetKey,
   page?: number,
   pageSize?: number,
   options?: Partial<
@@ -90,21 +106,21 @@ export const useGetClosingDays = (
   >,
 ) =>
   useQuery<PaginatedResponse<ClosingDayRow>, AxiosError>({
-    queryKey: closingKeys.days(page, pageSize),
-    queryFn: () => getClosingDaysFn({ page, pageSize }),
+    queryKey: closingKeys.days(sheet, page, pageSize),
+    queryFn: () => getClosingDaysFn(sheet, { page, pageSize }),
     ...options,
   });
 
 // REACT QUERY: Mutations
 
-export const useCreateClosingEntry = () => {
+export const useCreateClosingEntry = (sheet: ClosingSheetKey) => {
   const qc = useQueryClient();
   return useMutation<
     ApiResponse<BatteryClosingEntry>,
     AxiosError,
     CreateClosingEntryPayload
   >({
-    mutationFn: (payload) => createClosingEntryFn(payload),
+    mutationFn: (payload) => createClosingEntryFn(sheet, payload),
     onSuccess: (data) => {
       toast.success(data.message);
       qc.invalidateQueries({ queryKey: closingKeys.all });
@@ -115,10 +131,10 @@ export const useCreateClosingEntry = () => {
   });
 };
 
-export const useDeleteClosingEntry = () => {
+export const useDeleteClosingEntry = (sheet: ClosingSheetKey) => {
   const qc = useQueryClient();
   return useMutation<ApiResponse<undefined>, AxiosError, string>({
-    mutationFn: (id) => deleteClosingEntryFn(id),
+    mutationFn: (id) => deleteClosingEntryFn(sheet, id),
     onSuccess: (data) => {
       toast.success(data.message);
       qc.invalidateQueries({ queryKey: closingKeys.all });

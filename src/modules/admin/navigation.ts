@@ -64,6 +64,12 @@ export const CONSOLE_NAV: ConsoleNavItem[] = [
     icon: "BatteryFull",
     module: "battery_closing",
   },
+  {
+    label: "Muh'd & Kamila House",
+    to: "/house-closing",
+    icon: "House",
+    module: "house_closing",
+  },
   { label: "Swaps", to: "/swaps", icon: "ArrowLeftRight", module: "swaps" },
   { label: "Gate Pass", to: "/gate-pass", icon: "DoorOpen", module: "gate_pass" },
   { label: "Purchases", to: "/purchases", icon: "Package", module: "purchases" },
