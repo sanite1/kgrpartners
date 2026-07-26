@@ -32,7 +32,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { navForUser, CONSOLE_NAV } from "../navigation";
+import { navForUser, navGroupsForUser, CONSOLE_NAV } from "../navigation";
 import { cn } from "@/lib/utils";
 import TopBar, {
   NotificationBell,
@@ -75,6 +75,7 @@ const AdminLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const navItems = navForUser(user);
+  const navGroups = navGroupsForUser(user);
 
   // deep links into a module the user cannot access bounce to the dashboard
   const blocked = CONSOLE_NAV.some(
@@ -105,30 +106,39 @@ const AdminLayout = () => {
         </span>
       </div>
 
-      {/* nav: scrolls on its own when taller than the screen */}
+      {/* nav: grouped sections, scrolls on its own when taller than the screen */}
       <nav className="no-scrollbar flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 pb-28 lg:pb-8">
-        {navItems.map((item) => {
-          const Icon = ICON_MAP[item.icon];
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              onClick={() => setDrawerOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 rounded-lg px-3.5 py-3 text-[14px] font-bold transition-colors",
-                  isActive
-                    ? "cta-gradient text-forest-deep"
-                    : "text-mint hover:bg-white/5 hover:text-white",
-                )
-              }
-            >
-              {Icon && <Icon size={17} strokeWidth={2.3} />}
-              {item.label}
-            </NavLink>
-          );
-        })}
+        {navGroups.map((group, gi) => (
+          <div key={group.title ?? `group-${gi}`} className="flex flex-col gap-1">
+            {group.title && (
+              <span className="px-3.5 pb-1 pt-4 text-[10px] font-extrabold uppercase tracking-[2px] text-mint/50">
+                {group.title}
+              </span>
+            )}
+            {group.items.map((item) => {
+              const Icon = ICON_MAP[item.icon];
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === "/"}
+                  onClick={() => setDrawerOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-lg px-3.5 py-3 text-[14px] font-bold transition-colors",
+                      isActive
+                        ? "cta-gradient text-forest-deep"
+                        : "text-mint hover:bg-white/5 hover:text-white",
+                    )
+                  }
+                >
+                  {Icon && <Icon size={17} strokeWidth={2.3} />}
+                  {item.label}
+                </NavLink>
+              );
+            })}
+          </div>
+        ))}
       </nav>
     </>
   );
