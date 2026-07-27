@@ -52,6 +52,8 @@ export interface DailyAccountCashier {
 export interface DailyAccountData {
   date: string;
   receiptsIssued: number;
+  trips: number; // expected trips across the day's receipts
+  busesWorked: number; // distinct buses that got a receipt that day
   expectedAmount: string;
   collectedTotal: string;
   collectedFromToday: string;

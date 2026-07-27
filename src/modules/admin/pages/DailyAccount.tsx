@@ -66,7 +66,7 @@ export default function DailyAccount() {
       />
 
       {/* summary cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <div className="flex flex-col justify-between rounded-[20px] border border-line bg-white p-5">
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
             EXPECTED
@@ -115,7 +115,7 @@ export default function DailyAccount() {
             </span>
           )}
         </div>
-        <div className="col-span-2 flex flex-col justify-between rounded-[20px] border border-line bg-white p-5 lg:col-span-1">
+        <div className="flex flex-col justify-between rounded-[20px] border border-line bg-white p-5">
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
             STILL OUTSTANDING
           </span>
@@ -131,6 +131,30 @@ export default function DailyAccount() {
               )}
             >
               {fmtNaira(account?.outstandingToday)}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col justify-between rounded-[20px] border border-line bg-white p-5">
+          <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
+            DAILY TRIPS
+          </span>
+          {accountLoading ? (
+            <Skeleton className="mt-3 h-5 w-16" />
+          ) : (
+            <span className="mt-3 text-[20px] font-extrabold leading-none text-ink">
+              {account?.trips ?? 0}
+            </span>
+          )}
+        </div>
+        <div className="col-span-2 flex flex-col justify-between rounded-[20px] border border-line bg-white p-5 lg:col-span-1">
+          <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
+            DAILY WORKING BUSES
+          </span>
+          {accountLoading ? (
+            <Skeleton className="mt-3 h-5 w-16" />
+          ) : (
+            <span className="mt-3 text-[20px] font-extrabold leading-none text-ink">
+              {account?.busesWorked ?? 0}
             </span>
           )}
         </div>
