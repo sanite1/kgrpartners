@@ -77,7 +77,8 @@ export default function Checklist() {
   const createEntry = useCreateChecklistEntry();
   const deleteEntry = useDeleteChecklistEntry();
 
-  const isToday = !viewDate || viewDate === sheet?.date;
+  // no viewDate means the live sheet; any picked date shows the way back
+  const isToday = !viewDate;
   // who may write the list on screen; the backend enforces it either way
   const canWrite = isAdmin || (isSecurity ? kind === "security" : kind === "admin");
 

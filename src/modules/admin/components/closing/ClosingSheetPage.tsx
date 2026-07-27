@@ -82,7 +82,8 @@ export default function ClosingSheetPage({
   const createEntry = useCreateClosingEntry(sheet);
   const deleteEntry = useDeleteClosingEntry(sheet);
 
-  const isToday = !viewDate || viewDate === report?.date;
+  // no viewDate means the live sheet; any picked date shows the way back
+  const isToday = !viewDate;
 
   const openAdd = () => {
     setName("");
