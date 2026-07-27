@@ -28,9 +28,11 @@ import {
 
 const TRIP_OPTIONS = [1, 1.5, 2, 2.5, 3];
 
+// the "admin" kind is the STAFF checklist on screen; the stored value
+// stays "admin" so existing records are untouched
 const KIND_LABEL: Record<ChecklistKind, string> = {
   security: "Security checklist",
-  admin: "Admin checklist",
+  admin: "Staff checklist",
 };
 
 const smallBtn =
@@ -42,7 +44,8 @@ export default function Checklist() {
   const isAdmin = isAdminRole(user?.role);
   const isSecurity = user?.role === "security";
 
-  // security lives on their list; everyone else starts on the admin list
+  // security lives on their list, staff on theirs; only managers and
+  // admins get the toggle to compare the two
   const [kind, setKind] = useState<ChecklistKind>(
     isSecurity ? "security" : "admin",
   );
@@ -186,7 +189,7 @@ export default function Checklist() {
                       <td className="whitespace-nowrap px-4 py-3">
                         <StatusPill
                           tone={day.kind === "security" ? "warn" : "success"}
-                          label={day.kind === "security" ? "Security" : "Admin"}
+                          label={day.kind === "security" ? "Security" : "Staff"}
                         />
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-bold tabular-nums text-bark">
@@ -235,10 +238,11 @@ export default function Checklist() {
         <>
           {/* which list, which day */}
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            {isSecurity ? (
-              // security lives on one list; the admin list is not theirs
+            {!isManager ? (
+              // one list per person below management: security see
+              // theirs, staff see theirs
               <span className="rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-extrabold text-ink">
-                {KIND_LABEL.security}
+                {KIND_LABEL[kind]}
               </span>
             ) : (
               <div className="flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
