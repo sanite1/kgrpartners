@@ -12,6 +12,7 @@ import {
   useGetGatePasses,
   useApproveGatePass,
   useDeclineGatePass,
+  useClearGatePassItem,
   useCarryOutGatePass,
 } from "@/lib/network/api/gatePass.api";
 import type {
@@ -58,6 +59,11 @@ export default function GatePassPage() {
   const [note, setNote] = useState("");
   const [confirmCarry, setConfirmCarry] = useState(false);
 
+  // per-item flag form at the gate
+  const [flagFor, setFlagFor] = useState<number | null>(null);
+  const [flagQty, setFlagQty] = useState("");
+  const [flagNote, setFlagNote] = useState("");
+
   const { data, isLoading } = useGetGatePasses({
     page,
     pageSize,
@@ -69,18 +75,55 @@ export default function GatePassPage() {
 
   const approve = useApproveGatePass();
   const decline = useDeclineGatePass();
+  const clearItem = useClearGatePassItem();
   const carryOut = useCarryOutGatePass();
   const deciding =
-    approve.isPending || decline.isPending || carryOut.isPending;
+    approve.isPending ||
+    decline.isPending ||
+    clearItem.isPending ||
+    carryOut.isPending;
 
   const open = (pass: GatePass) => {
     setSelected(pass);
     setNote("");
     setConfirmCarry(false);
+    setFlagFor(null);
   };
 
-  const refreshSelected = (res: { data?: GatePass }) =>
+  const refreshSelected = (res: { data?: GatePass }) => {
     setSelected(res.data ?? null);
+    setFlagFor(null);
+  };
+
+  // the gate may only release after looking at every single line
+  const checkedCount =
+    selected?.items.filter((i) => i.clearance?.status).length ?? 0;
+  const allChecked = !!selected && checkedCount === selected.items.length;
+  const flaggedCount =
+    selected?.items.filter((i) => i.clearance?.status === "flagged").length ??
+    0;
+
+  const openFlag = (i: number) => {
+    setFlagFor(i);
+    setFlagQty("");
+    setFlagNote("");
+  };
+
+  const saveFlag = (i: number) => {
+    if (!selected) return;
+    clearItem.mutate(
+      {
+        id: selected._id,
+        index: i,
+        payload: {
+          outcome: "flagged",
+          seenQuantity: flagQty.trim() === "" ? undefined : Number(flagQty),
+          note: flagNote.trim() || undefined,
+        },
+      },
+      { onSuccess: refreshSelected },
+    );
+  };
 
   // security sees only what they may act on; hide the filters that
   // can never return anything for them
@@ -196,6 +239,16 @@ export default function GatePassPage() {
                 </td>
                 <td className="px-5 py-3.5 text-[13.5px] font-bold tabular-nums text-bark">
                   {pass.items.length}
+                  {(() => {
+                    const flagged = pass.items.filter(
+                      (i) => i.clearance?.status === "flagged",
+                    ).length;
+                    return flagged > 0 ? (
+                      <span className="ml-2 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-extrabold text-red-600">
+                        {flagged} flagged
+                      </span>
+                    ) : null;
+                  })()}
                 </td>
                 <td className="px-5 py-3.5 text-[13px] font-semibold text-bark">
                   {pass.exitAt}
@@ -302,9 +355,9 @@ export default function GatePassPage() {
                 (confirmCarry && selected.status === "approved" ? (
                   <div className="flex flex-col gap-2.5 rounded-xl border border-brand-200 bg-brand-50 p-4">
                     <p className="m-0 text-[13px] font-semibold text-bark">
-                      Confirm: the {selected.items.length} item
-                      {selected.items.length === 1 ? "" : "s"} on pass #
-                      {selected.passId} are physically leaving the gate now.
+                      {flaggedCount > 0
+                        ? `Confirm: releasing pass #${selected.passId}. ${flaggedCount} flagged ${flaggedCount === 1 ? "item stays" : "items stay"} behind and management will see why.`
+                        : `Confirm: the ${selected.items.length} item${selected.items.length === 1 ? "" : "s"} on pass #${selected.passId} are physically leaving the gate now.`}
                     </p>
                     <div className="flex gap-2">
                       <button
@@ -331,7 +384,9 @@ export default function GatePassPage() {
                 ) : (
                   <button
                     type="button"
-                    disabled={selected.status !== "approved" || deciding}
+                    disabled={
+                      selected.status !== "approved" || !allChecked || deciding
+                    }
                     title={
                       selected.status === "pending"
                         ? "Not approved by management yet. Do not release."
@@ -339,12 +394,17 @@ export default function GatePassPage() {
                           ? "Declined by management. Do not release."
                           : selected.status === "carried_out"
                             ? "Already carried out"
-                            : undefined
+                            : !allChecked
+                              ? "Clear or flag every item first"
+                              : undefined
                     }
                     onClick={() => setConfirmCarry(true)}
                     className="cta-gradient flex cursor-pointer items-center justify-center gap-2 rounded-lg border-none px-4 py-2.5 text-[13.5px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    <ShieldCheck size={15} /> Mark carried out
+                    <ShieldCheck size={15} />
+                    {selected.status === "approved" && !allChecked
+                      ? `Check all items first (${checkedCount}/${selected.items.length})`
+                      : "Mark carried out"}
                   </button>
                 ))}
             </div>
@@ -387,31 +447,163 @@ export default function GatePassPage() {
               </div>
             </div>
 
-            {/* items, numbered like the paper form */}
+            {/* items, numbered like the paper form; the gate checks
+                each line against what they can actually see */}
             <div className="flex flex-col gap-2">
               <span className="text-[12px] font-extrabold tracking-[1px] text-brand-600">
                 ITEM DETAILS
+                {selected.status === "approved" && canClear && (
+                  <span className="ml-2 text-fog">
+                    · {checkedCount}/{selected.items.length} CHECKED
+                  </span>
+                )}
               </span>
               <div className="overflow-hidden rounded-xl border border-line">
-                {selected.items.map((item, i) => (
-                  <div
-                    key={i}
-                    className={cn("px-4 py-3", i > 0 && "border-t border-line")}
-                  >
-                    <p className="m-0 text-[14px] font-extrabold text-ink">
-                      {i + 1}. {item.description}
-                      <span className="ml-2 rounded-full bg-haze px-2 py-0.5 text-[11.5px] font-bold text-bark">
-                        qty {item.quantity}
-                      </span>
-                    </p>
-                    <p className="m-0 mt-1 text-[12.5px] font-semibold text-fog">
-                      {item.purpose && <>Purpose: {item.purpose}</>}
-                      {item.purpose && item.location && " · "}
-                      {item.location && <>Going to: {item.location}</>}
-                      {!item.purpose && !item.location && "No details given"}
-                    </p>
-                  </div>
-                ))}
+                {selected.items.map((item, i) => {
+                  const cl = item.clearance;
+                  const checking = canClear && selected.status === "approved";
+                  return (
+                    <div
+                      key={i}
+                      className={cn(
+                        "px-4 py-3",
+                        i > 0 && "border-t border-line",
+                        cl?.status === "cleared" && "bg-brand-50/40",
+                        cl?.status === "flagged" && "bg-red-50/60",
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="m-0 text-[14px] font-extrabold text-ink">
+                          {i + 1}. {item.description}
+                          <span className="ml-2 rounded-full bg-haze px-2 py-0.5 text-[11.5px] font-bold text-bark">
+                            qty {item.quantity}
+                          </span>
+                        </p>
+                        {cl && (
+                          <span
+                            className={cn(
+                              "flex-none rounded-full px-2.5 py-1 text-[11px] font-extrabold",
+                              cl.status === "cleared"
+                                ? "bg-brand-50 text-brand-600"
+                                : "bg-red-50 text-red-600",
+                            )}
+                          >
+                            {cl.status === "cleared" ? "Cleared" : "Flagged"}
+                          </span>
+                        )}
+                      </div>
+                      <p className="m-0 mt-1 text-[12.5px] font-semibold text-fog">
+                        {item.purpose && <>Purpose: {item.purpose}</>}
+                        {item.purpose && item.location && " · "}
+                        {item.location && <>Going to: {item.location}</>}
+                        {!item.purpose && !item.location && "No details given"}
+                      </p>
+                      {cl && (
+                        <p
+                          className={cn(
+                            "m-0 mt-1.5 text-[12px] font-semibold",
+                            cl.status === "flagged"
+                              ? "text-red-600"
+                              : "text-fog",
+                          )}
+                        >
+                          {cl.status === "flagged" &&
+                            cl.seenQuantity !== undefined && (
+                              <>
+                                Seen {cl.seenQuantity} of {item.quantity} ·{" "}
+                              </>
+                            )}
+                          {cl.note && <>{cl.note} · </>}
+                          {cl.byName}
+                          {cl.at && <> at {fmtTime(cl.at)}</>}
+                        </p>
+                      )}
+                      {checking && flagFor !== i && (
+                        <div className="mt-2.5 flex gap-2">
+                          <button
+                            type="button"
+                            disabled={deciding}
+                            onClick={() =>
+                              clearItem.mutate(
+                                {
+                                  id: selected._id,
+                                  index: i,
+                                  payload: { outcome: "cleared" },
+                                },
+                                { onSuccess: refreshSelected },
+                              )
+                            }
+                            className={cn(
+                              "flex-1 cursor-pointer rounded-lg border px-3 py-2 text-[12.5px] font-extrabold transition-colors disabled:opacity-50",
+                              cl?.status === "cleared"
+                                ? "border-transparent bg-brand-500 text-white"
+                                : "border-line bg-white text-bark hover:border-brand-500 hover:text-brand-600",
+                            )}
+                          >
+                            ✓ {cl?.status === "cleared" ? "Cleared" : "Clear"}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={deciding}
+                            onClick={() => openFlag(i)}
+                            className={cn(
+                              "flex-1 cursor-pointer rounded-lg border px-3 py-2 text-[12.5px] font-extrabold transition-colors disabled:opacity-50",
+                              cl?.status === "flagged"
+                                ? "border-transparent bg-red-600 text-white"
+                                : "border-line bg-white text-bark hover:border-red-300 hover:text-red-600",
+                            )}
+                          >
+                            {cl?.status === "flagged" ? "Flagged" : "Flag"}
+                          </button>
+                        </div>
+                      )}
+                      {checking && flagFor === i && (
+                        <div className="mt-2.5 flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
+                          <p className="m-0 text-[12px] font-bold text-red-600">
+                            What did you actually see? This item will be held
+                            back.
+                          </p>
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder={`Quantity seen (listed: ${item.quantity})`}
+                            value={flagQty}
+                            onChange={(e) => setFlagQty(e.target.value)}
+                            className={cn(inputClasses, "sm:text-[13px]")}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Note (different item, damaged...)"
+                            value={flagNote}
+                            onChange={(e) => setFlagNote(e.target.value)}
+                            className={cn(inputClasses, "sm:text-[13px]")}
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              disabled={
+                                deciding ||
+                                (flagQty.trim() === "" &&
+                                  flagNote.trim() === "")
+                              }
+                              onClick={() => saveFlag(i)}
+                              className="flex-1 cursor-pointer rounded-lg border-none bg-red-600 px-3 py-2 text-[12.5px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              Flag item
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFlagFor(null)}
+                              className="flex-1 cursor-pointer rounded-lg border border-line bg-white px-3 py-2 text-[12.5px] font-bold text-bark"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

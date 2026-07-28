@@ -6,11 +6,22 @@ export type GatePassStatus =
   | "declined"
   | "carried_out";
 
+// security's verdict on one item, given at the gate against the pass
+// itself: cleared matches the line; flagged is held back
+export interface ItemClearance {
+  status: "cleared" | "flagged";
+  seenQuantity?: number;
+  note?: string;
+  byName?: string;
+  at?: string;
+}
+
 export interface GatePassItem {
   description: string;
   quantity: number;
   purpose: string;
   location: string;
+  clearance?: ItemClearance; // absent until security checks it
 }
 
 export interface GatePass {
@@ -45,6 +56,12 @@ export interface CreateGatePassPayload {
     purpose?: string;
     location?: string;
   }[];
+}
+
+export interface ClearGatePassItemPayload {
+  outcome: "cleared" | "flagged";
+  seenQuantity?: number;
+  note?: string;
 }
 
 export interface DecideGatePassPayload {

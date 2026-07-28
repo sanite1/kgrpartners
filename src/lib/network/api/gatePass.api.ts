@@ -8,6 +8,7 @@ import type {
   GatePass,
   CreateGatePassPayload,
   DecideGatePassPayload,
+  ClearGatePassItemPayload,
   GatePassesQueryParams,
 } from "../types/gatePass.types";
 import {
@@ -44,6 +45,16 @@ export const declineGatePassFn = (
   payload: DecideGatePassPayload,
 ): Promise<ApiResponse<GatePass>> =>
   api.post<ApiResponse<GatePass>>(`${BASE}/${id}/decline`, payload);
+
+export const clearGatePassItemFn = (
+  id: string,
+  index: number,
+  payload: ClearGatePassItemPayload,
+): Promise<ApiResponse<GatePass>> =>
+  api.post<ApiResponse<GatePass>>(
+    `${BASE}/${id}/items/${index}/clear`,
+    payload,
+  );
 
 export const carryOutGatePassFn = (
   id: string,
@@ -118,6 +129,13 @@ export const useDeclineGatePass = () =>
   useGatePassMutation<{ id: string; payload: DecideGatePassPayload }>(
     ({ id, payload }) => declineGatePassFn(id, payload),
   );
+
+export const useClearGatePassItem = () =>
+  useGatePassMutation<{
+    id: string;
+    index: number;
+    payload: ClearGatePassItemPayload;
+  }>(({ id, index, payload }) => clearGatePassItemFn(id, index, payload));
 
 export const useCarryOutGatePass = () =>
   useGatePassMutation<string>((id) => carryOutGatePassFn(id));
