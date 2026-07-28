@@ -48,3 +48,42 @@ export interface ChecklistDayRow {
   eveningTrips: number;
   totalTrips: number;
 }
+
+// one side of a compared row: what one list wrote for a bus and session
+export interface CompareSide {
+  batteryName: string;
+  trips: number;
+  addedByName: string;
+  createdAt: string;
+}
+
+// green: both lists agree; red: both wrote it but differently;
+// yellow: only one list has it
+export type CompareStatus =
+  | "match"
+  | "mismatch"
+  | "security_only"
+  | "staff_only";
+
+export interface CompareRow {
+  busName: string;
+  session: ChecklistSession;
+  security: CompareSide | null;
+  staff: CompareSide | null;
+  status: CompareStatus;
+}
+
+export interface ChecklistCompareTotals {
+  matched: number;
+  mismatched: number;
+  securityOnly: number;
+  staffOnly: number;
+  securityTrips: number;
+  staffTrips: number;
+}
+
+export interface ChecklistCompareData {
+  date: string;
+  rows: CompareRow[];
+  totals: ChecklistCompareTotals;
+}

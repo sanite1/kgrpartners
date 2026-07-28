@@ -8,6 +8,7 @@ import type {
   ChecklistData,
   ChecklistEntry,
   ChecklistKind,
+  ChecklistCompareData,
   CreateChecklistEntryPayload,
   ChecklistDayRow,
 } from "../types/checklist.types";
@@ -35,6 +36,11 @@ export const createChecklistEntryFn = (
 ): Promise<ApiResponse<ChecklistEntry>> =>
   api.post<ApiResponse<ChecklistEntry>>(BASE, payload);
 
+export const getChecklistCompareFn = (
+  date?: string,
+): Promise<ApiResponse<ChecklistCompareData>> =>
+  api.get<ApiResponse<ChecklistCompareData>>(`${BASE}/compare`, { date });
+
 export const getChecklistDaysFn = (params?: {
   page?: number;
   pageSize?: number;
@@ -52,6 +58,8 @@ export const checklistKeys = {
   all: ["checklists"] as const,
   sheet: (kind: ChecklistKind, date?: string) =>
     [...checklistKeys.all, "sheet", kind, date ?? "today"] as const,
+  compare: (date?: string) =>
+    [...checklistKeys.all, "compare", date ?? "today"] as const,
   days: (page?: number, pageSize?: number) =>
     [...checklistKeys.all, "days", page ?? 1, pageSize ?? 20] as const,
 } as const;
@@ -82,6 +90,18 @@ export const useGetChecklist = (
   useQuery<ApiResponse<ChecklistData>, AxiosError>({
     queryKey: checklistKeys.sheet(kind, date),
     queryFn: () => getChecklistFn(kind, date),
+    ...options,
+  });
+
+export const useGetChecklistCompare = (
+  date?: string,
+  options?: Partial<
+    UseQueryOptions<ApiResponse<ChecklistCompareData>, AxiosError>
+  >,
+) =>
+  useQuery<ApiResponse<ChecklistCompareData>, AxiosError>({
+    queryKey: checklistKeys.compare(date),
+    queryFn: () => getChecklistCompareFn(date),
     ...options,
   });
 

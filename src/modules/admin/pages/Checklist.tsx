@@ -9,6 +9,7 @@ import Pagination from "../components/console/Pagination";
 import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import {
   useGetChecklist,
+  useGetChecklistCompare,
   useGetChecklistDays,
   useCreateChecklistEntry,
   useDeleteChecklistEntry,
@@ -16,6 +17,7 @@ import {
 import type {
   ChecklistKind,
   ChecklistSession,
+  CompareStatus,
 } from "@/lib/network/types/checklist.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canApprove, isAdminRole } from "../permissions";
@@ -35,6 +37,45 @@ const KIND_LABEL: Record<ChecklistKind, string> = {
   admin: "Staff checklist",
 };
 
+// managers get a third view laying the two lists side by side
+type ChecklistTab = ChecklistKind | "compare";
+
+const TAB_LABEL: Record<ChecklistTab, string> = {
+  ...KIND_LABEL,
+  compare: "Compare",
+};
+
+// same normalization the backend matches with: case, spaces and
+// punctuation do not count as differences
+const canon = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+// how each verdict paints its row and badge
+const STATUS_META: Record<
+  CompareStatus,
+  { label: string; badge: string; row: string }
+> = {
+  match: {
+    label: "Match",
+    badge: "bg-brand-50 text-brand-600",
+    row: "bg-brand-50/40",
+  },
+  mismatch: {
+    label: "Mismatch",
+    badge: "bg-red-50 text-red-600",
+    row: "bg-red-50/60",
+  },
+  security_only: {
+    label: "Security only",
+    badge: "bg-[#FDF6E3] text-solar-700",
+    row: "bg-[#FDF6E3]/60",
+  },
+  staff_only: {
+    label: "Staff only",
+    badge: "bg-[#FDF6E3] text-solar-700",
+    row: "bg-[#FDF6E3]/60",
+  },
+};
+
 const smallBtn =
   "cursor-pointer rounded-lg border border-line bg-white px-3 py-1.5 text-[12.5px] font-bold text-bark transition-colors hover:border-brand-500 hover:text-brand-600";
 
@@ -45,10 +86,11 @@ export default function Checklist() {
   const isSecurity = user?.role === "security";
 
   // security lives on their list, staff on theirs; only managers and
-  // admins get the toggle to compare the two
-  const [kind, setKind] = useState<ChecklistKind>(
+  // admins get the toggle plus the side by side comparison
+  const [tab, setTab] = useState<ChecklistTab>(
     isSecurity ? "security" : "admin",
   );
+  const kind: ChecklistKind = tab === "compare" ? "admin" : tab;
   const [viewDate, setViewDate] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -62,10 +104,20 @@ export default function Checklist() {
   const [trips, setTrips] = useState<number>(2);
   const [error, setError] = useState("");
 
-  const { data, isLoading } = useGetChecklist(kind, viewDate || undefined);
+  const { data, isLoading } = useGetChecklist(kind, viewDate || undefined, {
+    enabled: tab !== "compare",
+  });
   const sheet = data?.data;
   const entries = sheet?.entries ?? [];
   const totals = sheet?.totals;
+
+  const { data: compareData, isLoading: compareLoading } =
+    useGetChecklistCompare(viewDate || undefined, {
+      enabled: isManager && tab === "compare",
+    });
+  const compare = compareData?.data;
+  const compareRows = compare?.rows ?? [];
+  const compareTotals = compare?.totals;
 
   const { data: daysData, isLoading: daysLoading } = useGetChecklistDays(
     page,
@@ -135,7 +187,7 @@ export default function Checklist() {
                 {historyOpen ? "Back to sheet" : "History"}
               </button>
             )}
-            {!historyOpen && canWrite && (
+            {!historyOpen && tab !== "compare" && canWrite && (
               <button
                 type="button"
                 onClick={openAdd}
@@ -178,7 +230,7 @@ export default function Checklist() {
                     <tr
                       key={day.date + day.kind}
                       onClick={() => {
-                        setKind(day.kind);
+                        setTab(day.kind);
                         setViewDate(day.date);
                         setHistoryOpen(false);
                       }}
@@ -247,25 +299,28 @@ export default function Checklist() {
               </span>
             ) : (
               <div className="flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
-                {(["security", "admin"] as const).map((value) => (
+                {(["security", "admin", "compare"] as const).map((value) => (
                   <button
                     key={value}
                     type="button"
-                    onClick={() => setKind(value)}
+                    onClick={() => setTab(value)}
                     className={cn(
                       "cursor-pointer rounded-lg border-none px-4 py-2 text-[13px] font-extrabold transition-colors",
-                      kind === value
+                      tab === value
                         ? "cta-gradient text-forest-deep"
                         : "bg-transparent text-fog hover:text-bark",
                     )}
                   >
-                    {KIND_LABEL[value]}
+                    {TAB_LABEL[value]}
                   </button>
                 ))}
               </div>
             )}
             <span className="text-[14px] font-extrabold text-ink">
-              {sheet ? fmtDate(sheet.date) : ""}
+              {(() => {
+                const shown = tab === "compare" ? compare?.date : sheet?.date;
+                return shown ? fmtDate(shown) : "";
+              })()}
               {!isToday && (
                 <button
                   type="button"
@@ -278,6 +333,266 @@ export default function Checklist() {
             </span>
           </div>
 
+          {tab === "compare" ? (
+            <>
+              {/* the verdict, counted */}
+              <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                <div className="rounded-2xl border border-line bg-white p-4">
+                  <span className="block text-[24px] font-extrabold leading-none text-brand-600">
+                    {compareTotals?.matched ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    MATCHED
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    "rounded-2xl border p-4",
+                    (compareTotals?.mismatched ?? 0) > 0
+                      ? "border-red-200 bg-red-50"
+                      : "border-line bg-white",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "block text-[24px] font-extrabold leading-none",
+                      (compareTotals?.mismatched ?? 0) > 0
+                        ? "text-red-600"
+                        : "text-ink",
+                    )}
+                  >
+                    {compareTotals?.mismatched ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    MISMATCHES
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    "rounded-2xl border p-4",
+                    (compareTotals?.securityOnly ?? 0) > 0
+                      ? "border-solar/40 bg-[#FDF6E3]"
+                      : "border-line bg-white",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "block text-[24px] font-extrabold leading-none",
+                      (compareTotals?.securityOnly ?? 0) > 0
+                        ? "text-solar-700"
+                        : "text-ink",
+                    )}
+                  >
+                    {compareTotals?.securityOnly ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    SECURITY ONLY
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    "rounded-2xl border p-4",
+                    (compareTotals?.staffOnly ?? 0) > 0
+                      ? "border-solar/40 bg-[#FDF6E3]"
+                      : "border-line bg-white",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "block text-[24px] font-extrabold leading-none",
+                      (compareTotals?.staffOnly ?? 0) > 0
+                        ? "text-solar-700"
+                        : "text-ink",
+                    )}
+                  >
+                    {compareTotals?.staffOnly ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    STAFF ONLY
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
+                  <span
+                    className={cn(
+                      "block text-[24px] font-extrabold leading-none",
+                      compareTotals &&
+                        compareTotals.securityTrips !== compareTotals.staffTrips
+                        ? "text-red-400"
+                        : "text-neon",
+                    )}
+                  >
+                    {compareTotals?.securityTrips ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
+                    TRIPS · SECURITY
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
+                  <span
+                    className={cn(
+                      "block text-[24px] font-extrabold leading-none",
+                      compareTotals &&
+                        compareTotals.securityTrips !== compareTotals.staffTrips
+                        ? "text-red-400"
+                        : "text-neon",
+                    )}
+                  >
+                    {compareTotals?.staffTrips ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
+                    TRIPS · STAFF
+                  </span>
+                </div>
+              </div>
+
+              {/* the two papers, side by side */}
+              {compareRows.length > 0 && (
+                <div className="overflow-hidden rounded-2xl border border-line bg-white">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-left">
+                      <thead>
+                        <tr className="border-b border-line bg-haze">
+                          {[
+                            "BUS",
+                            "SESSION",
+                            "SECURITY · BATTERY",
+                            "SECURITY · TRIPS",
+                            "SECURITY · BY",
+                            "STAFF · BATTERY",
+                            "STAFF · TRIPS",
+                            "STAFF · BY",
+                            "STATUS",
+                          ].map((h) => (
+                            <th
+                              key={h}
+                              className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {compareRows.map((row) => {
+                          const meta = STATUS_META[row.status];
+                          const batteryDiff =
+                            row.security &&
+                            row.staff &&
+                            canon(row.security.batteryName) !==
+                              canon(row.staff.batteryName);
+                          const tripsDiff =
+                            row.security &&
+                            row.staff &&
+                            row.security.trips !== row.staff.trips;
+                          return (
+                            <tr
+                              key={row.busName + row.session}
+                              className={cn(
+                                "border-b border-line last:border-0",
+                                meta.row,
+                              )}
+                            >
+                              <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
+                                {row.busName}
+                              </td>
+                              <td className="whitespace-nowrap px-4 py-3">
+                                <StatusPill
+                                  tone={
+                                    row.session === "morning"
+                                      ? "success"
+                                      : "muted"
+                                  }
+                                  label={
+                                    row.session === "morning"
+                                      ? "Morning"
+                                      : "Evening"
+                                  }
+                                />
+                              </td>
+                              <td
+                                className={cn(
+                                  "whitespace-nowrap px-4 py-3 text-[13.5px] font-bold",
+                                  batteryDiff ? "text-red-600" : "text-bark",
+                                )}
+                              >
+                                {row.security?.batteryName ?? "-"}
+                              </td>
+                              <td
+                                className={cn(
+                                  "whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold tabular-nums",
+                                  tripsDiff ? "text-red-600" : "text-ink",
+                                )}
+                              >
+                                {row.security?.trips ?? "-"}
+                              </td>
+                              <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
+                                {row.security?.addedByName || "-"}
+                              </td>
+                              <td
+                                className={cn(
+                                  "whitespace-nowrap px-4 py-3 text-[13.5px] font-bold",
+                                  batteryDiff ? "text-red-600" : "text-bark",
+                                )}
+                              >
+                                {row.staff?.batteryName ?? "-"}
+                              </td>
+                              <td
+                                className={cn(
+                                  "whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold tabular-nums",
+                                  tripsDiff ? "text-red-600" : "text-ink",
+                                )}
+                              >
+                                {row.staff?.trips ?? "-"}
+                              </td>
+                              <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
+                                {row.staff?.addedByName || "-"}
+                              </td>
+                              <td className="whitespace-nowrap px-4 py-3">
+                                <span
+                                  className={cn(
+                                    "rounded-full px-2.5 py-1 text-[11.5px] font-extrabold",
+                                    meta.badge,
+                                  )}
+                                >
+                                  {row.status === "mismatch"
+                                    ? `Mismatch (${[
+                                        batteryDiff && "battery",
+                                        tripsDiff && "trips",
+                                      ]
+                                        .filter(Boolean)
+                                        .join(", ")})`
+                                    : meta.label}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {compareLoading && (
+                <div className="flex justify-center py-12">
+                  <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-brand-200 border-t-brand-600" />
+                </div>
+              )}
+
+              {!compareLoading && compareRows.length === 0 && (
+                <div className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-white px-6 py-14 text-center">
+                  <BoltMark width={22} height={29} fill="#B5ECC2" />
+                  <p className="m-0 text-[15px] font-bold text-bark">
+                    Nothing to compare on this day yet.
+                  </p>
+                  <p className="m-0 text-[13px] font-semibold text-fog">
+                    Rows appear here once either list clears a bus.
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
           {/* the paper's footer, computed live */}
           <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             <div className="rounded-2xl border border-line bg-white p-4">
@@ -418,6 +733,8 @@ export default function Checklist() {
                 </p>
               )}
             </div>
+          )}
+            </>
           )}
         </>
       )}
