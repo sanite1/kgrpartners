@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { queryClient } from "../query/client";
 import type { AuthUser } from "../types/auth.types";
 
 // localStorage keys shared with the axios interceptor (scaffolding brief)
@@ -32,6 +33,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   setAuth: (user, token) => {
+    // a different account may be signing in on this device: cached
+    // queries belong to the previous user and must never be shown
+    queryClient.clear();
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     set({ user, token, isLoading: false });
@@ -41,6 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(REFRESH_KEY);
+    queryClient.clear();
     set({ user: null, token: null, isLoading: false });
   },
 }));
