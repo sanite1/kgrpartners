@@ -65,6 +65,13 @@ export interface BusTripReceipt {
   issuedBy?: { firstName?: string; lastName?: string } | string;
 }
 
+// one working day's total for the bus within the selected period
+export interface BusTripDay {
+  date: string;
+  trips: number;
+  receipts: number;
+}
+
 export interface BusTripsData {
   bus: Bus;
   summary: {
@@ -73,6 +80,9 @@ export interface BusTripsData {
     allTime: BusTripsSummaryBlock;
     range: BusTripsSummaryBlock;
   };
+  minTripsPerDay: number; // days below this are painted red
+  days: BusTripDay[];
+  lowTripDays: number; // days in the period below the minimum
   receipts: BusTripReceipt[];
   pagination: PaginationMeta;
 }

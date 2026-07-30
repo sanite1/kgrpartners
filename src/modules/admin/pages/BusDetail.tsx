@@ -60,6 +60,13 @@ export default function BusDetail() {
   const bus = payload?.bus;
   const summary = payload?.summary;
   const receipts = payload?.receipts ?? [];
+  // at least this many trips per day is expected of every bus; below it
+  // the day reads red so weak days and drivers stand out
+  const minTrips = payload?.minTripsPerDay ?? 3;
+  const dayTrips = new Map(
+    (payload?.days ?? []).map((d) => [d.date, d.trips]),
+  );
+  const lowTripDays = payload?.lowTripDays ?? 0;
 
   const pickQuick = (value: QuickRange) => {
     const range = quickRange(value);
@@ -95,7 +102,7 @@ export default function BusDetail() {
       />
 
       {/* lifetime and period totals, straight from receipts */}
-      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <div className="rounded-2xl border border-line bg-white p-4">
           <span className="block text-[24px] font-extrabold leading-none text-ink">
             {summary?.today.trips ?? 0}
@@ -142,6 +149,24 @@ export default function BusDetail() {
           </span>
           <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
             COLLECTED · {periodLabel}
+          </span>
+        </div>
+        <div
+          className={cn(
+            "rounded-2xl border p-4",
+            lowTripDays > 0 ? "border-red-200 bg-red-50" : "border-line bg-white",
+          )}
+        >
+          <span
+            className={cn(
+              "block text-[24px] font-extrabold leading-none",
+              lowTripDays > 0 ? "text-red-600" : "text-ink",
+            )}
+          >
+            {lowTripDays}
+          </span>
+          <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+            DAYS UNDER {minTrips} TRIPS · {periodLabel}
           </span>
         </div>
       </div>
@@ -192,6 +217,12 @@ export default function BusDetail() {
         </div>
       </div>
 
+      {/* red rows are days the bus closed below the minimum */}
+      <p className="m-0 mb-3 text-[12.5px] font-semibold text-fog">
+        <span className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-red-200 align-middle" />
+        A red row means the bus made fewer than {minTrips} trips that day.
+      </p>
+
       {/* the trips, one receipt per row */}
       <div className="overflow-hidden rounded-[20px] border border-line bg-white shadow-[0_12px_30px_rgba(13,31,21,0.05)]">
         <div className="overflow-x-auto">
@@ -223,18 +254,34 @@ export default function BusDetail() {
                   firstName?: string;
                   lastName?: string;
                 };
+                // judge the whole DAY, not this one receipt: a day can
+                // hold several receipts that add up past the minimum
+                const lowDay = (dayTrips.get(r.date) ?? 0) < minTrips;
                 return (
                   <tr
                     key={r._id}
-                    className="border-b border-line transition-colors last:border-b-0 hover:bg-haze"
+                    className={cn(
+                      "border-b border-line transition-colors last:border-b-0",
+                      lowDay ? "bg-red-50/60 hover:bg-red-50" : "hover:bg-haze",
+                    )}
                   >
-                    <td className="px-4 py-3.5 text-[13.5px] font-extrabold text-ink">
+                    <td
+                      className={cn(
+                        "px-4 py-3.5 text-[13.5px] font-extrabold",
+                        lowDay ? "text-red-600" : "text-ink",
+                      )}
+                    >
                       {fmtDate(r.date)}
                     </td>
                     <td className="px-4 py-3.5 text-[13.5px] font-bold tabular-nums text-bark">
                       #{r.billId}
                     </td>
-                    <td className="px-4 py-3.5 text-[14px] font-extrabold tabular-nums text-ink">
+                    <td
+                      className={cn(
+                        "px-4 py-3.5 text-[14px] font-extrabold tabular-nums",
+                        lowDay ? "text-red-600" : "text-ink",
+                      )}
+                    >
                       {r.expectedTrips}
                     </td>
                     <td className="px-4 py-3.5 text-[13.5px] font-semibold text-bark">
