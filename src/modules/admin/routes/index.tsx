@@ -25,6 +25,7 @@ const Swaps = lazy(() => import("../pages/Swaps"));
 const GatePassPage = lazy(() => import("../pages/GatePass"));
 const GatePassNewPage = lazy(() => import("../pages/GatePassNewPage"));
 const Purchases = lazy(() => import("../pages/Purchases"));
+const PriceListPage = lazy(() => import("../pages/PriceList"));
 const Checklist = lazy(() => import("../pages/Checklist"));
 const TrackerReportPage = lazy(() => import("../pages/TrackerReportPage"));
 const Repairs = lazy(() => import("../pages/Repairs"));
@@ -82,6 +83,7 @@ export const AdminRoutes = () => {
               <Route path="/gate-pass" element={<GatePassPage />} />
               <Route path="/gate-pass/new" element={<GatePassNewPage />} />
               <Route path="/purchases" element={<Purchases />} />
+              <Route path="/price-list" element={<PriceListPage />} />
               <Route path="/checklist" element={<Checklist />} />
               <Route path="/tracker-report" element={<TrackerReportPage />} />
               <Route path="/repairs" element={<Repairs />} />

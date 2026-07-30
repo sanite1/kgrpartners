@@ -113,6 +113,12 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
         icon: "Package",
         module: "purchases",
       },
+      {
+        label: "Price List",
+        to: "/price-list",
+        icon: "CircleDollarSign",
+        module: "price_list",
+      },
     ],
   },
   {
