@@ -17,6 +17,7 @@ import { useGetRepairJobs } from "@/lib/network/api/repair.api";
 import { useGetPartRequests } from "@/lib/network/api/partRequest.api";
 import { useGetGatePasses } from "@/lib/network/api/gatePass.api";
 import { useGetChecklist } from "@/lib/network/api/checklist.api";
+import { useGetTodos } from "@/lib/network/api/todo.api";
 import type { ReceiptSummarySeriesPoint } from "@/lib/network/types/receipt.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canApprove } from "../permissions";
@@ -225,6 +226,13 @@ export default function Dashboard() {
   const idleCount = idleData?.data?.count ?? 0;
   const snoozedCount = idleData?.data?.snoozedCount ?? 0;
 
+  // the to-do list ringing: dated items whose day has arrived
+  const { data: todoData } = useGetTodos(
+    { view: "attention", pageSize: 1 },
+    { enabled: isManager },
+  );
+  const todoCount = todoData?.counts?.attention ?? 0;
+
   const batteryCounts = batterySummaryData?.data?.counts;
   const series = summary?.series ?? [];
 
@@ -298,6 +306,21 @@ export default function Dashboard() {
               </span>
               <span className="flex-none text-[13px] font-extrabold text-solar-700">
                 View →
+              </span>
+            </Link>
+          )}
+          {todoCount > 0 && (
+            <Link
+              to="/todos"
+              className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 no-underline transition-colors hover:border-red-300"
+            >
+              <span className="flex flex-wrap items-center gap-2.5 text-[14px] font-extrabold text-red-600">
+                <TriangleAlert size={17} className="flex-none" />
+                {todoCount} {todoCount === 1 ? "to-do needs" : "to-dos need"}{" "}
+                attention on the company list
+              </span>
+              <span className="flex-none text-[13px] font-extrabold text-red-600">
+                Open →
               </span>
             </Link>
           )}

@@ -167,6 +167,12 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
     title: "Company",
     items: [
       {
+        label: "To-Do List",
+        to: "/todos",
+        icon: "ListTodo",
+        module: "todos",
+      },
+      {
         label: "Reports",
         to: "/reports",
         icon: "ChartColumn",
