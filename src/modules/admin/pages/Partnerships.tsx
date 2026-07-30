@@ -96,8 +96,7 @@ export default function Partnerships() {
   };
 
   const handledBy = selected?.handledBy as
-    | { firstName?: string; lastName?: string }
-    | undefined;
+    { firstName?: string; lastName?: string } | undefined;
 
   if (!canView) {
     return (
@@ -178,16 +177,22 @@ export default function Partnerships() {
         <table className="w-full whitespace-nowrap border-collapse text-left">
           <thead>
             <tr className="border-b border-line">
-              {["#", "NAME", "TYPE", "EMAIL", "PHONE", "STATUS", "SUBMITTED"].map(
-                (h) => (
-                  <th
-                    key={h}
-                    className="px-5 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                  >
-                    {h}
-                  </th>
-                ),
-              )}
+              {[
+                "#",
+                "NAME",
+                "TYPE",
+                "EMAIL",
+                "PHONE",
+                "STATUS",
+                "SUBMITTED",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="px-5 py-3.5 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>

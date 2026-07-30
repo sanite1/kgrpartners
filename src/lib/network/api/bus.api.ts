@@ -9,6 +9,8 @@ import type {
   CreateBusPayload,
   UpdateBusPayload,
   BusesQueryParams,
+  BusTripsData,
+  BusTripsQueryParams,
 } from "../types/bus.types";
 import {
   useQuery,
@@ -45,6 +47,13 @@ export const updateBusFn = (
 ): Promise<ApiResponse<Bus>> =>
   api.patch<ApiResponse<Bus>>(`${BASE}/${id}`, payload);
 
+// GET /api/buses/:id/trips: the bus's trip history from its receipts.
+export const getBusTripsFn = (
+  id: string,
+  params?: BusTripsQueryParams,
+): Promise<ApiResponse<BusTripsData>> =>
+  api.get<ApiResponse<BusTripsData>>(`${BASE}/${id}/trips`, params);
+
 // REACT QUERY: Query Keys
 
 export const busKeys = {
@@ -52,6 +61,8 @@ export const busKeys = {
   list: (params?: BusesQueryParams) =>
     [...busKeys.all, "list", params ?? {}] as const,
   detail: (id: string) => [...busKeys.all, "detail", id] as const,
+  trips: (id: string, params?: BusTripsQueryParams) =>
+    [...busKeys.all, "trips", id, params ?? {}] as const,
 } as const;
 
 // Error helper
@@ -79,6 +90,18 @@ export const useGetBuses = (
   useQuery<PaginatedResponse<Bus>, AxiosError>({
     queryKey: busKeys.list(params),
     queryFn: () => getBusesFn(params),
+    ...options,
+  });
+
+export const useGetBusTrips = (
+  id: string,
+  params?: BusTripsQueryParams,
+  options?: Partial<UseQueryOptions<ApiResponse<BusTripsData>, AxiosError>>,
+) =>
+  useQuery<ApiResponse<BusTripsData>, AxiosError>({
+    queryKey: busKeys.trips(id, params),
+    queryFn: () => getBusTripsFn(id, params),
+    enabled: !!id,
     ...options,
   });
 

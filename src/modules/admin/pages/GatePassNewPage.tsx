@@ -169,7 +169,9 @@ export default function GatePassNewPage() {
                     type="text"
                     placeholder="Item description"
                     value={item.description}
-                    onChange={(e) => setItem(i, { description: e.target.value })}
+                    onChange={(e) =>
+                      setItem(i, { description: e.target.value })
+                    }
                     className={cn(cellInput, "flex-1")}
                   />
                   <button

@@ -40,7 +40,9 @@ const PayModal = ({ receipt, onClose }: PayModalProps) => {
       return;
     }
     if (overpaid) {
-      setError(`This receipt expects ${fmtNaira(expected)}; collect at most that`);
+      setError(
+        `This receipt expects ${fmtNaira(expected)}; collect at most that`,
+      );
       return;
     }
     if (isShort && reason.trim().length < 3) {

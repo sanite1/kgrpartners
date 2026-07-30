@@ -60,10 +60,7 @@ export interface CompareSide {
 // green: both lists agree; red: both wrote it but differently;
 // yellow: only one list has it
 export type CompareStatus =
-  | "match"
-  | "mismatch"
-  | "security_only"
-  | "staff_only";
+  "match" | "mismatch" | "security_only" | "staff_only";
 
 export interface CompareRow {
   busName: string;

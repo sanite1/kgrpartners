@@ -13,11 +13,7 @@ import {
 import type { UserRole } from "@/lib/network/types/auth.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { ROLE_LABEL, ROLE_DESCRIPTION, isAdminRole } from "../permissions";
-import {
-  ACCESS_MODULES,
-  ROLE_DEFAULT_ACCESS,
-  type ModuleKey,
-} from "../access";
+import { ACCESS_MODULES, ROLE_DEFAULT_ACCESS, type ModuleKey } from "../access";
 import { cn } from "@/lib/utils";
 import {
   inputClasses,

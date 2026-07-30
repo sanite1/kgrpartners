@@ -1,10 +1,7 @@
 // Mirrors kgr-backend interfaces/gatePass.interface.ts.
 
 export type GatePassStatus =
-  | "pending"
-  | "approved"
-  | "declined"
-  | "carried_out";
+  "pending" | "approved" | "declined" | "carried_out";
 
 // security's verdict on one item, given at the gate against the pass
 // itself: cleared matches the line; flagged is held back

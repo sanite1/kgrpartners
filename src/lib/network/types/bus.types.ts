@@ -1,4 +1,5 @@
 // Mirrors kgr-backend interfaces/bus.interface.ts + models/Bus.ts.
+import type { PaginationMeta } from "./api.types";
 
 export type TrackerHealth = "ok" | "no_power" | "no_data";
 
@@ -39,4 +40,46 @@ export interface BusesQueryParams {
   pageSize?: number;
   isActive?: "true" | "false";
   search?: string;
+}
+
+// one period's totals on the bus page, straight from receipts
+export interface BusTripsSummaryBlock {
+  trips: number;
+  receipts: number;
+  expectedAmount: string;
+  collectedAmount: string;
+}
+
+// one trip row: a generated receipt for this bus
+export interface BusTripReceipt {
+  _id: string;
+  billId: number;
+  ticketId: string;
+  date: string;
+  expectedTrips: number;
+  batteryName: string;
+  expectedAmount: string;
+  amountPaid?: string;
+  status: "awaiting_payment" | "paid" | "void";
+  createdAt: string;
+  issuedBy?: { firstName?: string; lastName?: string } | string;
+}
+
+export interface BusTripsData {
+  bus: Bus;
+  summary: {
+    today: BusTripsSummaryBlock;
+    thisMonth: BusTripsSummaryBlock;
+    allTime: BusTripsSummaryBlock;
+    range: BusTripsSummaryBlock;
+  };
+  receipts: BusTripReceipt[];
+  pagination: PaginationMeta;
+}
+
+export interface BusTripsQueryParams {
+  page?: number;
+  pageSize?: number;
+  from?: string; // YYYY-MM-DD, inclusive
+  to?: string;
 }

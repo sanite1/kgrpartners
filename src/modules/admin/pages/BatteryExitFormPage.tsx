@@ -262,7 +262,8 @@ export default function BatteryExitFormPage() {
                             {fmtDate(form.date)}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
-                            {fmtDate(form.createdAt)} · {fmtTime(form.createdAt)}
+                            {fmtDate(form.createdAt)} ·{" "}
+                            {fmtTime(form.createdAt)}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-bold tabular-nums text-bark">
                             #{form.formId}
@@ -467,7 +468,10 @@ export default function BatteryExitFormPage() {
                               onChange={(e) =>
                                 setEntry(battery._id, { note: e.target.value })
                               }
-                              className={cn(cellSelect, "col-span-2 sm:col-span-1 font-semibold")}
+                              className={cn(
+                                cellSelect,
+                                "col-span-2 sm:col-span-1 font-semibold",
+                              )}
                             />
                           </div>
                         );
@@ -494,8 +498,8 @@ export default function BatteryExitFormPage() {
               <div className="sticky bottom-0 z-10 mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white/95 px-5 py-4 backdrop-blur">
                 <span className="text-[13px] font-bold text-fog">
                   {totals.active} active · {totals.faulty} faulty ·{" "}
-                  {totals.needsCheck} to check ·{" "}
-                  {byLocation.main_yard ?? 0} at {LOCATION_LABEL.main_yard}
+                  {totals.needsCheck} to check · {byLocation.main_yard ?? 0} at{" "}
+                  {LOCATION_LABEL.main_yard}
                 </span>
                 <button
                   type="button"

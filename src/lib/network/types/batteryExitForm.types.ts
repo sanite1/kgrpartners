@@ -4,12 +4,7 @@ import type { BatteryLocation, BatteryStatus } from "./battery.types";
 
 // the CHECK column: the audit's own vocabulary, mapped onto the fleet on save
 export type ExitCheck =
-  | "active"
-  | "faulty"
-  | "needs_check"
-  | "out_of_use"
-  | "sold"
-  | "bms";
+  "active" | "faulty" | "needs_check" | "out_of_use" | "sold" | "bms";
 
 export interface RosterBattery {
   _id: string;

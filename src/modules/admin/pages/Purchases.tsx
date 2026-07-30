@@ -90,7 +90,11 @@ const Stepper = ({ status }: { status: PurchaseStatus }) => {
                   !done && !active && "border-line bg-white text-fog",
                 )}
               >
-                {done ? <Check size={16} strokeWidth={3} /> : <Icon size={16} />}
+                {done ? (
+                  <Check size={16} strokeWidth={3} />
+                ) : (
+                  <Icon size={16} />
+                )}
               </span>
               <span
                 className={cn(
@@ -497,7 +501,9 @@ export default function Purchases() {
                   }
                   className="w-fit cursor-pointer rounded-lg border border-line bg-white px-4 py-2 text-[13px] font-extrabold text-bark transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-50"
                 >
-                  {updatePurchase.isPending ? "Saving…" : "Save tracking details"}
+                  {updatePurchase.isPending
+                    ? "Saving…"
+                    : "Save tracking details"}
                 </button>
               )}
               {selected.supplier && (

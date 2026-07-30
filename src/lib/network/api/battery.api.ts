@@ -137,7 +137,9 @@ export const useGetBatterySummary = (
   });
 
 export const useGetIdleBatteries = (
-  options?: Partial<UseQueryOptions<ApiResponse<IdleBatteriesData>, AxiosError>>,
+  options?: Partial<
+    UseQueryOptions<ApiResponse<IdleBatteriesData>, AxiosError>
+  >,
 ) =>
   useQuery<ApiResponse<IdleBatteriesData>, AxiosError>({
     queryKey: batteryKeys.idle(),
@@ -231,7 +233,11 @@ export const useCollectBattery = () => {
 
 export const useSnoozeBattery = () => {
   const qc = useQueryClient();
-  return useMutation<ApiResponse<Battery>, AxiosError, { id: string; days: number }>({
+  return useMutation<
+    ApiResponse<Battery>,
+    AxiosError,
+    { id: string; days: number }
+  >({
     mutationFn: ({ id, days }) => snoozeBatteryFn(id, days),
     onSuccess: (data) => {
       toast.success(data.message);

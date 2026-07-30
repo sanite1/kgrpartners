@@ -8,6 +8,7 @@ import { PublicOnlyRoute } from "@/components/shared/PublicOnlyRoute";
 const Login = lazy(() => import("../pages/Login"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Buses = lazy(() => import("../pages/Buses"));
+const BusDetail = lazy(() => import("../pages/BusDetail"));
 const GenerateReceipt = lazy(() => import("../pages/GenerateReceipt"));
 const Receipts = lazy(() => import("../pages/Receipts"));
 const PayPoint = lazy(() => import("../pages/PayPoint"));
@@ -85,6 +86,7 @@ export const AdminRoutes = () => {
               <Route path="/tracker-report" element={<TrackerReportPage />} />
               <Route path="/repairs" element={<Repairs />} />
               <Route path="/buses" element={<Buses />} />
+              <Route path="/buses/:id" element={<BusDetail />} />
               <Route path="/trip-price" element={<TripPrice />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/expenditures" element={<Expenditures />} />

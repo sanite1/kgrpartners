@@ -39,7 +39,12 @@ interface PickerProps {
 }
 
 // searchable battery picker with a locked chip once chosen
-const BatteryPicker = ({ id, placeholder, selected, onSelect }: PickerProps) => {
+const BatteryPicker = ({
+  id,
+  placeholder,
+  selected,
+  onSelect,
+}: PickerProps) => {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const { data } = useGetBatteries(

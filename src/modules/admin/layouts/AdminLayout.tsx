@@ -109,7 +109,10 @@ const AdminLayout = () => {
       {/* nav: grouped sections, scrolls on its own when taller than the screen */}
       <nav className="no-scrollbar flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 pb-28 lg:pb-8">
         {navGroups.map((group, gi) => (
-          <div key={group.title ?? `group-${gi}`} className="flex flex-col gap-1">
+          <div
+            key={group.title ?? `group-${gi}`}
+            className="flex flex-col gap-1"
+          >
             {group.title && (
               <span className="px-3.5 pb-1 pt-4 text-[10px] font-extrabold uppercase tracking-[2px] text-mint/50">
                 {group.title}

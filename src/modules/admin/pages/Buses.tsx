@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus, Pencil, Search } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
@@ -24,6 +25,7 @@ const FILTERS: { id: ActiveFilter; label: string }[] = [
 ];
 
 export default function Buses() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const canEdit = canApprove(user?.role);
 
@@ -129,7 +131,8 @@ export default function Buses() {
               {buses.map((bus) => (
                 <tr
                   key={bus._id}
-                  className="border-b border-line transition-colors last:border-b-0 hover:bg-haze"
+                  onClick={() => navigate(`/buses/${bus._id}`)}
+                  className="cursor-pointer border-b border-line transition-colors last:border-b-0 hover:bg-haze"
                 >
                   <td className="px-5 py-4">
                     <span className="flex items-center gap-2.5 text-[15px] font-extrabold text-ink">
@@ -161,7 +164,10 @@ export default function Buses() {
                       <button
                         type="button"
                         title="Edit bus"
-                        onClick={() => setModal({ bus })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModal({ bus });
+                        }}
                         className="cursor-pointer rounded-lg border border-line bg-white p-2 text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
                       >
                         <Pencil size={14} />

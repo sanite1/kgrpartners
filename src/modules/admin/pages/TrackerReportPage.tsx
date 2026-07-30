@@ -135,7 +135,9 @@ const SummaryCard = ({
     </div>
     <div className="mt-4 flex flex-col gap-2 border-t border-line pt-3.5 text-[13px] font-semibold text-bark">
       <p className="m-0">
-        <strong>Not active with tracker ({summary.notActiveTracked.length}):</strong>{" "}
+        <strong>
+          Not active with tracker ({summary.notActiveTracked.length}):
+        </strong>{" "}
         {summary.notActiveTracked.join(", ") || "none"}
       </p>
       <p className="m-0">
@@ -287,17 +289,18 @@ export default function TrackerReportPage() {
   const parseText = useParseTrackerText();
   const createReport = useCreateTrackerReport();
 
-  const { data: historyData, isLoading: historyLoading } =
-    useGetTrackerReports(
-      { page, pageSize },
-      { enabled: isManager && tab === "history" },
-    );
+  const { data: historyData, isLoading: historyLoading } = useGetTrackerReports(
+    { page, pageSize },
+    { enabled: isManager && tab === "history" },
+  );
   const reports = historyData?.data ?? [];
 
-  const { data: mileageData, isLoading: mileageLoading } =
-    useGetMileageSummary(month || undefined, {
+  const { data: mileageData, isLoading: mileageLoading } = useGetMileageSummary(
+    month || undefined,
+    {
       enabled: isManager && tab === "mileage",
-    });
+    },
+  );
   const mileage = mileageData?.data;
 
   const { data: busData } = useGetBuses(
@@ -572,7 +575,9 @@ export default function TrackerReportPage() {
                   key={i}
                   className={cn(
                     "rounded-2xl border border-line bg-white p-4",
-                    !row.busId && row.busNumber && "border-solar/50 bg-[#FDF6E3]/60",
+                    !row.busId &&
+                      row.busNumber &&
+                      "border-solar/50 bg-[#FDF6E3]/60",
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -872,10 +877,7 @@ export default function TrackerReportPage() {
       {isManager && tab === "history" && (
         <>
           {openReport ? (
-            <ReportDetail
-              id={openReport}
-              onBack={() => setOpenReport(null)}
-            />
+            <ReportDetail id={openReport} onBack={() => setOpenReport(null)} />
           ) : (
             <>
               <div className="overflow-hidden rounded-2xl border border-line bg-white">
@@ -988,16 +990,20 @@ export default function TrackerReportPage() {
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="border-b border-line bg-haze">
-                    {["BUS", "DAYS ACTIVE", "TOTAL KM", "AVG KM/DAY", "BEST DAY"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                        >
-                          {h}
-                        </th>
-                      ),
-                    )}
+                    {[
+                      "BUS",
+                      "DAYS ACTIVE",
+                      "TOTAL KM",
+                      "AVG KM/DAY",
+                      "BEST DAY",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>

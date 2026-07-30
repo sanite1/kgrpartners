@@ -132,7 +132,8 @@ export default function Checklist() {
   // no viewDate means the live sheet; any picked date shows the way back
   const isToday = !viewDate;
   // who may write the list on screen; the backend enforces it either way
-  const canWrite = isAdmin || (isSecurity ? kind === "security" : kind === "admin");
+  const canWrite =
+    isAdmin || (isSecurity ? kind === "security" : kind === "admin");
 
   const openAdd = () => {
     setBusName("");
@@ -593,147 +594,155 @@ export default function Checklist() {
             </>
           ) : (
             <>
-          {/* the paper's footer, computed live */}
-          <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <div className="rounded-2xl border border-line bg-white p-4">
-              <span className="block text-[24px] font-extrabold leading-none text-ink">
-                {totals?.morningTrips ?? 0}
-              </span>
-              <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
-                MORNING TRIPS
-              </span>
-            </div>
-            <div className="rounded-2xl border border-line bg-white p-4">
-              <span className="block text-[24px] font-extrabold leading-none text-ink">
-                {totals?.eveningTrips ?? 0}
-              </span>
-              <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
-                EVENING TRIPS
-              </span>
-            </div>
-            <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
-              <span className="block text-[24px] font-extrabold leading-none text-neon">
-                {totals?.totalTrips ?? 0}
-              </span>
-              <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
-                TOTAL TRIPS
-              </span>
-            </div>
-            <div className="rounded-2xl border border-line bg-haze p-4">
-              <span className="block text-[24px] font-extrabold leading-none text-ink">
-                {totals?.morningBuses ?? 0}
-              </span>
-              <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
-                BUSES · MORNING
-              </span>
-            </div>
-            <div className="rounded-2xl border border-line bg-haze p-4">
-              <span className="block text-[24px] font-extrabold leading-none text-ink">
-                {totals?.eveningBuses ?? 0}
-              </span>
-              <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
-                BUSES · EVENING
-              </span>
-            </div>
-          </div>
-
-          {/* the sheet */}
-          {entries.length > 0 && (
-            <div className="overflow-hidden rounded-2xl border border-line bg-white">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left">
-                  <thead>
-                    <tr className="border-b border-line bg-haze">
-                      {[
-                        "S/N",
-                        "BUS",
-                        "SESSION",
-                        "BATTERY",
-                        "TRIPS",
-                        "CLEARED BY",
-                        "TIME",
-                        "",
-                      ].map((h) => (
-                        <th
-                          key={h}
-                          className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {entries.map((entry, i) => (
-                      <tr
-                        key={entry._id}
-                        className="border-b border-line last:border-0"
-                      >
-                        <td className="whitespace-nowrap px-4 py-3 text-[13px] font-bold tabular-nums text-fog">
-                          {i + 1}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
-                          {entry.busName}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3">
-                          <StatusPill
-                            tone={entry.session === "morning" ? "success" : "muted"}
-                            label={entry.session === "morning" ? "Morning" : "Evening"}
-                          />
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-bold text-bark">
-                          {entry.batteryName}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold tabular-nums text-ink">
-                          {entry.trips}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
-                          {entry.addedByName || "—"}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold tabular-nums text-fog">
-                          {fmtTime(entry.createdAt)}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3">
-                          {(isAdmin ||
-                            (isToday && entry.addedBy === user?._id)) && (
-                            <button
-                              type="button"
-                              aria-label={`Remove ${entry.busName}`}
-                              disabled={deleteEntry.isPending}
-                              onClick={() => deleteEntry.mutate(entry._id)}
-                              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-40"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* the paper's footer, computed live */}
+              <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                <div className="rounded-2xl border border-line bg-white p-4">
+                  <span className="block text-[24px] font-extrabold leading-none text-ink">
+                    {totals?.morningTrips ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    MORNING TRIPS
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-line bg-white p-4">
+                  <span className="block text-[24px] font-extrabold leading-none text-ink">
+                    {totals?.eveningTrips ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    EVENING TRIPS
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
+                  <span className="block text-[24px] font-extrabold leading-none text-neon">
+                    {totals?.totalTrips ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
+                    TOTAL TRIPS
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-line bg-haze p-4">
+                  <span className="block text-[24px] font-extrabold leading-none text-ink">
+                    {totals?.morningBuses ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    BUSES · MORNING
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-line bg-haze p-4">
+                  <span className="block text-[24px] font-extrabold leading-none text-ink">
+                    {totals?.eveningBuses ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    BUSES · EVENING
+                  </span>
+                </div>
               </div>
-            </div>
-          )}
 
-          {isLoading && (
-            <div className="flex justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-brand-200 border-t-brand-600" />
-            </div>
-          )}
-
-          {!isLoading && entries.length === 0 && (
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-white px-6 py-14 text-center">
-              <BoltMark width={22} height={29} fill="#B5ECC2" />
-              <p className="m-0 text-[15px] font-bold text-bark">
-                Nothing on this sheet yet.
-              </p>
-              {isToday && canWrite && (
-                <p className="m-0 text-[13px] font-semibold text-fog">
-                  Tap "Clear bus" as each bus goes out.
-                </p>
+              {/* the sheet */}
+              {entries.length > 0 && (
+                <div className="overflow-hidden rounded-2xl border border-line bg-white">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-left">
+                      <thead>
+                        <tr className="border-b border-line bg-haze">
+                          {[
+                            "S/N",
+                            "BUS",
+                            "SESSION",
+                            "BATTERY",
+                            "TRIPS",
+                            "CLEARED BY",
+                            "TIME",
+                            "",
+                          ].map((h) => (
+                            <th
+                              key={h}
+                              className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {entries.map((entry, i) => (
+                          <tr
+                            key={entry._id}
+                            className="border-b border-line last:border-0"
+                          >
+                            <td className="whitespace-nowrap px-4 py-3 text-[13px] font-bold tabular-nums text-fog">
+                              {i + 1}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
+                              {entry.busName}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              <StatusPill
+                                tone={
+                                  entry.session === "morning"
+                                    ? "success"
+                                    : "muted"
+                                }
+                                label={
+                                  entry.session === "morning"
+                                    ? "Morning"
+                                    : "Evening"
+                                }
+                              />
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-bold text-bark">
+                              {entry.batteryName}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold tabular-nums text-ink">
+                              {entry.trips}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
+                              {entry.addedByName || "—"}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold tabular-nums text-fog">
+                              {fmtTime(entry.createdAt)}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {(isAdmin ||
+                                (isToday && entry.addedBy === user?._id)) && (
+                                <button
+                                  type="button"
+                                  aria-label={`Remove ${entry.busName}`}
+                                  disabled={deleteEntry.isPending}
+                                  onClick={() => deleteEntry.mutate(entry._id)}
+                                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-40"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
-            </div>
-          )}
+
+              {isLoading && (
+                <div className="flex justify-center py-12">
+                  <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-brand-200 border-t-brand-600" />
+                </div>
+              )}
+
+              {!isLoading && entries.length === 0 && (
+                <div className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-white px-6 py-14 text-center">
+                  <BoltMark width={22} height={29} fill="#B5ECC2" />
+                  <p className="m-0 text-[15px] font-bold text-bark">
+                    Nothing on this sheet yet.
+                  </p>
+                  {isToday && canWrite && (
+                    <p className="m-0 text-[13px] font-semibold text-fog">
+                      Tap "Clear bus" as each bus goes out.
+                    </p>
+                  )}
+                </div>
+              )}
             </>
           )}
         </>

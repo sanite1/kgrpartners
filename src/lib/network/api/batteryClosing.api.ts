@@ -89,7 +89,9 @@ const getErrorMessage = (error: unknown): string => {
 export const useGetClosingReport = (
   sheet: ClosingSheetKey,
   date?: string,
-  options?: Partial<UseQueryOptions<ApiResponse<ClosingReportData>, AxiosError>>,
+  options?: Partial<
+    UseQueryOptions<ApiResponse<ClosingReportData>, AxiosError>
+  >,
 ) =>
   useQuery<ApiResponse<ClosingReportData>, AxiosError>({
     queryKey: closingKeys.report(sheet, date),

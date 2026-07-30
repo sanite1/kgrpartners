@@ -253,138 +253,141 @@ export default function Batteries() {
       />
 
       {/* packs that have not worked in 48h+ (managers) */}
-      {isManager && (idleBatteries.length > 0 || snoozedBatteries.length > 0) && (
-        <div className="mb-6 overflow-hidden rounded-2xl border border-solar/40 bg-[#FDF6E3]">
-          <button
-            type="button"
-            onClick={() => setIdleOpen((o) => !o)}
-            className="flex w-full cursor-pointer items-center justify-between gap-3 border-none bg-transparent px-5 py-4 text-left"
-          >
-            <span className="flex items-center gap-2.5 text-[14px] font-extrabold text-solar-700">
-              <TriangleAlert size={17} className="flex-none" />
-              {idleBatteries.length}{" "}
-              {idleBatteries.length === 1 ? "battery has" : "batteries have"}{" "}
-              not worked in 48 hours or more
-              {snoozedBatteries.length > 0 && (
-                <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-[11.5px] font-extrabold text-bark">
-                  {snoozedBatteries.length} snoozed
-                </span>
-              )}
-            </span>
-            <ChevronDown
-              size={17}
-              className={cn(
-                "flex-none text-solar-700 transition-transform",
-                idleOpen && "rotate-180",
-              )}
-            />
-          </button>
-          {idleOpen && (
-            <div className="max-h-72 overflow-y-auto border-t border-solar/30">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left">
-                  <thead>
-                    <tr className="border-b border-solar/30">
-                      {[
-                        "BATTERY",
-                        "IDLE FOR",
-                        "LAST WORKED",
-                        "STATE",
-                        "LOCATION",
-                        "SNOOZE",
-                      ].map((h) => (
+      {isManager &&
+        (idleBatteries.length > 0 || snoozedBatteries.length > 0) && (
+          <div className="mb-6 overflow-hidden rounded-2xl border border-solar/40 bg-[#FDF6E3]">
+            <button
+              type="button"
+              onClick={() => setIdleOpen((o) => !o)}
+              className="flex w-full cursor-pointer items-center justify-between gap-3 border-none bg-transparent px-5 py-4 text-left"
+            >
+              <span className="flex items-center gap-2.5 text-[14px] font-extrabold text-solar-700">
+                <TriangleAlert size={17} className="flex-none" />
+                {idleBatteries.length}{" "}
+                {idleBatteries.length === 1 ? "battery has" : "batteries have"}{" "}
+                not worked in 48 hours or more
+                {snoozedBatteries.length > 0 && (
+                  <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-[11.5px] font-extrabold text-bark">
+                    {snoozedBatteries.length} snoozed
+                  </span>
+                )}
+              </span>
+              <ChevronDown
+                size={17}
+                className={cn(
+                  "flex-none text-solar-700 transition-transform",
+                  idleOpen && "rotate-180",
+                )}
+              />
+            </button>
+            {idleOpen && (
+              <div className="max-h-72 overflow-y-auto border-t border-solar/30">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-left">
+                    <thead>
+                      <tr className="border-b border-solar/30">
+                        {[
+                          "BATTERY",
+                          "IDLE FOR",
+                          "LAST WORKED",
+                          "STATE",
+                          "LOCATION",
+                          "SNOOZE",
+                        ].map((h) => (
                           <th
                             key={h}
                             className="whitespace-nowrap px-5 py-2.5 text-[10.5px] font-extrabold tracking-[1.5px] text-solar-700"
                           >
                             {h}
                           </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {idleBatteries.map((b) => (
-                      <tr
-                        key={b._id}
-                        className="border-b border-solar/20 last:border-0"
-                      >
-                        <td className="whitespace-nowrap px-5 py-2.5 text-[13.5px] font-extrabold text-ink">
-                          {b.code}
-                        </td>
-                        <td className="whitespace-nowrap px-5 py-2.5 text-[13.5px] font-extrabold text-solar-700">
-                          {b.idleDays} {b.idleDays === 1 ? "day" : "days"}
-                        </td>
-                        <td className="whitespace-nowrap px-5 py-2.5 text-[13px] font-semibold text-bark">
-                          {b.lastWorkedDate ? fmtDate(b.lastWorkedDate) : "Never"}
-                        </td>
-                        <td className="whitespace-nowrap px-5 py-2.5 text-[13px] font-semibold text-bark">
-                          {metaFor(b.status).label}
-                        </td>
-                        <td className="whitespace-nowrap px-5 py-2.5 text-[13px] font-semibold text-bark">
-                          {b.location.replace(/_/g, " ")}
-                        </td>
-                        <td className="whitespace-nowrap px-5 py-2.5">
-                          <select
-                            aria-label={`Snooze ${b.code}`}
-                            value=""
-                            disabled={snoozeBattery.isPending}
-                            onChange={(e) => {
-                              const days = Number(e.target.value);
-                              if (days > 0) {
-                                snoozeBattery.mutate({ id: b._id, days });
-                              }
-                            }}
-                            className="cursor-pointer rounded-lg border border-solar/50 bg-white px-2.5 py-1.5 text-base font-bold text-solar-700 outline-none transition-colors hover:border-solar sm:text-[12.5px]"
-                          >
-                            <option value="">Snooze…</option>
-                            <option value="1">1 day</option>
-                            <option value="3">3 days</option>
-                            <option value="7">1 week</option>
-                            <option value="14">2 weeks</option>
-                            <option value="31">1 month</option>
-                          </select>
-                        </td>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {snoozedBatteries.length > 0 && (
-                <div className="border-t border-solar/30 px-5 py-4">
-                  <span className="text-[10.5px] font-extrabold tracking-[1.5px] text-solar-700">
-                    SNOOZED ({snoozedBatteries.length})
-                  </span>
-                  <div className="mt-2 flex flex-col gap-1.5">
-                    {snoozedBatteries.map((b) => (
-                      <div
-                        key={b._id}
-                        className="flex flex-wrap items-center justify-between gap-2 text-[13px] font-semibold text-bark"
-                      >
-                        <span>
-                          <strong className="text-ink">{b.code}</strong> · idle{" "}
-                          {b.idleDays} days · snoozed by{" "}
-                          {b.snoozedByName || "—"} until{" "}
-                          {b.snoozedUntil ? fmtDate(b.snoozedUntil) : "—"}
-                        </span>
-                        <button
-                          type="button"
-                          disabled={snoozeBattery.isPending}
-                          onClick={() =>
-                            snoozeBattery.mutate({ id: b._id, days: 0 })
-                          }
-                          className="cursor-pointer rounded-lg border border-line bg-white px-3 py-1 text-[12px] font-extrabold text-bark transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-50"
+                    </thead>
+                    <tbody>
+                      {idleBatteries.map((b) => (
+                        <tr
+                          key={b._id}
+                          className="border-b border-solar/20 last:border-0"
                         >
-                          Wake now
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                          <td className="whitespace-nowrap px-5 py-2.5 text-[13.5px] font-extrabold text-ink">
+                            {b.code}
+                          </td>
+                          <td className="whitespace-nowrap px-5 py-2.5 text-[13.5px] font-extrabold text-solar-700">
+                            {b.idleDays} {b.idleDays === 1 ? "day" : "days"}
+                          </td>
+                          <td className="whitespace-nowrap px-5 py-2.5 text-[13px] font-semibold text-bark">
+                            {b.lastWorkedDate
+                              ? fmtDate(b.lastWorkedDate)
+                              : "Never"}
+                          </td>
+                          <td className="whitespace-nowrap px-5 py-2.5 text-[13px] font-semibold text-bark">
+                            {metaFor(b.status).label}
+                          </td>
+                          <td className="whitespace-nowrap px-5 py-2.5 text-[13px] font-semibold text-bark">
+                            {b.location.replace(/_/g, " ")}
+                          </td>
+                          <td className="whitespace-nowrap px-5 py-2.5">
+                            <select
+                              aria-label={`Snooze ${b.code}`}
+                              value=""
+                              disabled={snoozeBattery.isPending}
+                              onChange={(e) => {
+                                const days = Number(e.target.value);
+                                if (days > 0) {
+                                  snoozeBattery.mutate({ id: b._id, days });
+                                }
+                              }}
+                              className="cursor-pointer rounded-lg border border-solar/50 bg-white px-2.5 py-1.5 text-base font-bold text-solar-700 outline-none transition-colors hover:border-solar sm:text-[12.5px]"
+                            >
+                              <option value="">Snooze…</option>
+                              <option value="1">1 day</option>
+                              <option value="3">3 days</option>
+                              <option value="7">1 week</option>
+                              <option value="14">2 weeks</option>
+                              <option value="31">1 month</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+                {snoozedBatteries.length > 0 && (
+                  <div className="border-t border-solar/30 px-5 py-4">
+                    <span className="text-[10.5px] font-extrabold tracking-[1.5px] text-solar-700">
+                      SNOOZED ({snoozedBatteries.length})
+                    </span>
+                    <div className="mt-2 flex flex-col gap-1.5">
+                      {snoozedBatteries.map((b) => (
+                        <div
+                          key={b._id}
+                          className="flex flex-wrap items-center justify-between gap-2 text-[13px] font-semibold text-bark"
+                        >
+                          <span>
+                            <strong className="text-ink">{b.code}</strong> ·
+                            idle {b.idleDays} days · snoozed by{" "}
+                            {b.snoozedByName || "—"} until{" "}
+                            {b.snoozedUntil ? fmtDate(b.snoozedUntil) : "—"}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={snoozeBattery.isPending}
+                            onClick={() =>
+                              snoozeBattery.mutate({ id: b._id, days: 0 })
+                            }
+                            className="cursor-pointer rounded-lg border border-line bg-white px-3 py-1 text-[12px] font-extrabold text-bark transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-50"
+                          >
+                            Wake now
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
       {/* status board: all-packs spans 2 cells so the 6 statuses fill the
           rest of an 8-column row evenly at every breakpoint */}
@@ -487,133 +490,135 @@ export default function Batteries() {
 
       {/* battery table */}
       {batteries.length > 0 && (
-      <div className="overflow-hidden rounded-2xl border border-line bg-white">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-line bg-haze">
-                {["BATTERY", "STATE", "BUS", "NOTES", "ACTIONS"].map((h) => (
-                  <th
-                    key={h}
-                    className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+        <div className="overflow-hidden rounded-2xl border border-line bg-white">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-line bg-haze">
+                  {["BATTERY", "STATE", "BUS", "NOTES", "ACTIONS"].map((h) => (
+                    <th
+                      key={h}
+                      className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {batteries.map((battery) => (
+                  <tr
+                    key={battery._id}
+                    className="border-b border-line last:border-0"
                   >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {batteries.map((battery) => (
-                <tr
-                  key={battery._id}
-                  className="border-b border-line last:border-0"
-                >
-                  <td className="whitespace-nowrap px-4 py-3 text-[14px] font-extrabold tracking-[-0.2px] text-ink">
-                    {battery.code}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    <StatusPill
-                      tone={metaFor(battery.status).tone}
-                      label={metaFor(battery.status).label}
-                    />
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    {battery.bus && battery.busNumber ? (
-                      <span className="rounded-full bg-haze px-2.5 py-1 text-[11.5px] font-extrabold text-brand-600">
-                        {battery.busNumber}
+                    <td className="whitespace-nowrap px-4 py-3 text-[14px] font-extrabold tracking-[-0.2px] text-ink">
+                      {battery.code}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <StatusPill
+                        tone={metaFor(battery.status).tone}
+                        label={metaFor(battery.status).label}
+                      />
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      {battery.bus && battery.busNumber ? (
+                        <span className="rounded-full bg-haze px-2.5 py-1 text-[11.5px] font-extrabold text-brand-600">
+                          {battery.busNumber}
+                        </span>
+                      ) : (
+                        <span className="text-[13px] font-semibold text-fog">
+                          —
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="block max-w-[220px] truncate text-[12.5px] font-semibold text-fog">
+                        {battery.notes || "—"}
                       </span>
-                    ) : (
-                      <span className="text-[13px] font-semibold text-fog">
-                        —
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="block max-w-[220px] truncate text-[12.5px] font-semibold text-fog">
-                      {battery.notes || "—"}
-                    </span>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      {canStock && (
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        {canStock && (
+                          <button
+                            type="button"
+                            disabled={
+                              !!battery.bus || battery.status === "faulty"
+                            }
+                            title={
+                              battery.bus
+                                ? `${battery.code} is already on ${battery.busNumber}`
+                                : battery.status === "faulty"
+                                  ? "Faulty packs cannot be issued"
+                                  : undefined
+                            }
+                            onClick={() => {
+                              setBusSearch("");
+                              setIssueNote("");
+                              setIssueFor(battery);
+                            }}
+                            className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            Issue to bus
+                          </button>
+                        )}
+                        {canStock && battery.bus && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCollectNote("");
+                              setCollectFor(battery);
+                            }}
+                            className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
+                          >
+                            Collect from {battery.busNumber}
+                          </button>
+                        )}
+                        {canStock && (
+                          <select
+                            aria-label={`Set status for ${battery.code}`}
+                            value={battery.status}
+                            disabled={setStatus.isPending}
+                            onChange={(e) =>
+                              quickStatus(
+                                battery,
+                                e.target.value as BatteryStatus,
+                              )
+                            }
+                            className="cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-base font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none sm:text-[12.5px]"
+                          >
+                            {STATUS_OPTIONS.map(([value, label]) => (
+                              <option key={value} value={value}>
+                                {label}
+                              </option>
+                            ))}
+                          </select>
+                        )}
                         <button
                           type="button"
-                          disabled={!!battery.bus || battery.status === "faulty"}
-                          title={
-                            battery.bus
-                              ? `${battery.code} is already on ${battery.busNumber}`
-                              : battery.status === "faulty"
-                                ? "Faulty packs cannot be issued"
-                                : undefined
-                          }
-                          onClick={() => {
-                            setBusSearch("");
-                            setIssueNote("");
-                            setIssueFor(battery);
-                          }}
-                          className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          Issue to bus
-                        </button>
-                      )}
-                      {canStock && battery.bus && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCollectNote("");
-                            setCollectFor(battery);
-                          }}
-                          className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
-                        >
-                          Collect from {battery.busNumber}
-                        </button>
-                      )}
-                      {canStock && (
-                        <select
-                          aria-label={`Set status for ${battery.code}`}
-                          value={battery.status}
-                          disabled={setStatus.isPending}
-                          onChange={(e) =>
-                            quickStatus(
-                              battery,
-                              e.target.value as BatteryStatus,
-                            )
-                          }
-                          className="cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-base font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none sm:text-[12.5px]"
-                        >
-                          {STATUS_OPTIONS.map(([value, label]) => (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                      <button
-                        type="button"
-                        aria-label={`History for ${battery.code}`}
-                        onClick={() => setHistoryFor(battery)}
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
-                      >
-                        <History size={14} />
-                      </button>
-                      {canStock && (
-                        <button
-                          type="button"
-                          aria-label={`Edit ${battery.code}`}
-                          onClick={() => openEdit(battery)}
+                          aria-label={`History for ${battery.code}`}
+                          onClick={() => setHistoryFor(battery)}
                           className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
                         >
-                          <Pencil size={14} />
+                          <History size={14} />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        {canStock && (
+                          <button
+                            type="button"
+                            aria-label={`Edit ${battery.code}`}
+                            onClick={() => openEdit(battery)}
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
       )}
 
       {isLoading && (
@@ -778,8 +783,8 @@ export default function Batteries() {
       >
         <div className="flex flex-col gap-4">
           <p className="m-0 text-[13px] font-semibold text-fog">
-            This takes {collectFor?.code} off {collectFor?.busNumber}. Its status
-            stays as it is; update it separately if it needs charging.
+            This takes {collectFor?.code} off {collectFor?.busNumber}. Its
+            status stays as it is; update it separately if it needs charging.
           </p>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="collect-note" className={labelClasses}>

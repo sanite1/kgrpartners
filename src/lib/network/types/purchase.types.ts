@@ -1,10 +1,6 @@
 // Mirrors kgr-backend interfaces/purchase.interface.ts.
 
-export type PurchaseStatus =
-  | "purchased"
-  | "shipping"
-  | "arrived"
-  | "delivered";
+export type PurchaseStatus = "purchased" | "shipping" | "arrived" | "delivered";
 
 export interface PurchaseStatusEvent {
   status: PurchaseStatus;

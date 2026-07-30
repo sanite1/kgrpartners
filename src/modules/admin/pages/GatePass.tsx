@@ -623,8 +623,9 @@ export default function GatePassPage() {
                 )}
                 {selected.carriedOutAt && (
                   <p className="m-0">
-                    Carried out past <strong>{selected.carriedOutByName}</strong>{" "}
-                    on {fmtDate(selected.carriedOutAt)} at{" "}
+                    Carried out past{" "}
+                    <strong>{selected.carriedOutByName}</strong> on{" "}
+                    {fmtDate(selected.carriedOutAt)} at{" "}
                     {fmtTime(selected.carriedOutAt)}
                   </p>
                 )}

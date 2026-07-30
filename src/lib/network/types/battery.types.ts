@@ -12,17 +12,10 @@ export type BatteryStatus =
 export type BatteryMoveAction = "issue" | "collect" | "status";
 
 export type BatteryLocation =
-  | "main_yard"
-  | "muhd_house"
-  | "kamila_house"
-  | "ubs";
+  "main_yard" | "muhd_house" | "kamila_house" | "ubs";
 
 export type BatteryRetiredReason =
-  | "sold"
-  | "dismantled"
-  | "accident"
-  | "bms_burnt"
-  | "other";
+  "sold" | "dismantled" | "accident" | "bms_burnt" | "other";
 
 export interface Battery {
   _id: string;
