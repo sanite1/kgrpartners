@@ -9,6 +9,8 @@ import type {
   CreateBusPayload,
   UpdateBusPayload,
   BusesQueryParams,
+  BusPerformanceData,
+  BusPerformanceQueryParams,
   BusTripsData,
   BusTripsQueryParams,
 } from "../types/bus.types";
@@ -47,6 +49,12 @@ export const updateBusFn = (
 ): Promise<ApiResponse<Bus>> =>
   api.patch<ApiResponse<Bus>>(`${BASE}/${id}`, payload);
 
+// GET /api/buses/performance: the fleet judged against the daily minimum.
+export const getBusPerformanceFn = (
+  params?: BusPerformanceQueryParams,
+): Promise<ApiResponse<BusPerformanceData>> =>
+  api.get<ApiResponse<BusPerformanceData>>(`${BASE}/performance`, params);
+
 // GET /api/buses/:id/trips: the bus's trip history from its receipts.
 export const getBusTripsFn = (
   id: string,
@@ -63,6 +71,8 @@ export const busKeys = {
   detail: (id: string) => [...busKeys.all, "detail", id] as const,
   trips: (id: string, params?: BusTripsQueryParams) =>
     [...busKeys.all, "trips", id, params ?? {}] as const,
+  performance: (params?: BusPerformanceQueryParams) =>
+    [...busKeys.all, "performance", params ?? {}] as const,
 } as const;
 
 // Error helper
@@ -90,6 +100,18 @@ export const useGetBuses = (
   useQuery<PaginatedResponse<Bus>, AxiosError>({
     queryKey: busKeys.list(params),
     queryFn: () => getBusesFn(params),
+    ...options,
+  });
+
+export const useGetBusPerformance = (
+  params?: BusPerformanceQueryParams,
+  options?: Partial<
+    UseQueryOptions<ApiResponse<BusPerformanceData>, AxiosError>
+  >,
+) =>
+  useQuery<ApiResponse<BusPerformanceData>, AxiosError>({
+    queryKey: busKeys.performance(params),
+    queryFn: () => getBusPerformanceFn(params),
     ...options,
   });
 

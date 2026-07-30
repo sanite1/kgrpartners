@@ -93,3 +93,39 @@ export interface BusTripsQueryParams {
   from?: string; // YYYY-MM-DD, inclusive
   to?: string;
 }
+
+// the whole fleet judged against the daily trip minimum for a period
+export type PerformanceBand = "good" | "average" | "under" | "idle";
+
+export interface BusPerformanceRow extends Bus {
+  trips: number;
+  daysWorked: number;
+  avgTripsPerDay: number;
+  band: PerformanceBand;
+}
+
+export interface FleetPerformanceSummary {
+  minTripsPerDay: number;
+  fleetTrips: number;
+  busesWorked: number;
+  good: number;
+  average: number;
+  under: number;
+  idle: number;
+}
+
+export interface BusPerformanceData {
+  summary: FleetPerformanceSummary;
+  buses: BusPerformanceRow[];
+  pagination: PaginationMeta;
+}
+
+export interface BusPerformanceQueryParams {
+  page?: number;
+  pageSize?: number;
+  isActive?: "true" | "false";
+  search?: string;
+  from?: string;
+  to?: string;
+  band?: PerformanceBand | "all";
+}
