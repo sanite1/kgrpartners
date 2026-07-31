@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowLeftRight, Plus, Search } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
@@ -126,16 +126,13 @@ export default function Swaps() {
   );
   const busResults = busData?.data ?? [];
 
-  // when the fleet knows which pack is on the chosen bus, prefill it
+  // what the fleet believes is on the chosen bus; shown as a hint only,
+  // the user always picks the battery themselves
   const { data: onBusData } = useGetBatteries(
     { busId: bus?._id, pageSize: 2 },
     { enabled: !!bus },
   );
-  useEffect(() => {
-    if (!bus || initial) return;
-    const current = onBusData?.data?.[0];
-    if (current) setInitial(current);
-  }, [bus, initial, onBusData]);
+  const currentOnBus = bus ? (onBusData?.data?.[0] ?? null) : null;
 
   const createSwap = useCreateSwap();
 
@@ -349,6 +346,20 @@ export default function Swaps() {
               selected={initial}
               onSelect={setInitial}
             />
+            {currentOnBus && (
+              <span
+                className={cn(
+                  "text-[12px] font-bold",
+                  initial && initial._id !== currentOnBus._id
+                    ? "text-solar-700"
+                    : "text-fog",
+                )}
+              >
+                {initial && initial._id !== currentOnBus._id
+                  ? `Note: the system has ${currentOnBus.code} on ${bus?.number}, not ${initial.code}.`
+                  : `The system has ${currentOnBus.code} on ${bus?.number}. Pick the pack you can actually see.`}
+              </span>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
