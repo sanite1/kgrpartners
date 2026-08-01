@@ -3,9 +3,8 @@ import type { BatteryLocation } from "./battery.types";
 
 export type ClosingPercent = 50 | 75 | 100;
 
-// two identical sheets kept by different people: the main yard one and
-// the Muh'd & Kamila house one
-export type ClosingSheetKey = "main" | "muhd_kamila";
+// identical sheets kept by different people at different places
+export type ClosingSheetKey = "main" | "muhd_kamila" | "main_yard" | "ubs";
 
 export interface BatteryClosingEntry {
   _id: string;

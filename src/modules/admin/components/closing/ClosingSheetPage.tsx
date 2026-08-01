@@ -35,10 +35,21 @@ interface ClosingSheetPageProps {
   title: string;
   subtitle: string;
   countLabel: string; // the dark tile, e.g. "BATTERIES AT YARD"
+  // which location tiles this tab shows; omitted = all of them
+  locations?: BatteryLocation[];
+  defaultLocation?: BatteryLocation;
 }
 
-// The evening closing sheet, shared by the main yard tab and the Muh'd
-// & Kamila house tab. Same format, separate lists and separate people.
+// how many tile columns the summary row needs (3 fixed + locations)
+const TILE_COLS: Record<number, string> = {
+  4: "lg:grid-cols-4",
+  5: "lg:grid-cols-5",
+  6: "lg:grid-cols-6",
+  7: "lg:grid-cols-7",
+};
+
+// One evening closing sheet among several, each kept at its own place
+// by its own people. Same format, separate lists.
 export default function ClosingSheetPage({
   sheet,
   pageTitle,
@@ -46,6 +57,8 @@ export default function ClosingSheetPage({
   title,
   subtitle,
   countLabel,
+  locations,
+  defaultLocation = "main_yard",
 }: ClosingSheetPageProps) {
   const { user } = useAuthStore();
   const isManager = canApprove(user?.role);
@@ -62,7 +75,7 @@ export default function ClosingSheetPage({
   const [name, setName] = useState("");
   const [voltage, setVoltage] = useState("");
   const [percent, setPercent] = useState<ClosingPercent>(100);
-  const [location, setLocation] = useState<BatteryLocation>("main_yard");
+  const [location, setLocation] = useState<BatteryLocation>(defaultLocation);
   const [trips, setTrips] = useState("");
   const [error, setError] = useState("");
 
@@ -85,11 +98,18 @@ export default function ClosingSheetPage({
   // no viewDate means the live sheet; any picked date shows the way back
   const isToday = !viewDate;
 
+  // this tab's own location tiles; the general sheet shows every place
+  const shownLocations = locations
+    ? LOCATION_OPTIONS.filter(([value]) =>
+        locations.includes(value as BatteryLocation),
+      )
+    : LOCATION_OPTIONS;
+
   const openAdd = () => {
     setName("");
     setVoltage("");
     setPercent(100);
-    setLocation("main_yard");
+    setLocation(defaultLocation);
     setTrips("");
     setError("");
     setAddOpen(true);
@@ -255,8 +275,13 @@ export default function ClosingSheetPage({
             </span>
           </div>
 
-          {/* footer totals, computed live */}
-          <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
+          {/* footer totals, computed live; tiles fit this tab's place */}
+          <div
+            className={cn(
+              "mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3",
+              TILE_COLS[3 + shownLocations.length] ?? "lg:grid-cols-7",
+            )}
+          >
             <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
               <span className="block text-[24px] font-extrabold leading-none text-neon">
                 {totals?.count ?? 0}
@@ -281,7 +306,7 @@ export default function ClosingSheetPage({
                 FULLY CHARGED
               </span>
             </div>
-            {LOCATION_OPTIONS.map(([value, label]) => (
+            {shownLocations.map(([value, label]) => (
               <div
                 key={value}
                 className="rounded-2xl border border-line bg-white p-4"

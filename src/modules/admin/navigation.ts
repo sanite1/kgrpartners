@@ -83,6 +83,18 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
         icon: "House",
         module: "house_closing",
       },
+      {
+        label: "Main Yard",
+        to: "/main-yard-closing",
+        icon: "Factory",
+        module: "main_yard_closing",
+      },
+      {
+        label: "UBS",
+        to: "/ubs-closing",
+        icon: "Building2",
+        module: "ubs_closing",
+      },
       { label: "Swaps", to: "/swaps", icon: "ArrowLeftRight", module: "swaps" },
     ],
   },

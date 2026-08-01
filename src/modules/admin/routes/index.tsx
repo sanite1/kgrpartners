@@ -21,6 +21,8 @@ const Batteries = lazy(() => import("../pages/Batteries"));
 const BatteryExitFormPage = lazy(() => import("../pages/BatteryExitFormPage"));
 const BatteryClosing = lazy(() => import("../pages/BatteryClosing"));
 const HouseClosing = lazy(() => import("../pages/HouseClosing"));
+const MainYardClosing = lazy(() => import("../pages/MainYardClosing"));
+const UbsClosing = lazy(() => import("../pages/UbsClosing"));
 const Swaps = lazy(() => import("../pages/Swaps"));
 const GatePassPage = lazy(() => import("../pages/GatePass"));
 const GatePassNewPage = lazy(() => import("../pages/GatePassNewPage"));
@@ -80,6 +82,8 @@ export const AdminRoutes = () => {
               <Route path="/battery-form" element={<BatteryExitFormPage />} />
               <Route path="/battery-closing" element={<BatteryClosing />} />
               <Route path="/house-closing" element={<HouseClosing />} />
+              <Route path="/main-yard-closing" element={<MainYardClosing />} />
+              <Route path="/ubs-closing" element={<UbsClosing />} />
               <Route path="/swaps" element={<Swaps />} />
               <Route path="/gate-pass" element={<GatePassPage />} />
               <Route path="/gate-pass/new" element={<GatePassNewPage />} />

@@ -24,6 +24,8 @@ import { toast } from "sonner";
 const SHEET_BASE: Record<ClosingSheetKey, string> = {
   main: "/api/battery-closing",
   muhd_kamila: "/api/house-closing",
+  main_yard: "/api/main-yard-closing",
+  ubs: "/api/ubs-closing",
 };
 
 // RAW API FUNCTIONS

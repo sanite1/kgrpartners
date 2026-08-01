@@ -11,6 +11,8 @@ export default function HouseClosing() {
       title="Muh'd & Kamila House"
       subtitle="The house closing report: every battery there tonight, its charge and voltage."
       countLabel="BATTERIES AT HOUSE"
+      locations={["muhd_house", "kamila_house"]}
+      defaultLocation="muhd_house"
     />
   );
 }

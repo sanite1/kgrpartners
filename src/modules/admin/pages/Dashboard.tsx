@@ -28,6 +28,14 @@ const dayLabel = (iso: string) =>
     weekday: "short",
   });
 
+// bar labels: ₦663,750 reads as ₦664k so seven days fit side by side
+const fmtCompact = (raw: string | number) => {
+  const n = Number(raw) || 0;
+  if (n >= 1_000_000) return `₦${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}m`;
+  if (n >= 1_000) return `₦${Math.round(n / 1_000)}k`;
+  return `₦${Math.round(n)}`;
+};
+
 // One white stat cell with a skeleton while its own query loads.
 const StatCell = ({
   label,
@@ -137,10 +145,17 @@ const TrendChart = ({
             return (
               <div
                 key={point.date}
-                className="flex flex-1 flex-col items-center gap-2"
-                title={`${point.date}: collected ${fmtNaira(point.collectedAmount)}`}
+                className="flex flex-1 flex-col items-center gap-1.5"
+                title={
+                  personal
+                    ? `${point.date}: collected ${fmtNaira(point.collectedAmount)}`
+                    : `${point.date}: expected ${fmtNaira(point.expectedAmount)}, collected ${fmtNaira(point.collectedAmount)}`
+                }
               >
-                <div className="flex h-[120px] w-full items-end justify-center gap-1">
+                <span className="whitespace-nowrap text-[9.5px] font-extrabold tabular-nums text-brand-600 sm:text-[11px]">
+                  {fmtCompact(point.collectedAmount)}
+                </span>
+                <div className="flex h-[102px] w-full items-end justify-center gap-1">
                   {!personal && (
                     <div
                       className="w-[38%] max-w-[26px] rounded-t-md bg-card-line"
