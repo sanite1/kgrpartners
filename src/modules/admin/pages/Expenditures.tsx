@@ -34,6 +34,10 @@ import {
 
 const NEW_CATEGORY = "__new__";
 
+// the page opens scoped to the running month, so every new month the
+// totals start fresh; "All history" lifts the scope with one click
+const monthStart = () => `${todayLagos().slice(0, 7)}-01`;
+
 type StatusFilter = "" | ExpenditureStatus;
 
 const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
@@ -97,9 +101,11 @@ export default function Expenditures() {
   const [busFilter, setBusFilter] = useState<Bus | null>(null);
   const [busFilterSearch, setBusFilterSearch] = useState("");
   const [busFilterOpen, setBusFilterOpen] = useState(false);
-  const [from, setFrom] = useState("");
+  const [from, setFrom] = useState(monthStart());
   const [to, setTo] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("");
+  // the category split shows its heaviest hitters; the rest unfold
+  const [allCats, setAllCats] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
@@ -189,7 +195,7 @@ export default function Expenditures() {
     setCategoryFilter("");
     setBusFilter(null);
     setBusFilterSearch("");
-    setFrom("");
+    setFrom(monthStart());
     setTo("");
     setStatusFilter("");
     setPage(1);
@@ -256,13 +262,15 @@ export default function Expenditures() {
     );
   }
 
+  // the default month scope is home base, not a "filter"
+  const isMonthScope = from === monthStart() && !to;
+  const isAllHistory = !from && !to;
   const hasFilter =
     !!search ||
     !!categoryFilter ||
     !!busFilter ||
-    !!from ||
-    !!to ||
-    !!statusFilter;
+    !!statusFilter ||
+    (!isMonthScope && (!!from || !!to));
 
   return (
     <>
@@ -282,11 +290,46 @@ export default function Expenditures() {
         }
       />
 
-      {/* total + category split */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_1fr]">
-        <div className="flex flex-col justify-between rounded-[20px] bg-forest p-6">
+      {/* this month is home; all history is one click away */}
+      <div className="mb-4 flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
+        {(
+          [
+            ["month", "This month"],
+            ["all", "All history"],
+          ] as const
+        ).map(([value, label]) => {
+          const active = value === "month" ? isMonthScope : isAllHistory;
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => {
+                setFrom(value === "month" ? monthStart() : "");
+                setTo("");
+                setPage(1);
+              }}
+              className={cn(
+                "cursor-pointer rounded-lg border-none px-4 py-2 text-[13px] font-extrabold transition-colors",
+                active
+                  ? "cta-gradient text-forest-deep"
+                  : "bg-transparent text-fog hover:text-bark",
+              )}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* total + category split; each card keeps its own height */}
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[320px_1fr]">
+        <div className="flex flex-col rounded-[20px] bg-forest p-6">
           <span className="text-[11px] font-extrabold tracking-[1.5px] text-mint-soft">
-            {hasFilter ? "TOTAL (FILTERED)" : "TOTAL SPENT"}
+            {isMonthScope && !hasFilter
+              ? "SPENT THIS MONTH"
+              : hasFilter
+                ? "TOTAL (FILTERED)"
+                : "TOTAL SPENT · ALL TIME"}
           </span>
           {summaryLoading ? (
             <Skeleton className="mt-4 h-9 w-40 bg-white/15" />
@@ -315,7 +358,10 @@ export default function Expenditures() {
                 No spending in this view.
               </p>
             ) : (
-              summary?.byCategory.map((c, i) => (
+              (allCats
+                ? (summary?.byCategory ?? [])
+                : (summary?.byCategory ?? []).slice(0, 2)
+              ).map((c, i) => (
                 <div key={c.category} className="flex flex-col gap-1">
                   <div className="flex items-center justify-between text-[13px]">
                     <span className="font-extrabold text-ink">
@@ -339,6 +385,17 @@ export default function Expenditures() {
                   </div>
                 </div>
               ))
+            )}
+            {!summaryLoading && (summary?.byCategory ?? []).length > 8 && (
+              <button
+                type="button"
+                onClick={() => setAllCats((v) => !v)}
+                className="mt-1 w-fit cursor-pointer border-none bg-transparent p-0 text-[13px] font-extrabold text-brand-600 hover:text-brand-500"
+              >
+                {allCats
+                  ? "Show less"
+                  : `Show all ${(summary?.byCategory ?? []).length} categories`}
+              </button>
             )}
           </div>
         </div>
