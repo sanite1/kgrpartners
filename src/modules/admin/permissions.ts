@@ -36,3 +36,14 @@ export const canIssue = (role?: UserRole) =>
 export const canManageStock = (role?: UserRole) =>
   !!role && STORE.includes(role);
 export const isAdminRole = (role?: UserRole) => role === "admin";
+
+// The two owner accounts, mirrored from kgr-backend config/roles.ts.
+// Nobody can delete them, change their role or disable them; only a
+// super admin may edit a super admin at all.
+export const SUPER_ADMIN_EMAILS = [
+  "admin@kgrpartnersltd.com",
+  "csanni52@gmail.com",
+];
+
+export const isSuperAdminEmail = (email?: string | null): boolean =>
+  !!email && SUPER_ADMIN_EMAILS.includes(email.trim().toLowerCase());

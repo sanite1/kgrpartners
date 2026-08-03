@@ -12,7 +12,7 @@ import { useGetUsers, useUpdateUser } from "@/lib/network/api/user.api";
 import type { ConsoleUser } from "@/lib/network/types/user.types";
 import type { UserRole } from "@/lib/network/types/auth.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { ROLE_LABEL, isAdminRole } from "../permissions";
+import { ROLE_LABEL, isAdminRole, isSuperAdminEmail } from "../permissions";
 import { cn, fmtDate } from "@/lib/utils";
 import { inputClasses } from "../components/console/form";
 
@@ -174,10 +174,17 @@ export default function Users() {
                   {user.email}
                 </td>
                 <td className="px-5 py-3.5">
-                  <StatusPill
-                    tone={roleTone(user.role)}
-                    label={ROLE_LABEL[user.role] ?? user.role}
-                  />
+                  <span className="flex items-center gap-1.5">
+                    <StatusPill
+                      tone={roleTone(user.role)}
+                      label={ROLE_LABEL[user.role] ?? user.role}
+                    />
+                    {isSuperAdminEmail(user.email) && (
+                      <span className="rounded-full bg-forest-deep px-2 py-0.5 text-[10.5px] font-extrabold tracking-[0.5px] text-neon">
+                        SUPER
+                      </span>
+                    )}
+                  </span>
                 </td>
                 <td className="px-5 py-3.5">
                   <StatusPill
@@ -191,6 +198,7 @@ export default function Users() {
                 <td className="px-5 py-3.5">
                   <div className="flex items-center justify-end gap-2">
                     {user._id !== me?._id &&
+                      !isSuperAdminEmail(user.email) &&
                       (user.isActive ? (
                         <button
                           type="button"
@@ -208,14 +216,18 @@ export default function Users() {
                           <UserCheck size={13} /> Enable
                         </button>
                       ))}
-                    <button
-                      type="button"
-                      aria-label={`Edit ${user.firstName}`}
-                      onClick={() => navigate(`/users/${user._id}/edit`)}
-                      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
-                    >
-                      <Pencil size={14} />
-                    </button>
+                    {(!isSuperAdminEmail(user.email) ||
+                      isSuperAdminEmail(me?.email) ||
+                      user._id === me?._id) && (
+                      <button
+                        type="button"
+                        aria-label={`Edit ${user.firstName}`}
+                        onClick={() => navigate(`/users/${user._id}/edit`)}
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

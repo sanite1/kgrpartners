@@ -12,7 +12,12 @@ import {
 } from "@/lib/network/api/user.api";
 import type { UserRole } from "@/lib/network/types/auth.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { ROLE_LABEL, ROLE_DESCRIPTION, isAdminRole } from "../permissions";
+import {
+  ROLE_LABEL,
+  ROLE_DESCRIPTION,
+  isAdminRole,
+  isSuperAdminEmail,
+} from "../permissions";
 import { ACCESS_MODULES, ROLE_DEFAULT_ACCESS, type ModuleKey } from "../access";
 import { cn } from "@/lib/utils";
 import {
@@ -68,6 +73,12 @@ export default function UserFormPage() {
   });
   const user = userData?.data;
 
+  // the owner accounts: role and status locked for everyone, and only
+  // a super admin may edit them at all
+  const targetSuper = isEdit && isSuperAdminEmail(user?.email);
+  const meSuper = isSuperAdminEmail(me?.email);
+  const locked = targetSuper && !meSuper && user?._id !== me?._id;
+
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
@@ -99,11 +110,10 @@ export default function UserFormPage() {
   };
 
   const accessPayload = () =>
-    role === "admin" || sameAccess(access, ROLE_DEFAULT_ACCESS[role] ?? [])
-      ? null
-      : access;
+    sameAccess(access, ROLE_DEFAULT_ACCESS[role] ?? []) ? null : access;
 
   const submit = () => {
+    if (locked) return;
     if (firstName.trim().length < 2 || lastName.trim().length < 2) {
       setError("Enter the first and last name");
       return;
@@ -123,13 +133,17 @@ export default function UserFormPage() {
       updateUser.mutate(
         {
           id: user._id,
-          payload: {
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
-            role,
-            isActive,
-            access: accessPayload(),
-          },
+          // super admin accounts only ever change their names; role,
+          // status and access stay locked
+          payload: targetSuper
+            ? { firstName: firstName.trim(), lastName: lastName.trim() }
+            : {
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
+                role,
+                isActive,
+                access: accessPayload(),
+              },
         },
         { onSuccess: () => navigate("/users") },
       );
@@ -286,6 +300,7 @@ export default function UserFormPage() {
               <select
                 id="u-role"
                 value={role}
+                disabled={targetSuper || locked}
                 onChange={(e) => {
                   const next = e.target.value as UserRole;
                   setRole(next);
@@ -294,7 +309,7 @@ export default function UserFormPage() {
                     setAccess([...(ROLE_DEFAULT_ACCESS[next] ?? [])]);
                   }
                 }}
-                className={inputClasses}
+                className={cn(inputClasses, targetSuper && "opacity-60")}
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>
@@ -303,11 +318,13 @@ export default function UserFormPage() {
                 ))}
               </select>
               <p className="m-0 text-[12.5px] font-semibold text-fog">
-                {ROLE_DESCRIPTION[role] ?? ""}
+                {targetSuper
+                  ? "A super admin: always Admin, every tab, cannot be disabled or deleted."
+                  : (ROLE_DESCRIPTION[role] ?? "")}
               </p>
             </div>
 
-            {role !== "admin" && (
+            {!targetSuper && (
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between gap-3">
                   <span className={labelClasses}>
@@ -325,7 +342,9 @@ export default function UserFormPage() {
                   </button>
                 </div>
                 <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 rounded-xl border border-line bg-haze p-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {ACCESS_MODULES.filter((m) => m.key !== "users").map((m) => (
+                  {ACCESS_MODULES.filter(
+                    (m) => role === "admin" || m.key !== "users",
+                  ).map((m) => (
                     <label
                       key={m.key}
                       className="flex cursor-pointer items-center gap-2.5 text-[13.5px] font-bold text-ink"
@@ -347,7 +366,7 @@ export default function UserFormPage() {
               </div>
             )}
 
-            {isEdit && user && user._id !== me?._id && (
+            {isEdit && user && user._id !== me?._id && !targetSuper && (
               <div className="flex flex-col gap-1.5">
                 <span className={labelClasses}>Account access</span>
                 <div className="flex gap-2">
@@ -379,12 +398,17 @@ export default function UserFormPage() {
               </div>
             )}
 
+            {locked && (
+              <span className={errorClasses}>
+                Only a super admin can edit a super admin account.
+              </span>
+            )}
             {error && <span className={errorClasses}>{error}</span>}
 
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                disabled={isPending}
+                disabled={isPending || locked}
                 onClick={submit}
                 className={cn(
                   "cta-gradient cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep",
@@ -408,8 +432,8 @@ export default function UserFormPage() {
               </button>
             </div>
 
-            {/* danger zone: hard delete, only for other people's accounts */}
-            {isEdit && user && user._id !== me?._id && (
+            {/* danger zone: hard delete, never for the owner accounts */}
+            {isEdit && user && user._id !== me?._id && !targetSuper && (
               <div className="mt-2 border-t border-line pt-4">
                 {confirmDelete ? (
                   <div className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 p-4">

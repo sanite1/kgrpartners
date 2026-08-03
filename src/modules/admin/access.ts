@@ -2,6 +2,7 @@
 // access on every route; the console uses this to decide which tabs a
 // user sees and to prefill the admin's access toggles.
 import type { UserRole } from "@/lib/network/types/auth.types";
+import { isSuperAdminEmail } from "./permissions";
 
 export const ACCESS_MODULES = [
   { key: "generate", label: "Generate Receipt" },
@@ -66,13 +67,15 @@ export const ROLE_DEFAULT_ACCESS: Record<UserRole, ModuleKey[]> = {
 
 interface AccessUser {
   role: UserRole;
+  email?: string | null;
   access?: string[] | null;
 }
 
-// per-user override when set, otherwise role defaults; admins get all
+// per-user override when set, otherwise role defaults; only the super
+// admins are untouchable with everything, normal admins can be narrowed
 export const effectiveAccess = (user?: AccessUser | null): ModuleKey[] => {
   if (!user) return [];
-  if (user.role === "admin") return ROLE_DEFAULT_ACCESS.admin;
+  if (isSuperAdminEmail(user.email)) return ROLE_DEFAULT_ACCESS.admin;
   if (Array.isArray(user.access)) {
     return user.access.filter((k): k is ModuleKey =>
       (MODULE_KEYS as string[]).includes(k),
