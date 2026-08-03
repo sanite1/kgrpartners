@@ -460,7 +460,8 @@ export default function Dashboard() {
           </div>
 
           <div className="mt-4">{opsCells}</div>
-          <TrendChart series={series} loading={summaryLoading} />
+          {/* week-long money trends are the admin's view alone */}
+          {isAdmin && <TrendChart series={series} loading={summaryLoading} />}
         </>
       )}
 
