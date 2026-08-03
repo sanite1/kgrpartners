@@ -6,6 +6,7 @@ import PageHead from "../components/console/PageHead";
 import Modal from "../components/console/Modal";
 import StatusPill from "../components/console/StatusPill";
 import Pagination from "../components/console/Pagination";
+import ConfirmModal from "../components/console/ConfirmModal";
 import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import {
   useGetChecklist,
@@ -15,6 +16,7 @@ import {
   useDeleteChecklistEntry,
 } from "@/lib/network/api/checklist.api";
 import type {
+  ChecklistEntry,
   ChecklistKind,
   ChecklistSession,
   CompareStatus,
@@ -103,6 +105,7 @@ export default function Checklist() {
   const [batteryName, setBatteryName] = useState("");
   const [trips, setTrips] = useState<number>(2);
   const [error, setError] = useState("");
+  const [deleteFor, setDeleteFor] = useState<ChecklistEntry | null>(null);
 
   const { data, isLoading } = useGetChecklist(kind, viewDate || undefined, {
     enabled: tab !== "compare",
@@ -709,7 +712,7 @@ export default function Checklist() {
                                   type="button"
                                   aria-label={`Remove ${entry.busName}`}
                                   disabled={deleteEntry.isPending}
-                                  onClick={() => deleteEntry.mutate(entry._id)}
+                                  onClick={() => setDeleteFor(entry)}
                                   className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-40"
                                 >
                                   <Trash2 size={13} />
@@ -747,6 +750,26 @@ export default function Checklist() {
           )}
         </>
       )}
+
+      <ConfirmModal
+        open={deleteFor !== null}
+        title="Remove bus?"
+        message={
+          <>
+            Remove <strong>{deleteFor?.busName}</strong> (
+            {deleteFor?.session === "morning" ? "morning" : "evening"}) from
+            this checklist? This cannot be undone.
+          </>
+        }
+        loading={deleteEntry.isPending}
+        onConfirm={() =>
+          deleteFor &&
+          deleteEntry.mutate(deleteFor._id, {
+            onSuccess: () => setDeleteFor(null),
+          })
+        }
+        onClose={() => setDeleteFor(null)}
+      />
 
       {/* clear-bus modal: bus, session, battery, trips */}
       <Modal title="Clear bus" open={addOpen} onClose={() => setAddOpen(false)}>

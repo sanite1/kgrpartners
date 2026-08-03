@@ -13,7 +13,9 @@ import {
   useMarkClosingWorked,
   useDeleteClosingEntry,
 } from "@/lib/network/api/batteryClosing.api";
+import ConfirmModal from "../console/ConfirmModal";
 import type {
+  BatteryClosingEntry,
   ClosingPercent,
   ClosingSheetKey,
 } from "@/lib/network/types/batteryClosing.types";
@@ -79,6 +81,7 @@ export default function ClosingSheetPage({
   const [location, setLocation] = useState<BatteryLocation>(defaultLocation);
   const [trips, setTrips] = useState("");
   const [error, setError] = useState("");
+  const [deleteFor, setDeleteFor] = useState<BatteryClosingEntry | null>(null);
 
   const { data, isLoading } = useGetClosingReport(sheet, viewDate || undefined);
   const report = data?.data;
@@ -428,7 +431,7 @@ export default function ClosingSheetPage({
                               type="button"
                               aria-label={`Remove ${entry.batteryName}`}
                               disabled={deleteEntry.isPending}
-                              onClick={() => deleteEntry.mutate(entry._id)}
+                              onClick={() => setDeleteFor(entry)}
                               className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-40"
                             >
                               <Trash2 size={13} />
@@ -464,6 +467,25 @@ export default function ClosingSheetPage({
           )}
         </>
       )}
+
+      <ConfirmModal
+        open={deleteFor !== null}
+        title="Remove battery?"
+        message={
+          <>
+            Remove <strong>{deleteFor?.batteryName}</strong> from this closing
+            sheet? This cannot be undone.
+          </>
+        }
+        loading={deleteEntry.isPending}
+        onConfirm={() =>
+          deleteFor &&
+          deleteEntry.mutate(deleteFor._id, {
+            onSuccess: () => setDeleteFor(null),
+          })
+        }
+        onClose={() => setDeleteFor(null)}
+      />
 
       {/* add modal: name -> voltage -> percent -> location -> save */}
       <Modal

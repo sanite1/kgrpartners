@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2, RefreshCcw } from "lucide-react";
 import BoltMark from "@/components/shared/BoltMark";
 import Modal from "../console/Modal";
+import ConfirmModal from "../console/ConfirmModal";
 import {
   useGetPriceList,
   useCreatePriceItem,
@@ -45,6 +46,7 @@ export default function PriceListSection() {
   // notes modal
   const [notesOpen, setNotesOpen] = useState(false);
   const [notesInput, setNotesInput] = useState("");
+  const [deleteFor, setDeleteFor] = useState<PriceListItem | null>(null);
 
   const createItem = useCreatePriceItem();
   const updateItem = useUpdatePriceItem();
@@ -222,7 +224,7 @@ export default function PriceListSection() {
                           type="button"
                           title="Remove item"
                           disabled={deleteItem.isPending}
-                          onClick={() => deleteItem.mutate(item._id)}
+                          onClick={() => setDeleteFor(item)}
                           className="cursor-pointer rounded-lg border border-line bg-white p-2 text-bark transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-40"
                         >
                           <Trash2 size={14} />
@@ -282,6 +284,25 @@ export default function PriceListSection() {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        open={deleteFor !== null}
+        title="Remove item?"
+        message={
+          <>
+            Remove <strong>{deleteFor?.name}</strong> from the price list?
+            This cannot be undone.
+          </>
+        }
+        loading={deleteItem.isPending}
+        onConfirm={() =>
+          deleteFor &&
+          deleteItem.mutate(deleteFor._id, {
+            onSuccess: () => setDeleteFor(null),
+          })
+        }
+        onClose={() => setDeleteFor(null)}
+      />
 
       {/* add or edit item */}
       <Modal

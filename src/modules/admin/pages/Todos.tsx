@@ -5,6 +5,7 @@ import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
 import Modal from "../components/console/Modal";
 import Pagination from "../components/console/Pagination";
+import ConfirmModal from "../components/console/ConfirmModal";
 import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import {
   useGetTodos,
@@ -60,6 +61,7 @@ export default function Todos() {
 
   // snooze modal
   const [snoozeFor, setSnoozeFor] = useState<Todo | null>(null);
+  const [deleteFor, setDeleteFor] = useState<Todo | null>(null);
 
   const { data, isLoading } = useGetTodos({ view, page, pageSize });
   const todos = data?.data ?? [];
@@ -319,7 +321,7 @@ export default function Todos() {
                 type="button"
                 title="Delete"
                 disabled={busy}
-                onClick={() => deleteTodo.mutate(todo._id)}
+                onClick={() => setDeleteFor(todo)}
                 className="cursor-pointer rounded-lg border border-line bg-white p-2 text-bark transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-40"
               >
                 <Trash2 size={14} />
@@ -363,6 +365,25 @@ export default function Todos() {
           className="border-t border-line px-5 pb-4"
         />
       </div>
+
+      <ConfirmModal
+        open={deleteFor !== null}
+        title="Remove to-do?"
+        message={
+          <>
+            Remove <strong>{deleteFor?.title}</strong> from the list? This
+            cannot be undone. Finished items can stay in Done instead.
+          </>
+        }
+        loading={deleteTodo.isPending}
+        onConfirm={() =>
+          deleteFor &&
+          deleteTodo.mutate(deleteFor._id, {
+            onSuccess: () => setDeleteFor(null),
+          })
+        }
+        onClose={() => setDeleteFor(null)}
+      />
 
       {/* add or edit */}
       <Modal
