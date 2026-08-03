@@ -174,17 +174,18 @@ export default function Users() {
                   {user.email}
                 </td>
                 <td className="px-5 py-3.5">
-                  <span className="flex items-center gap-1.5">
+                  {isSuperAdminEmail(user.email) ? (
+                    // the owner accounts: same Admin label, unmistakable look
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-forest-deep px-2.5 py-1 text-[11.5px] font-extrabold text-neon">
+                      <span className="h-1.5 w-1.5 rounded-full bg-neon" />
+                      Admin
+                    </span>
+                  ) : (
                     <StatusPill
                       tone={roleTone(user.role)}
                       label={ROLE_LABEL[user.role] ?? user.role}
                     />
-                    {isSuperAdminEmail(user.email) && (
-                      <span className="rounded-full bg-forest-deep px-2 py-0.5 text-[10.5px] font-extrabold tracking-[0.5px] text-neon">
-                        SUPER
-                      </span>
-                    )}
-                  </span>
+                  )}
                 </td>
                 <td className="px-5 py-3.5">
                   <StatusPill
