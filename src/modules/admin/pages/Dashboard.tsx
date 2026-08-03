@@ -20,7 +20,7 @@ import { useGetChecklist } from "@/lib/network/api/checklist.api";
 import { useGetTodos } from "@/lib/network/api/todo.api";
 import type { ReceiptSummarySeriesPoint } from "@/lib/network/types/receipt.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { canApprove } from "../permissions";
+import { canApprove, isAdminRole } from "../permissions";
 import { cn, fmtNaira } from "@/lib/utils";
 
 const dayLabel = (iso: string) =>
@@ -188,6 +188,9 @@ export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
   const role = user?.role;
   const isManager = canApprove(role); // admin + manager: global view
+  // monthly totals (money and trips) are the admin's view alone;
+  // managers see the day's numbers
+  const isAdmin = isAdminRole(role);
   const isCashier = role === "cashier";
   const isStore = role === "storekeeper";
   const isSecurity = role === "security";
@@ -346,13 +349,15 @@ export default function Dashboard() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neon opacity-60 motion-reduce:animate-none" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-neon" />
                 </span>
-                COLLECTED THIS MONTH
+                {isAdmin ? "COLLECTED THIS MONTH" : "COLLECTED TODAY"}
               </span>
               {summaryLoading ? (
                 <Skeleton className="h-8 w-44 bg-white/15" />
               ) : (
                 <span className="text-[32px] font-extrabold leading-none text-neon">
-                  {fmtNaira(summary?.monthCollected)}
+                  {fmtNaira(
+                    isAdmin ? summary?.monthCollected : summary?.collectedAmount,
+                  )}
                 </span>
               )}
             </div>
@@ -372,20 +377,25 @@ export default function Dashboard() {
 
             <div className="flex flex-col justify-between rounded-[20px] border border-line bg-white p-5">
               <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
-                COLLECTED TODAY
+                {isAdmin ? "COLLECTED TODAY" : "EXPECTED TODAY"}
               </span>
               {summaryLoading ? (
                 <Skeleton className="h-6 w-28" />
               ) : (
                 <span className="text-[24px] font-extrabold leading-none text-ink">
-                  {fmtNaira(summary?.collectedAmount)}
+                  {fmtNaira(
+                    isAdmin ? summary?.collectedAmount : summary?.expectedAmount,
+                  )}
                 </span>
               )}
             </div>
 
             <StatCell
-              label="RECEIPTS THIS MONTH"
-              value={summary?.monthIssuedCount ?? 0}
+              label={isAdmin ? "RECEIPTS THIS MONTH" : "RECEIPTS TODAY"}
+              value={
+                (isAdmin ? summary?.monthIssuedCount : summary?.issuedCount) ??
+                0
+              }
               loading={summaryLoading}
             />
             <StatCell
@@ -407,7 +417,12 @@ export default function Dashboard() {
           </div>
 
           {/* today's work: who went out and how many trips */}
-          <div className="mt-4 grid auto-rows-[124px] grid-cols-2 gap-4 lg:grid-cols-6">
+          <div
+            className={cn(
+              "mt-4 grid auto-rows-[124px] grid-cols-2 gap-4",
+              isAdmin ? "lg:grid-cols-6" : "lg:grid-cols-5",
+            )}
+          >
             <StatCell
               label="BUSES WORKING TODAY"
               value={summary?.busesWorkingToday ?? 0}
@@ -435,11 +450,13 @@ export default function Dashboard() {
               value={summary?.trips ?? 0}
               loading={summaryLoading}
             />
-            <StatCell
-              label="TRIPS THIS MONTH"
-              value={summary?.monthTrips ?? 0}
-              loading={summaryLoading}
-            />
+            {isAdmin && (
+              <StatCell
+                label="TRIPS THIS MONTH"
+                value={summary?.monthTrips ?? 0}
+                loading={summaryLoading}
+              />
+            )}
           </div>
 
           <div className="mt-4">{opsCells}</div>
