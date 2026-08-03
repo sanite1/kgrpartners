@@ -10,6 +10,7 @@ import {
   useGetClosingReport,
   useGetClosingDays,
   useCreateClosingEntry,
+  useMarkClosingWorked,
   useDeleteClosingEntry,
 } from "@/lib/network/api/batteryClosing.api";
 import type {
@@ -93,6 +94,7 @@ export default function ClosingSheetPage({
   const days = daysData?.data ?? [];
 
   const createEntry = useCreateClosingEntry(sheet);
+  const markWorked = useMarkClosingWorked(sheet);
   const deleteEntry = useDeleteClosingEntry(sheet);
 
   // no viewDate means the live sheet; any picked date shows the way back
@@ -289,6 +291,10 @@ export default function ClosingSheetPage({
               <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
                 {countLabel}
               </span>
+              <span className="mt-1 block text-[10.5px] font-semibold text-mint/70">
+                {totals?.worked ?? 0} worked ·{" "}
+                {(totals?.count ?? 0) - (totals?.worked ?? 0)} waiting
+              </span>
             </div>
             <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
               <span className="block text-[24px] font-extrabold leading-none text-neon">
@@ -335,6 +341,7 @@ export default function ClosingSheetPage({
                         "VOLTAGE",
                         "TRIPS",
                         "LOCATION",
+                        "WORKED",
                         "ADDED BY",
                         "TIME",
                         "",
@@ -382,6 +389,31 @@ export default function ClosingSheetPage({
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-bark">
                           {LOCATION_LABEL[entry.location]}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <button
+                            type="button"
+                            disabled={markWorked.isPending}
+                            title={
+                              entry.worked
+                                ? entry.workedNote || "Worked"
+                                : "Tap when this pack goes out"
+                            }
+                            onClick={() =>
+                              markWorked.mutate({
+                                id: entry._id,
+                                worked: !entry.worked,
+                              })
+                            }
+                            className={cn(
+                              "cursor-pointer rounded-full border-none px-2.5 py-1 text-[11.5px] font-extrabold transition-colors disabled:opacity-40",
+                              entry.worked
+                                ? "bg-brand-50 text-brand-600 hover:bg-brand-100"
+                                : "bg-[#FDF6E3] text-solar-700 hover:bg-[#FAEBC8]",
+                            )}
+                          >
+                            {entry.worked ? "Worked ✓" : "Not yet"}
+                          </button>
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
                           {entry.addedByName || "—"}

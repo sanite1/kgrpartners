@@ -16,6 +16,9 @@ export interface BatteryClosingEntry {
   location: BatteryLocation;
   trips: number;
   tripsAuto: boolean; // derived from receipts and swaps, not typed
+  worked: boolean; // the pack actually went out after being prepared
+  workedAt?: string;
+  workedNote?: string; // "Receipt #123 on A 37" or "Marked by NAME"
   addedBy: string;
   addedByName: string;
   createdAt: string;
@@ -25,6 +28,7 @@ export interface BatteryClosingEntry {
 export interface ClosingTotals {
   count: number;
   fullyCharged: number;
+  worked: number;
   totalTrips: number;
   byLocation: Record<string, number>;
 }

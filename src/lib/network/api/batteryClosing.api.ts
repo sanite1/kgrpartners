@@ -54,6 +54,16 @@ export const getClosingDaysFn = (
     params,
   );
 
+export const markClosingWorkedFn = (
+  sheet: ClosingSheetKey,
+  id: string,
+  worked: boolean,
+): Promise<ApiResponse<BatteryClosingEntry>> =>
+  api.post<ApiResponse<BatteryClosingEntry>>(
+    `${SHEET_BASE[sheet]}/${id}/worked`,
+    { worked },
+  );
+
 export const deleteClosingEntryFn = (
   sheet: ClosingSheetKey,
   id: string,
@@ -125,6 +135,24 @@ export const useCreateClosingEntry = (sheet: ClosingSheetKey) => {
     CreateClosingEntryPayload
   >({
     mutationFn: (payload) => createClosingEntryFn(sheet, payload),
+    onSuccess: (data) => {
+      toast.success(data.message);
+      qc.invalidateQueries({ queryKey: closingKeys.all });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+};
+
+export const useMarkClosingWorked = (sheet: ClosingSheetKey) => {
+  const qc = useQueryClient();
+  return useMutation<
+    ApiResponse<BatteryClosingEntry>,
+    AxiosError,
+    { id: string; worked: boolean }
+  >({
+    mutationFn: ({ id, worked }) => markClosingWorkedFn(sheet, id, worked),
     onSuccess: (data) => {
       toast.success(data.message);
       qc.invalidateQueries({ queryKey: closingKeys.all });
