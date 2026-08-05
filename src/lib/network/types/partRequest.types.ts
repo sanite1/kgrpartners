@@ -25,7 +25,8 @@ export interface PartRequest {
 }
 
 export interface CreatePartRequestPayload {
-  busId: string;
+  busId?: string; // a registered bus...
+  target?: string; // ...or anything typed: generator, office, workshop
   itemId: string;
   quantity: number;
   narration?: string;

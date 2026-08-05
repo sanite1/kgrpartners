@@ -47,6 +47,8 @@ export default function Requests() {
   const [busSearch, setBusSearch] = useState("");
   const [busOpen, setBusOpen] = useState(false);
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
+  // a request can also be for something typed, not a registered bus
+  const [typedTarget, setTypedTarget] = useState("");
   const [itemSearch, setItemSearch] = useState("");
   const [itemOpen, setItemOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
@@ -90,6 +92,7 @@ export default function Requests() {
 
   const resetForm = () => {
     setSelectedBus(null);
+    setTypedTarget("");
     setBusSearch("");
     setSelectedItem(null);
     setItemSearch("");
@@ -105,11 +108,12 @@ export default function Requests() {
   };
 
   const submit = (allowOverride: boolean) => {
-    if (!selectedBus || !selectedItem || qty < 1) return;
+    if ((!selectedBus && !typedTarget) || !selectedItem || qty < 1) return;
     setLockMessage(null);
     createRequest.mutate(
       {
-        busId: selectedBus._id,
+        busId: selectedBus?._id,
+        target: selectedBus ? undefined : typedTarget,
         itemId: selectedItem._id,
         quantity: qty,
         narration: narration || undefined,
@@ -147,17 +151,23 @@ export default function Requests() {
             {/* bus */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="rq-bus" className={labelClasses}>
-                Bus <span className="text-brand-500">*</span>
+                For <span className="text-brand-500">*</span>
               </label>
-              {selectedBus ? (
+              {selectedBus || typedTarget ? (
                 <div className="flex items-center justify-between rounded-[10px] border border-brand-200 bg-haze px-4 py-3">
                   <span className="text-[15px] font-extrabold text-ink">
-                    {selectedBus.number}
+                    {selectedBus?.number ?? typedTarget}
+                    {!selectedBus && (
+                      <span className="ml-2 text-[11.5px] font-bold text-fog">
+                        (typed)
+                      </span>
+                    )}
                   </span>
                   <button
                     type="button"
                     onClick={() => {
                       setSelectedBus(null);
+                      setTypedTarget("");
                       setBusSearch("");
                     }}
                     className="cursor-pointer border-none bg-transparent text-[13px] font-extrabold text-brand-600"
@@ -168,22 +178,40 @@ export default function Requests() {
               ) : (
                 <SearchSelect
                   id="rq-bus"
-                  placeholder="Search bus number"
+                  placeholder="Bus number, or type anything (generator...)"
                   search={busSearch}
                   onSearch={setBusSearch}
                   onOpenChange={setBusOpen}
-                  options={(busData?.data ?? []).map((bus) => ({
-                    key: bus._id,
-                    title: bus.number,
-                    subtitle: bus.driverName || "",
-                  }))}
+                  options={[
+                    ...(busData?.data ?? []).map((bus) => ({
+                      key: bus._id,
+                      title: bus.number,
+                      subtitle: bus.driverName || "",
+                    })),
+                    // not every request is for a bus: whatever was
+                    // typed can be used as-is
+                    ...(busSearch.trim()
+                      ? [
+                          {
+                            key: "__typed__",
+                            title: `Use "${busSearch.trim()}"`,
+                            subtitle: "not a registered bus, use as typed",
+                          },
+                        ]
+                      : []),
+                  ]}
                   onPick={(key) => {
+                    if (key === "__typed__") {
+                      setTypedTarget(busSearch.trim());
+                      setSelectedBus(null);
+                      return;
+                    }
                     const bus = (busData?.data ?? []).find(
                       (b) => b._id === key,
                     );
                     if (bus) setSelectedBus(bus);
                   }}
-                  emptyText="No active bus matches."
+                  emptyText="Keep typing and pick the typed option."
                 />
               )}
             </div>
@@ -314,7 +342,7 @@ export default function Requests() {
             <button
               type="button"
               disabled={
-                !selectedBus ||
+                (!selectedBus && !typedTarget) ||
                 !selectedItem ||
                 qty < 1 ||
                 createRequest.isPending
@@ -322,7 +350,7 @@ export default function Requests() {
               onClick={() => submit(false)}
               className={cn(
                 "cta-gradient cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep",
-                !selectedBus ||
+                (!selectedBus && !typedTarget) ||
                   !selectedItem ||
                   qty < 1 ||
                   createRequest.isPending
