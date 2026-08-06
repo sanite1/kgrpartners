@@ -9,6 +9,8 @@ const StoryTeaser = () => (
         <img
           src={STORY_IMAGE}
           alt="KGR solar panels"
+          loading="lazy"
+          decoding="async"
           className="h-[280px] w-full rounded-[20px] object-cover sm:h-[400px]"
         />
         <div className="cta-gradient absolute -bottom-5 right-2 rounded-2xl px-5 py-4 text-[14px] font-extrabold text-forest-deep shadow-[0_14px_30px_rgba(4,23,12,0.2)] sm:-bottom-[22px] sm:-right-[18px] sm:px-6 sm:py-[18px] sm:text-[16px]">

@@ -11,6 +11,8 @@ const Footer = () => (
           <img
             src={logoWhite}
             alt="KGR Partners"
+            loading="lazy"
+            decoding="async"
             className="h-auto w-[170px] lg:w-[190px]"
           />
           <p className="m-0 text-[14px] font-medium leading-[1.7] text-mint-dim">

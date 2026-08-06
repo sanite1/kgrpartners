@@ -60,11 +60,15 @@ const HomeHero = () => (
         <img
           src={HERO_IMAGES.main}
           alt="KGR electric bus on the road"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           className="absolute right-0 top-0 h-[230px] w-[78%] rounded-[18px] object-cover shadow-[0_18px_44px_rgba(13,31,21,0.22)] sm:h-[300px] lg:h-[340px]"
         />
         <img
           src={HERO_IMAGES.secondary}
           alt="KGR solar charging station"
+          decoding="async"
           className="absolute bottom-0 left-0 h-[150px] w-[52%] rounded-[18px] border-[6px] border-white object-cover shadow-[0_18px_44px_rgba(13,31,21,0.22)] sm:h-[200px] lg:h-[220px]"
         />
         <div className="absolute bottom-[90px] right-2 flex items-center gap-3 rounded-[14px] bg-white px-4 py-3 shadow-[0_12px_30px_rgba(13,31,21,0.18)] sm:bottom-[120px] sm:right-3.5 sm:px-5 sm:py-4">

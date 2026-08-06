@@ -14,6 +14,9 @@ const PageHeader = ({ eyebrow, title, crumb, image }: PageHeaderProps) => (
     <img
       src={image}
       alt=""
+      loading="eager"
+      fetchPriority="high"
+      decoding="async"
       className="absolute inset-0 h-full w-full object-cover"
     />
     <div className="header-overlay absolute inset-0" />

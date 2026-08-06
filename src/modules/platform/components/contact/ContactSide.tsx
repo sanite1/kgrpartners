@@ -15,6 +15,8 @@ const ContactSide = () => (
       <img
         src={CONTACT_IMAGES.side}
         alt="The KGR depot"
+        loading="lazy"
+        decoding="async"
         className="h-[240px] w-full rounded-[18px] object-cover shadow-[0_18px_44px_rgba(13,31,21,0.18)] sm:h-[300px]"
       />
       <div className="absolute -bottom-5 left-5 flex items-center gap-3 rounded-[14px] bg-white px-4 py-3.5 shadow-[0_12px_30px_rgba(13,31,21,0.16)]">

@@ -26,6 +26,8 @@ const BentoSection = () => (
           <img
             src={BENTO_IMAGES.fleet}
             alt="The KGR electric fleet"
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
           />
           <div className="absolute bottom-4 left-4 rounded-[10px] bg-[rgba(13,31,21,0.85)] px-4 py-2.5 text-[13px] font-extrabold text-white sm:bottom-[18px] sm:left-5 sm:text-[14px]">
@@ -51,6 +53,8 @@ const BentoSection = () => (
           <img
             src={BENTO_IMAGES.charging}
             alt="Charging bay"
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
           />
         </div>
@@ -70,6 +74,8 @@ const BentoSection = () => (
           <img
             src={BENTO_IMAGES.workshop}
             alt="Conversion workshop"
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
           />
         </div>

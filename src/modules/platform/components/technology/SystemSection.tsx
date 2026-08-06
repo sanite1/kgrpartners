@@ -73,6 +73,8 @@ const SystemSection = ({ system, first, last }: SystemSectionProps) => (
       <img
         src={system.image}
         alt={system.title}
+        loading="lazy"
+        decoding="async"
         className={cn(
           "h-[260px] w-full rounded-[20px] object-cover sm:h-[380px]",
           system.imageFirst && "lg:order-1",

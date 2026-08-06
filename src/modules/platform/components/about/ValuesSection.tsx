@@ -9,6 +9,8 @@ const ValuesSection = () => (
         <img
           src={ABOUT_IMAGES.values}
           alt="A converted KGR electric bus"
+          loading="lazy"
+          decoding="async"
           className="h-[300px] w-full rounded-[20px] object-cover sm:h-[420px]"
         />
         <div className="absolute -bottom-5 left-2 flex items-center gap-3.5 rounded-2xl bg-ink px-5 py-4 shadow-[0_14px_30px_rgba(4,23,12,0.25)] sm:-bottom-[22px] sm:-left-[18px] sm:px-[26px] sm:py-5">

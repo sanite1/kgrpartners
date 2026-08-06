@@ -50,6 +50,7 @@ const GalleryGrid = () => {
                 src={item.image}
                 alt={item.caption}
                 loading="lazy"
+                decoding="async"
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <figcaption className="absolute bottom-3.5 left-3.5 rounded-[10px] bg-[rgba(13,31,21,0.85)] px-3.5 py-2 text-[13px] font-extrabold text-white">
