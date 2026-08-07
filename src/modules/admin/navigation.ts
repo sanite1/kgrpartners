@@ -72,6 +72,12 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
         module: "battery_form",
       },
       {
+        label: "Attendance",
+        to: "/battery-attendance",
+        icon: "CalendarCheck",
+        module: "battery_attendance",
+      },
+      {
         label: "Battery Closing",
         to: "/battery-closing",
         icon: "BatteryFull",
