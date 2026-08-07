@@ -17,6 +17,7 @@ import {
 import type {
   AttendanceRow,
   AttendanceSession,
+  AttendanceStatus,
 } from "@/lib/network/types/batteryAttendance.types";
 import type { BatteryLocation } from "@/lib/network/types/battery.types";
 import { LOCATION_LABEL, LOCATION_OPTIONS } from "../components/exitform/meta";
@@ -82,12 +83,15 @@ export default function BatteryAttendance() {
   const [filter, setFilter] = useState<RowFilter>("all");
   const [search, setSearch] = useState("");
 
-  // one location choice powers one-tap "Seen" down the whole register
+  // marking happens per row: the user picks the time of day and the
+  // place themselves; the clock time is still stamped automatically
+  const [markFor, setMarkFor] = useState<{
+    row: AttendanceRow;
+    status: AttendanceStatus;
+  } | null>(null);
+  const [markSession, setMarkSession] = useState<AttendanceSession>("morning");
   const [markLocation, setMarkLocation] =
     useState<BatteryLocation>("main_yard");
-
-  // missing modal
-  const [missingFor, setMissingFor] = useState<AttendanceRow | null>(null);
   const [lastSeen, setLastSeen] = useState("");
 
   // clear-mark confirm
@@ -125,24 +129,33 @@ export default function BatteryAttendance() {
     return true;
   });
 
-  const markSeen = (row: AttendanceRow) =>
-    markAttendance.mutate({
-      batteryId: row.batteryId,
-      session,
-      status: "seen",
-      location: markLocation,
-    });
+  const openMark = (row: AttendanceRow, status: AttendanceStatus) => {
+    setMarkFor({ row, status });
+    setMarkSession(session);
+    setMarkLocation(row.mark?.location ?? "main_yard");
+    setLastSeen(row.mark?.lastSeen ?? "");
+  };
 
-  const saveMissing = () => {
-    if (!missingFor) return;
+  const saveMark = () => {
+    if (!markFor) return;
     markAttendance.mutate(
       {
-        batteryId: missingFor.batteryId,
-        session,
-        status: "missing",
-        lastSeen: lastSeen.trim() || undefined,
+        batteryId: markFor.row.batteryId,
+        session: markSession,
+        status: markFor.status,
+        location: markFor.status === "seen" ? markLocation : undefined,
+        lastSeen:
+          markFor.status === "missing"
+            ? lastSeen.trim() || undefined
+            : undefined,
       },
-      { onSuccess: () => setMissingFor(null) },
+      {
+        onSuccess: () => {
+          setMarkFor(null);
+          // land the user on the register they just wrote into
+          setSession(markSession);
+        },
+      },
     );
   };
 
@@ -256,9 +269,13 @@ export default function BatteryAttendance() {
         </>
       ) : (
         <>
-          {/* which session, which day */}
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
+          {/* which session register is on screen */}
+          <div className="mb-1.5 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
+                SESSION
+              </span>
+              <div className="flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
               {SESSIONS.map((s) => (
                 <button
                   key={s.id}
@@ -274,6 +291,7 @@ export default function BatteryAttendance() {
                   {s.label}
                 </button>
               ))}
+              </div>
             </div>
             <span className="text-[14px] font-extrabold text-ink">
               {sheet ? fmtDate(sheet.date) : ""}
@@ -288,6 +306,11 @@ export default function BatteryAttendance() {
               )}
             </span>
           </div>
+          <p className="m-0 mb-4 text-[12.5px] font-semibold text-fog">
+            You are viewing the {SESSION_LABEL[session].toLowerCase()} register
+            for {sheet ? fmtDate(sheet.date) : "today"}. Every battery is
+            called once per session.
+          </p>
 
           {/* the register's verdict so far */}
           <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -369,23 +392,6 @@ export default function BatteryAttendance() {
               ))}
             </div>
             <div className="flex items-center gap-2">
-              {isToday && (
-                <select
-                  aria-label="Location for one-tap seen"
-                  value={markLocation}
-                  onChange={(e) =>
-                    setMarkLocation(e.target.value as BatteryLocation)
-                  }
-                  className={cn(inputClasses, "w-auto py-2.5 sm:text-[13.5px]")}
-                  title='One tap on "Seen" uses this location'
-                >
-                  {LOCATION_OPTIONS.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      Seen at: {label}
-                    </option>
-                  ))}
-                </select>
-              )}
               <div className="relative sm:w-[190px]">
                 <Search
                   size={15}
@@ -488,7 +494,7 @@ export default function BatteryAttendance() {
                               <button
                                 type="button"
                                 disabled={busy}
-                                onClick={() => markSeen(row)}
+                                onClick={() => openMark(row, "seen")}
                                 className={cn(
                                   "flex cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[12px] font-extrabold transition-colors disabled:opacity-40",
                                   mark?.status === "seen"
@@ -501,10 +507,7 @@ export default function BatteryAttendance() {
                               <button
                                 type="button"
                                 disabled={busy}
-                                onClick={() => {
-                                  setMissingFor(row);
-                                  setLastSeen(mark?.lastSeen ?? "");
-                                }}
+                                onClick={() => openMark(row, "missing")}
                                 className={cn(
                                   "cursor-pointer rounded-lg border px-2.5 py-1.5 text-[12px] font-extrabold transition-colors disabled:opacity-40",
                                   mark?.status === "missing"
@@ -555,41 +558,109 @@ export default function BatteryAttendance() {
         </>
       )}
 
-      {/* missing: say where it was last seen */}
+      {/* the mark: the user picks the time of day and the place; the
+          clock time is stamped automatically either way */}
       <Modal
-        title={missingFor ? `${missingFor.batteryCode} is missing?` : ""}
-        open={missingFor !== null}
-        onClose={() => setMissingFor(null)}
+        title={
+          markFor
+            ? markFor.status === "seen"
+              ? `${markFor.row.batteryCode} seen`
+              : `${markFor.row.batteryCode} is missing?`
+            : ""
+        }
+        open={markFor !== null}
+        onClose={() => setMarkFor(null)}
       >
-        {missingFor && (
+        {markFor && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="ba-lastseen" className={labelClasses}>
-                Where was it last seen?
-              </label>
-              <input
-                id="ba-lastseen"
-                type="text"
-                placeholder="UBS yesterday evening"
-                value={lastSeen}
-                onChange={(e) => setLastSeen(e.target.value)}
-                className={inputClasses}
-                autoComplete="off"
-              />
+              <span className={labelClasses}>
+                Time of day <span className="text-brand-500">*</span>
+              </span>
+              <div className="flex gap-2">
+                {SESSIONS.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setMarkSession(s.id)}
+                    className={cn(
+                      "flex-1 cursor-pointer rounded-[10px] border px-3 py-3 text-[14px] font-extrabold transition-colors",
+                      markSession === s.id
+                        ? "cta-gradient border-transparent text-forest-deep"
+                        : "border-line bg-white text-bark hover:border-brand-500",
+                    )}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
               <span className="text-[12px] font-semibold text-fog">
-                Optional, but it is what the search party will use.
+                The exact clock time is recorded automatically.
               </span>
             </div>
+
+            {markFor.status === "seen" ? (
+              <div className="flex flex-col gap-1.5">
+                <span className={labelClasses}>
+                  Where was it seen? <span className="text-brand-500">*</span>
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  {LOCATION_OPTIONS.map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setMarkLocation(value as BatteryLocation)}
+                      className={cn(
+                        "cursor-pointer rounded-[10px] border px-3 py-3 text-[14px] font-extrabold transition-colors",
+                        markLocation === value
+                          ? "cta-gradient border-transparent text-forest-deep"
+                          : "border-line bg-white text-bark hover:border-brand-500",
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="ba-lastseen" className={labelClasses}>
+                  Where was it last seen?
+                </label>
+                <input
+                  id="ba-lastseen"
+                  type="text"
+                  placeholder="UBS yesterday evening"
+                  value={lastSeen}
+                  onChange={(e) => setLastSeen(e.target.value)}
+                  className={inputClasses}
+                  autoComplete="off"
+                />
+                <span className="text-[12px] font-semibold text-fog">
+                  Optional, but it is what the search party will use.
+                </span>
+              </div>
+            )}
+
             {markAttendance.isError && (
               <span className={errorClasses}>Could not save. Try again.</span>
             )}
             <button
               type="button"
               disabled={markAttendance.isPending}
-              onClick={saveMissing}
-              className="mt-1 cursor-pointer rounded-[10px] border-none bg-red-600 px-8 py-3.5 text-[14px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={saveMark}
+              className={cn(
+                "mt-1 cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold disabled:cursor-not-allowed disabled:opacity-50",
+                markFor.status === "seen"
+                  ? "cta-gradient text-forest-deep"
+                  : "bg-red-600 text-white",
+              )}
             >
-              {markAttendance.isPending ? "Saving…" : "Mark MISSING"}
+              {markAttendance.isPending
+                ? "Saving…"
+                : markFor.status === "seen"
+                  ? "Mark seen →"
+                  : "Mark MISSING"}
             </button>
           </div>
         )}
