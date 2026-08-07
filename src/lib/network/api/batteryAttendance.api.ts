@@ -8,6 +8,8 @@ import type {
   AttendanceData,
   AttendanceMark,
   AttendanceSession,
+  AttendanceRegister,
+  AttendanceCompareData,
   MarkAttendancePayload,
   AttendanceDayRow,
 } from "../types/batteryAttendance.types";
@@ -26,9 +28,19 @@ const BASE = "/api/battery-attendance";
 
 export const getAttendanceFn = (
   session: AttendanceSession,
+  register: AttendanceRegister,
   date?: string,
 ): Promise<ApiResponse<AttendanceData>> =>
-  api.get<ApiResponse<AttendanceData>>(BASE, { session, date });
+  api.get<ApiResponse<AttendanceData>>(BASE, { session, register, date });
+
+export const getAttendanceCompareFn = (
+  session: AttendanceSession,
+  date?: string,
+): Promise<ApiResponse<AttendanceCompareData>> =>
+  api.get<ApiResponse<AttendanceCompareData>>(`${BASE}/compare`, {
+    session,
+    date,
+  });
 
 export const markAttendanceFn = (
   payload: MarkAttendancePayload,
@@ -50,8 +62,20 @@ export const clearAttendanceFn = (
 
 export const attendanceKeys = {
   all: ["battery-attendance"] as const,
-  sheet: (session: AttendanceSession, date?: string) =>
-    [...attendanceKeys.all, "sheet", session, date ?? "today"] as const,
+  sheet: (
+    session: AttendanceSession,
+    register: AttendanceRegister,
+    date?: string,
+  ) =>
+    [
+      ...attendanceKeys.all,
+      "sheet",
+      session,
+      register,
+      date ?? "today",
+    ] as const,
+  compare: (session: AttendanceSession, date?: string) =>
+    [...attendanceKeys.all, "compare", session, date ?? "today"] as const,
   days: (page?: number, pageSize?: number) =>
     [...attendanceKeys.all, "days", page ?? 1, pageSize ?? 20] as const,
 } as const;
@@ -76,12 +100,26 @@ const getErrorMessage = (error: unknown): string => {
 
 export const useGetAttendance = (
   session: AttendanceSession,
+  register: AttendanceRegister,
   date?: string,
   options?: Partial<UseQueryOptions<ApiResponse<AttendanceData>, AxiosError>>,
 ) =>
   useQuery<ApiResponse<AttendanceData>, AxiosError>({
-    queryKey: attendanceKeys.sheet(session, date),
-    queryFn: () => getAttendanceFn(session, date),
+    queryKey: attendanceKeys.sheet(session, register, date),
+    queryFn: () => getAttendanceFn(session, register, date),
+    ...options,
+  });
+
+export const useGetAttendanceCompare = (
+  session: AttendanceSession,
+  date?: string,
+  options?: Partial<
+    UseQueryOptions<ApiResponse<AttendanceCompareData>, AxiosError>
+  >,
+) =>
+  useQuery<ApiResponse<AttendanceCompareData>, AxiosError>({
+    queryKey: attendanceKeys.compare(session, date),
+    queryFn: () => getAttendanceCompareFn(session, date),
     ...options,
   });
 

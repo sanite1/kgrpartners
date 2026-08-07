@@ -10,6 +10,7 @@ import ConfirmModal from "../components/console/ConfirmModal";
 import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import {
   useGetAttendance,
+  useGetAttendanceCompare,
   useGetAttendanceDays,
   useMarkAttendance,
   useClearAttendance,
@@ -18,11 +19,14 @@ import type {
   AttendanceRow,
   AttendanceSession,
   AttendanceStatus,
+  AttendanceRegister,
+  AttendanceCompareStatus,
+  CompareVerdict,
 } from "@/lib/network/types/batteryAttendance.types";
 import type { BatteryLocation } from "@/lib/network/types/battery.types";
 import { LOCATION_LABEL, LOCATION_OPTIONS } from "../components/exitform/meta";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { canApprove } from "../permissions";
+import { canApprove, isAdminRole } from "../permissions";
 import { cn, fmtDate, fmtTime } from "@/lib/utils";
 import {
   inputClasses,
@@ -41,6 +45,22 @@ const SESSION_LABEL: Record<AttendanceSession, string> = {
   afternoon: "Afternoon",
   night: "Night",
 };
+
+const REGISTER_LABEL: Record<AttendanceRegister, string> = {
+  manager: "Managers attendance",
+  staff: "Staff attendance",
+  storekeeper: "Storekeeper attendance",
+};
+
+// admins get the fourth view laying the three registers side by side
+type RegisterTab = AttendanceRegister | "compare";
+
+const REGISTER_TABS: { id: RegisterTab; label: string }[] = [
+  { id: "manager", label: "Managers" },
+  { id: "staff", label: "Staff" },
+  { id: "storekeeper", label: "Storekeeper" },
+  { id: "compare", label: "Compare" },
+];
 
 // the session that is probably being taken right now, Lagos time
 const currentSession = (): AttendanceSession => {
@@ -73,16 +93,57 @@ const CLOSING_SHEET_LABEL: Record<string, string> = {
   ubs: "UBS",
 };
 
+// how each comparison verdict paints its row and badge
+const COMPARE_META: Record<
+  AttendanceCompareStatus,
+  { label: string; badge: string; row: string }
+> = {
+  match: {
+    label: "Match",
+    badge: "bg-brand-50 text-brand-600",
+    row: "bg-brand-50/40",
+  },
+  mismatch: {
+    label: "Mismatch",
+    badge: "bg-red-50 text-red-600",
+    row: "bg-red-50/60",
+  },
+  partial: {
+    label: "Awaiting others",
+    badge: "bg-[#FDF6E3] text-solar-700",
+    row: "bg-[#FDF6E3]/60",
+  },
+  unmarked: {
+    label: "Nobody called it",
+    badge: "bg-mist text-bark",
+    row: "",
+  },
+};
+
 const smallBtn =
   "cursor-pointer rounded-lg border border-line bg-white px-3 py-1.5 text-[12.5px] font-bold text-bark transition-colors hover:border-brand-500 hover:text-brand-600";
 
-// The paper "Battery Attendance" sheet: the whole registered fleet is
-// called three times a day, and every pack is seen somewhere or
-// missing. Unmarked packs stay visible - that is the point.
+// The paper "Battery Attendance" sheet, taken three times by three
+// different sets of eyes: managers, staff and the storekeeper each
+// keep their own register, and the admin compares all three.
 export default function BatteryAttendance() {
   const { user } = useAuthStore();
-  const isManager = canApprove(user?.role);
+  const role = user?.role;
+  const isManager = canApprove(role);
+  const isAdmin = isAdminRole(role);
 
+  // which of the three registers this account belongs to
+  const myRegister: AttendanceRegister =
+    role === "manager"
+      ? "manager"
+      : role === "storekeeper"
+        ? "storekeeper"
+        : "staff";
+
+  const [tab, setTab] = useState<RegisterTab>(
+    isAdmin ? "compare" : myRegister,
+  );
+  const register: AttendanceRegister = tab === "compare" ? "staff" : tab;
   const [session, setSession] = useState<AttendanceSession>(currentSession());
   const [viewDate, setViewDate] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -105,10 +166,23 @@ export default function BatteryAttendance() {
   // clear-mark confirm
   const [clearFor, setClearFor] = useState<AttendanceRow | null>(null);
 
-  const { data, isLoading } = useGetAttendance(session, viewDate || undefined);
+  const { data, isLoading } = useGetAttendance(
+    session,
+    register,
+    viewDate || undefined,
+    { enabled: tab !== "compare" },
+  );
   const sheet = data?.data;
   const rows = sheet?.rows ?? [];
   const totals = sheet?.totals;
+
+  const { data: compareData, isLoading: compareLoading } =
+    useGetAttendanceCompare(session, viewDate || undefined, {
+      enabled: isAdmin && tab === "compare",
+    });
+  const compare = compareData?.data;
+  const compareRows = compare?.rows ?? [];
+  const compareTotals = compare?.totals;
 
   const { data: daysData, isLoading: daysLoading } = useGetAttendanceDays(
     page,
@@ -141,18 +215,17 @@ export default function BatteryAttendance() {
     setMarkFor({ row, status });
     setMarkSession(session);
     // suggest where the closing sheets last put it, but the user decides
-    setMarkLocation(
-      row.mark?.location ?? row.closing?.location ?? "main_yard",
-    );
+    setMarkLocation(row.mark?.location ?? row.closing?.location ?? "main_yard");
     setLastSeen(row.mark?.lastSeen ?? "");
   };
 
   const saveMark = () => {
-    if (!markFor) return;
+    if (!markFor || tab === "compare") return;
     markAttendance.mutate(
       {
         batteryId: markFor.row.batteryId,
         session: markSession,
+        register,
         status: markFor.status,
         location: markFor.status === "seen" ? markLocation : undefined,
         lastSeen:
@@ -163,10 +236,33 @@ export default function BatteryAttendance() {
       {
         onSuccess: () => {
           setMarkFor(null);
-          // land the user on the register they just wrote into
+          // land the user on the session they just wrote into
           setSession(markSession);
         },
       },
+    );
+  };
+
+  // one register's verdict inside a comparison cell
+  const verdictCell = (v: CompareVerdict | null) => {
+    if (!v) return <span className="text-[13px] font-semibold text-fog">-</span>;
+    if (v.status === "seen") {
+      return (
+        <span
+          className="text-[13px] font-extrabold text-brand-600"
+          title={v.markedByName}
+        >
+          Seen · {v.location ? LOCATION_LABEL[v.location] : ""}
+        </span>
+      );
+    }
+    return (
+      <span
+        className="text-[13px] font-extrabold text-red-600"
+        title={v.lastSeen ? `Last seen: ${v.lastSeen}` : v.markedByName}
+      >
+        MISSING
+      </span>
     );
   };
 
@@ -176,7 +272,7 @@ export default function BatteryAttendance() {
       <PageHead
         eyebrow="ROLL CALL"
         title="Battery Attendance"
-        subtitle="The whole fleet called three times a day: every pack seen somewhere, or missing."
+        subtitle="Three sets of eyes call the fleet every day: managers, staff and the storekeeper each keep their own register."
         actions={
           isManager ? (
             <button
@@ -194,7 +290,7 @@ export default function BatteryAttendance() {
         }
       />
 
-      {/* HISTORY (managers) */}
+      {/* HISTORY (managers see their own; admin sees all) */}
       {isManager && historyOpen ? (
         <>
           <div className="overflow-hidden rounded-2xl border border-line bg-white">
@@ -202,24 +298,30 @@ export default function BatteryAttendance() {
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="border-b border-line bg-haze">
-                    {["DATE", "SESSION", "SEEN", "MISSING", "MARKED"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                        >
-                          {h}
-                        </th>
-                      ),
-                    )}
+                    {[
+                      "DATE",
+                      "SESSION",
+                      "REGISTER",
+                      "SEEN",
+                      "MISSING",
+                      "MARKED",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {days.map((day) => (
                     <tr
-                      key={day.date + day.session}
+                      key={day.date + day.session + day.register}
                       onClick={() => {
                         setSession(day.session);
+                        if (isAdmin) setTab(day.register);
                         setViewDate(day.date);
                         setHistoryOpen(false);
                       }}
@@ -232,6 +334,20 @@ export default function BatteryAttendance() {
                         <StatusPill
                           tone="muted"
                           label={SESSION_LABEL[day.session]}
+                        />
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <StatusPill
+                          tone={
+                            day.register === "manager"
+                              ? "warn"
+                              : day.register === "storekeeper"
+                                ? "muted"
+                                : "success"
+                          }
+                          label={
+                            REGISTER_LABEL[day.register].split(" ")[0]
+                          }
                         />
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-bold tabular-nums text-brand-600">
@@ -280,32 +396,55 @@ export default function BatteryAttendance() {
         </>
       ) : (
         <>
-          {/* which session register is on screen */}
+          {/* which register, which session, which day */}
           <div className="mb-1.5 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
-                SESSION
-              </span>
+            <div className="flex flex-wrap items-center gap-2.5">
+              {isAdmin ? (
+                <div className="flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
+                  {REGISTER_TABS.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTab(t.id)}
+                      className={cn(
+                        "cursor-pointer rounded-lg border-none px-4 py-2 text-[13px] font-extrabold transition-colors",
+                        tab === t.id
+                          ? "cta-gradient text-forest-deep"
+                          : "bg-transparent text-fog hover:text-bark",
+                      )}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <span className="rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-extrabold text-ink">
+                  {REGISTER_LABEL[myRegister]}
+                </span>
+              )}
               <div className="flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
-              {SESSIONS.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setSession(s.id)}
-                  className={cn(
-                    "cursor-pointer rounded-lg border-none px-4 py-2 text-[13px] font-extrabold transition-colors",
-                    session === s.id
-                      ? "cta-gradient text-forest-deep"
-                      : "bg-transparent text-fog hover:text-bark",
-                  )}
-                >
-                  {s.label}
-                </button>
-              ))}
+                {SESSIONS.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setSession(s.id)}
+                    className={cn(
+                      "cursor-pointer rounded-lg border-none px-4 py-2 text-[13px] font-extrabold transition-colors",
+                      session === s.id
+                        ? "cta-gradient text-forest-deep"
+                        : "bg-transparent text-fog hover:text-bark",
+                    )}
+                  >
+                    {s.label}
+                  </button>
+                ))}
               </div>
             </div>
             <span className="text-[14px] font-extrabold text-ink">
-              {sheet ? fmtDate(sheet.date) : ""}
+              {(() => {
+                const shown = tab === "compare" ? compare?.date : sheet?.date;
+                return shown ? fmtDate(shown) : "";
+              })()}
               {!isToday && (
                 <button
                   type="button"
@@ -318,254 +457,407 @@ export default function BatteryAttendance() {
             </span>
           </div>
           <p className="m-0 mb-4 text-[12.5px] font-semibold text-fog">
-            You are viewing the {SESSION_LABEL[session].toLowerCase()} register
-            for {sheet ? fmtDate(sheet.date) : "today"}. Every battery is
-            called once per session.
+            {tab === "compare"
+              ? `Comparing all three registers for the ${SESSION_LABEL[session].toLowerCase()} session. Green agrees, red disagrees, amber is still waiting.`
+              : `You are viewing the ${REGISTER_LABEL[register].toLowerCase()} (${SESSION_LABEL[session].toLowerCase()} session). Every battery is called once per session per register.`}
           </p>
 
-          {/* the register's verdict so far */}
-          <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
-              <span className="block text-[24px] font-extrabold leading-none text-neon">
-                {totals?.fleet ?? 0}
-              </span>
-              <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
-                FLEET
-              </span>
-            </div>
-            <div className="rounded-2xl border border-line bg-white p-4">
-              <span className="block text-[24px] font-extrabold leading-none text-brand-600">
-                {totals?.seen ?? 0}
-              </span>
-              <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
-                SEEN
-              </span>
-            </div>
-            <div
-              className={cn(
-                "rounded-2xl border p-4",
-                (totals?.missing ?? 0) > 0
-                  ? "border-red-200 bg-red-50"
-                  : "border-line bg-white",
-              )}
-            >
-              <span
-                className={cn(
-                  "block text-[24px] font-extrabold leading-none",
-                  (totals?.missing ?? 0) > 0 ? "text-red-600" : "text-ink",
-                )}
-              >
-                {totals?.missing ?? 0}
-              </span>
-              <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
-                MISSING
-              </span>
-            </div>
-            <div
-              className={cn(
-                "rounded-2xl border p-4",
-                (totals?.unmarked ?? 0) > 0
-                  ? "border-solar/40 bg-[#FDF6E3]"
-                  : "border-line bg-white",
-              )}
-            >
-              <span
-                className={cn(
-                  "block text-[24px] font-extrabold leading-none",
-                  (totals?.unmarked ?? 0) > 0 ? "text-solar-700" : "text-ink",
-                )}
-              >
-                {totals?.unmarked ?? 0}
-              </span>
-              <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
-                NOT YET CALLED
-              </span>
-            </div>
-          </div>
-
-          {/* filters, search and the one-tap seen location */}
-          <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap gap-2">
-              {ROW_FILTERS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFilter(f.id)}
+          {tab === "compare" ? (
+            <>
+              {/* the three registers, judged */}
+              <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <div className="rounded-2xl border border-line bg-white p-4">
+                  <span className="block text-[24px] font-extrabold leading-none text-brand-600">
+                    {compareTotals?.matched ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    ALL AGREE
+                  </span>
+                </div>
+                <div
                   className={cn(
-                    "cursor-pointer rounded-full border px-4 py-2 text-[13px] font-bold transition-colors",
-                    filter === f.id
-                      ? "cta-gradient border-transparent text-forest-deep"
-                      : "border-line bg-white text-bark hover:border-brand-500 hover:text-brand-600",
+                    "rounded-2xl border p-4",
+                    (compareTotals?.mismatched ?? 0) > 0
+                      ? "border-red-200 bg-red-50"
+                      : "border-line bg-white",
                   )}
                 >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative sm:w-[190px]">
-                <Search
-                  size={15}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-fog"
-                />
-                <input
-                  type="text"
-                  placeholder="Search battery"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className={cn(inputClasses, "py-2.5 pl-9 sm:text-[14px]")}
-                />
+                  <span
+                    className={cn(
+                      "block text-[24px] font-extrabold leading-none",
+                      (compareTotals?.mismatched ?? 0) > 0
+                        ? "text-red-600"
+                        : "text-ink",
+                    )}
+                  >
+                    {compareTotals?.mismatched ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    DISAGREE
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    "rounded-2xl border p-4",
+                    (compareTotals?.partial ?? 0) > 0
+                      ? "border-solar/40 bg-[#FDF6E3]"
+                      : "border-line bg-white",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "block text-[24px] font-extrabold leading-none",
+                      (compareTotals?.partial ?? 0) > 0
+                        ? "text-solar-700"
+                        : "text-ink",
+                    )}
+                  >
+                    {compareTotals?.partial ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    AWAITING OTHERS
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
+                  <span className="block text-[24px] font-extrabold leading-none text-neon">
+                    {compareTotals?.unmarked ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
+                    NOBODY CALLED · OF {compareTotals?.fleet ?? 0}
+                  </span>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* the register: every pack, every session */}
-          <div className="overflow-hidden rounded-2xl border border-line bg-white">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left">
-                <thead>
-                  <tr className="border-b border-line bg-haze">
-                    {[
-                      "S/N",
-                      "BATTERY",
-                      "STATUS",
-                      "DETAIL",
-                      "TIME",
-                      "MARKED BY",
-                      "",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibleRows.map((row, i) => {
-                    const mark = row.mark;
-                    return (
-                      <tr
-                        key={row.batteryId}
-                        className={cn(
-                          "border-b border-line last:border-0",
-                          mark?.status === "missing" && "bg-red-50/60",
-                          !mark && "bg-[#FDF6E3]/40",
-                        )}
-                      >
-                        <td className="whitespace-nowrap px-4 py-3 text-[13px] font-bold tabular-nums text-fog">
-                          {i + 1}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
-                          {row.batteryCode}
-                          {row.busNumber && (
-                            <span className="ml-2 text-[11.5px] font-bold text-fog">
-                              on {row.busNumber}
-                            </span>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3">
-                          {mark ? (
-                            <span
-                              className={cn(
-                                "rounded-full px-2.5 py-1 text-[11.5px] font-extrabold",
-                                mark.status === "seen"
-                                  ? "bg-brand-50 text-brand-600"
-                                  : "bg-red-50 text-red-600",
-                              )}
-                            >
-                              {mark.status === "seen" ? "Seen" : "MISSING"}
-                            </span>
-                          ) : (
-                            <span className="rounded-full bg-[#FDF6E3] px-2.5 py-1 text-[11.5px] font-extrabold text-solar-700">
-                              Not called
-                            </span>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-bark">
-                          {mark?.status === "seen" && mark.location
-                            ? LOCATION_LABEL[mark.location]
-                            : mark?.status === "missing"
-                              ? mark.lastSeen
-                                ? `Last seen: ${mark.lastSeen}`
-                                : "-"
-                              : "-"}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold tabular-nums text-fog">
-                          {mark ? fmtTime(mark.updatedAt) : "-"}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
-                          {mark?.markedByName || "-"}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3">
-                          {isToday && (
-                            <div className="flex justify-end gap-1.5">
-                              <button
-                                type="button"
-                                disabled={busy}
-                                onClick={() => openMark(row, "seen")}
-                                className={cn(
-                                  "flex cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[12px] font-extrabold transition-colors disabled:opacity-40",
-                                  mark?.status === "seen"
-                                    ? "border-transparent bg-brand-500 text-white"
-                                    : "border-line bg-white text-bark hover:border-brand-500 hover:text-brand-600",
-                                )}
-                              >
-                                <Check size={12} strokeWidth={3} /> Seen
-                              </button>
-                              <button
-                                type="button"
-                                disabled={busy}
-                                onClick={() => openMark(row, "missing")}
-                                className={cn(
-                                  "cursor-pointer rounded-lg border px-2.5 py-1.5 text-[12px] font-extrabold transition-colors disabled:opacity-40",
-                                  mark?.status === "missing"
-                                    ? "border-transparent bg-red-600 text-white"
-                                    : "border-line bg-white text-bark hover:border-red-300 hover:text-red-600",
-                                )}
-                              >
-                                Missing
-                              </button>
-                              {mark && (
-                                <button
-                                  type="button"
-                                  title="Clear back to unmarked"
-                                  disabled={busy}
-                                  onClick={() => setClearFor(row)}
-                                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-40"
-                                >
-                                  <X size={13} />
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </td>
+              {/* the three registers side by side */}
+              <div className="overflow-hidden rounded-2xl border border-line bg-white">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-left">
+                    <thead>
+                      <tr className="border-b border-line bg-haze">
+                        {[
+                          "BATTERY",
+                          "MANAGERS",
+                          "STAFF",
+                          "STOREKEEPER",
+                          "STATUS",
+                        ].map((h) => (
+                          <th
+                            key={h}
+                            className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                          >
+                            {h}
+                          </th>
+                        ))}
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                    </thead>
+                    <tbody>
+                      {compareRows.map((row) => {
+                        const meta = COMPARE_META[row.status];
+                        return (
+                          <tr
+                            key={row.batteryId}
+                            className={cn(
+                              "border-b border-line last:border-0",
+                              meta.row,
+                            )}
+                          >
+                            <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
+                              {row.batteryCode}
+                              {row.busNumber && (
+                                <span className="ml-2 text-[11.5px] font-bold text-fog">
+                                  on {row.busNumber}
+                                </span>
+                              )}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {verdictCell(row.manager)}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {verdictCell(row.staff)}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {verdictCell(row.storekeeper)}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              <span
+                                className={cn(
+                                  "rounded-full px-2.5 py-1 text-[11.5px] font-extrabold",
+                                  meta.badge,
+                                )}
+                              >
+                                {meta.label}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
 
-            {isLoading && (
-              <div className="flex justify-center py-12">
-                <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-brand-200 border-t-brand-600" />
-              </div>
-            )}
+                {compareLoading && (
+                  <div className="flex justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-brand-200 border-t-brand-600" />
+                  </div>
+                )}
 
-            {!isLoading && visibleRows.length === 0 && (
-              <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-                <BoltMark width={22} height={29} fill="#B5ECC2" />
-                <p className="m-0 text-[15px] font-bold text-bark">
-                  {rows.length === 0
-                    ? "No batteries registered yet."
-                    : "Nothing matches this filter."}
-                </p>
+                {!compareLoading && compareRows.length === 0 && (
+                  <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
+                    <BoltMark width={22} height={29} fill="#B5ECC2" />
+                    <p className="m-0 text-[15px] font-bold text-bark">
+                      No batteries registered yet.
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <>
+              {/* the register's verdict so far */}
+              <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
+                  <span className="block text-[24px] font-extrabold leading-none text-neon">
+                    {totals?.fleet ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
+                    FLEET
+                  </span>
+                </div>
+                <div className="rounded-2xl border border-line bg-white p-4">
+                  <span className="block text-[24px] font-extrabold leading-none text-brand-600">
+                    {totals?.seen ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    SEEN
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    "rounded-2xl border p-4",
+                    (totals?.missing ?? 0) > 0
+                      ? "border-red-200 bg-red-50"
+                      : "border-line bg-white",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "block text-[24px] font-extrabold leading-none",
+                      (totals?.missing ?? 0) > 0 ? "text-red-600" : "text-ink",
+                    )}
+                  >
+                    {totals?.missing ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    MISSING
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    "rounded-2xl border p-4",
+                    (totals?.unmarked ?? 0) > 0
+                      ? "border-solar/40 bg-[#FDF6E3]"
+                      : "border-line bg-white",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "block text-[24px] font-extrabold leading-none",
+                      (totals?.unmarked ?? 0) > 0
+                        ? "text-solar-700"
+                        : "text-ink",
+                    )}
+                  >
+                    {totals?.unmarked ?? 0}
+                  </span>
+                  <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                    NOT YET CALLED
+                  </span>
+                </div>
+              </div>
+
+              {/* filters and search */}
+              <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap gap-2">
+                  {ROW_FILTERS.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setFilter(f.id)}
+                      className={cn(
+                        "cursor-pointer rounded-full border px-4 py-2 text-[13px] font-bold transition-colors",
+                        filter === f.id
+                          ? "cta-gradient border-transparent text-forest-deep"
+                          : "border-line bg-white text-bark hover:border-brand-500 hover:text-brand-600",
+                      )}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="relative sm:w-[190px]">
+                  <Search
+                    size={15}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-fog"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search battery"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className={cn(inputClasses, "py-2.5 pl-9 sm:text-[14px]")}
+                  />
+                </div>
+              </div>
+
+              {/* the register: every pack, every session */}
+              <div className="overflow-hidden rounded-2xl border border-line bg-white">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-left">
+                    <thead>
+                      <tr className="border-b border-line bg-haze">
+                        {[
+                          "S/N",
+                          "BATTERY",
+                          "STATUS",
+                          "DETAIL",
+                          "TIME",
+                          "MARKED BY",
+                          "",
+                        ].map((h) => (
+                          <th
+                            key={h}
+                            className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                          >
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleRows.map((row, i) => {
+                        const mark = row.mark;
+                        return (
+                          <tr
+                            key={row.batteryId}
+                            className={cn(
+                              "border-b border-line last:border-0",
+                              mark?.status === "missing" && "bg-red-50/60",
+                              !mark && "bg-[#FDF6E3]/40",
+                            )}
+                          >
+                            <td className="whitespace-nowrap px-4 py-3 text-[13px] font-bold tabular-nums text-fog">
+                              {i + 1}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
+                              {row.batteryCode}
+                              {row.busNumber && (
+                                <span className="ml-2 text-[11.5px] font-bold text-fog">
+                                  on {row.busNumber}
+                                </span>
+                              )}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {mark ? (
+                                <span
+                                  className={cn(
+                                    "rounded-full px-2.5 py-1 text-[11.5px] font-extrabold",
+                                    mark.status === "seen"
+                                      ? "bg-brand-50 text-brand-600"
+                                      : "bg-red-50 text-red-600",
+                                  )}
+                                >
+                                  {mark.status === "seen" ? "Seen" : "MISSING"}
+                                </span>
+                              ) : (
+                                <span className="rounded-full bg-[#FDF6E3] px-2.5 py-1 text-[11.5px] font-extrabold text-solar-700">
+                                  Not called
+                                </span>
+                              )}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-bark">
+                              {mark?.status === "seen" && mark.location
+                                ? LOCATION_LABEL[mark.location]
+                                : mark?.status === "missing"
+                                  ? mark.lastSeen
+                                    ? `Last seen: ${mark.lastSeen}`
+                                    : "-"
+                                  : "-"}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold tabular-nums text-fog">
+                              {mark ? fmtTime(mark.updatedAt) : "-"}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
+                              {mark?.markedByName || "-"}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {isToday && (
+                                <div className="flex justify-end gap-1.5">
+                                  <button
+                                    type="button"
+                                    disabled={busy}
+                                    onClick={() => openMark(row, "seen")}
+                                    className={cn(
+                                      "flex cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[12px] font-extrabold transition-colors disabled:opacity-40",
+                                      mark?.status === "seen"
+                                        ? "border-transparent bg-brand-500 text-white"
+                                        : "border-line bg-white text-bark hover:border-brand-500 hover:text-brand-600",
+                                    )}
+                                  >
+                                    <Check size={12} strokeWidth={3} /> Seen
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={busy}
+                                    onClick={() => openMark(row, "missing")}
+                                    className={cn(
+                                      "cursor-pointer rounded-lg border px-2.5 py-1.5 text-[12px] font-extrabold transition-colors disabled:opacity-40",
+                                      mark?.status === "missing"
+                                        ? "border-transparent bg-red-600 text-white"
+                                        : "border-line bg-white text-bark hover:border-red-300 hover:text-red-600",
+                                    )}
+                                  >
+                                    Missing
+                                  </button>
+                                  {mark && (
+                                    <button
+                                      type="button"
+                                      title="Clear back to unmarked"
+                                      disabled={busy}
+                                      onClick={() => setClearFor(row)}
+                                      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-40"
+                                    >
+                                      <X size={13} />
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {isLoading && (
+                  <div className="flex justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-brand-200 border-t-brand-600" />
+                  </div>
+                )}
+
+                {!isLoading && visibleRows.length === 0 && (
+                  <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
+                    <BoltMark width={22} height={29} fill="#B5ECC2" />
+                    <p className="m-0 text-[15px] font-bold text-bark">
+                      {rows.length === 0
+                        ? "No batteries registered yet."
+                        : "Nothing matches this filter."}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
 

@@ -6,10 +6,15 @@ import type { BatteryLocation } from "./battery.types";
 export type AttendanceSession = "morning" | "afternoon" | "night";
 export type AttendanceStatus = "seen" | "missing";
 
+// three independent registers kept by three different sets of eyes;
+// the admin compares them
+export type AttendanceRegister = "manager" | "staff" | "storekeeper";
+
 export interface AttendanceMark {
   _id: string;
   date: string;
   session: AttendanceSession;
+  register: AttendanceRegister;
   battery: string;
   batteryCode: string;
   status: AttendanceStatus;
@@ -48,6 +53,7 @@ export interface AttendanceTotals {
 export interface AttendanceData {
   date: string;
   session: AttendanceSession;
+  register: AttendanceRegister;
   rows: AttendanceRow[];
   totals: AttendanceTotals;
 }
@@ -55,6 +61,7 @@ export interface AttendanceData {
 export interface MarkAttendancePayload {
   batteryId: string;
   session: AttendanceSession;
+  register: AttendanceRegister;
   status: AttendanceStatus;
   location?: BatteryLocation;
   lastSeen?: string;
@@ -63,7 +70,49 @@ export interface MarkAttendancePayload {
 export interface AttendanceDayRow {
   date: string;
   session: AttendanceSession;
+  register: AttendanceRegister;
   seen: number;
   missing: number;
   marked: number;
+}
+
+// one register's verdict on one pack inside the comparison
+export interface CompareVerdict {
+  status: AttendanceStatus;
+  location?: BatteryLocation;
+  lastSeen?: string;
+  markedByName: string;
+}
+
+// green: all three agree; red: they disagree; amber: some registers
+// have not called it yet; plain: nobody has
+export type AttendanceCompareStatus =
+  | "match"
+  | "mismatch"
+  | "partial"
+  | "unmarked";
+
+export interface AttendanceCompareRow {
+  batteryId: string;
+  batteryCode: string;
+  busNumber: string;
+  manager: CompareVerdict | null;
+  staff: CompareVerdict | null;
+  storekeeper: CompareVerdict | null;
+  status: AttendanceCompareStatus;
+}
+
+export interface AttendanceCompareTotals {
+  fleet: number;
+  matched: number;
+  mismatched: number;
+  partial: number;
+  unmarked: number;
+}
+
+export interface AttendanceCompareData {
+  date: string;
+  session: AttendanceSession;
+  rows: AttendanceCompareRow[];
+  totals: AttendanceCompareTotals;
 }
