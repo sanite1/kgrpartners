@@ -65,6 +65,14 @@ const ROW_FILTERS: { id: RowFilter; label: string }[] = [
   { id: "missing", label: "Missing" },
 ];
 
+// which closing tab a suggestion came from
+const CLOSING_SHEET_LABEL: Record<string, string> = {
+  main: "Battery Closing",
+  muhd_kamila: "Muh'd & Kamila House",
+  main_yard: "Main Yard",
+  ubs: "UBS",
+};
+
 const smallBtn =
   "cursor-pointer rounded-lg border border-line bg-white px-3 py-1.5 text-[12.5px] font-bold text-bark transition-colors hover:border-brand-500 hover:text-brand-600";
 
@@ -132,7 +140,10 @@ export default function BatteryAttendance() {
   const openMark = (row: AttendanceRow, status: AttendanceStatus) => {
     setMarkFor({ row, status });
     setMarkSession(session);
-    setMarkLocation(row.mark?.location ?? "main_yard");
+    // suggest where the closing sheets last put it, but the user decides
+    setMarkLocation(
+      row.mark?.location ?? row.closing?.location ?? "main_yard",
+    );
     setLastSeen(row.mark?.lastSeen ?? "");
   };
 
@@ -621,6 +632,20 @@ export default function BatteryAttendance() {
                     </button>
                   ))}
                 </div>
+                {markFor.row.closing && (
+                  <span
+                    className={cn(
+                      "text-[12px] font-bold",
+                      markLocation !== markFor.row.closing.location
+                        ? "text-solar-700"
+                        : "text-fog",
+                    )}
+                  >
+                    {markLocation !== markFor.row.closing.location
+                      ? `Note: the ${CLOSING_SHEET_LABEL[markFor.row.closing.sheet] ?? "closing"} sheet (${fmtDate(markFor.row.closing.date)}) has it at ${LOCATION_LABEL[markFor.row.closing.location]}.`
+                      : `The ${CLOSING_SHEET_LABEL[markFor.row.closing.sheet] ?? "closing"} sheet (${fmtDate(markFor.row.closing.date)}) closed it at ${LOCATION_LABEL[markFor.row.closing.location]}. Confirm what you can see.`}
+                  </span>
+                )}
               </div>
             ) : (
               <div className="flex flex-col gap-1.5">
@@ -638,6 +663,8 @@ export default function BatteryAttendance() {
                 />
                 <span className="text-[12px] font-semibold text-fog">
                   Optional, but it is what the search party will use.
+                  {markFor.row.closing &&
+                    ` The ${CLOSING_SHEET_LABEL[markFor.row.closing.sheet] ?? "closing"} sheet (${fmtDate(markFor.row.closing.date)}) last had it at ${LOCATION_LABEL[markFor.row.closing.location]}.`}
                 </span>
               </div>
             )}

@@ -21,12 +21,20 @@ export interface AttendanceMark {
   updatedAt: string;
 }
 
+// where the closing sheets last put the pack to bed (a suggestion)
+export interface AttendanceClosingHint {
+  location: BatteryLocation;
+  date: string;
+  sheet: string; // main | muhd_kamila | main_yard | ubs
+}
+
 // one fleet pack with its verdict for the session (null = unmarked)
 export interface AttendanceRow {
   batteryId: string;
   batteryCode: string;
   batteryStatus: string;
   busNumber: string;
+  closing: AttendanceClosingHint | null;
   mark: AttendanceMark | null;
 }
 
