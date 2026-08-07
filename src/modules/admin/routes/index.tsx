@@ -18,6 +18,7 @@ const Inventory = lazy(() => import("../pages/Inventory"));
 const WarehousePage = lazy(() => import("../pages/Warehouse"));
 const Requests = lazy(() => import("../pages/Requests"));
 const Batteries = lazy(() => import("../pages/Batteries"));
+const BatteryDetail = lazy(() => import("../pages/BatteryDetail"));
 const BatteryExitFormPage = lazy(() => import("../pages/BatteryExitFormPage"));
 const BatteryAttendance = lazy(() => import("../pages/BatteryAttendance"));
 const BatteryClosing = lazy(() => import("../pages/BatteryClosing"));
@@ -80,6 +81,7 @@ export const AdminRoutes = () => {
               <Route path="/warehouse" element={<WarehousePage />} />
               <Route path="/requests" element={<Requests />} />
               <Route path="/batteries" element={<Batteries />} />
+              <Route path="/batteries/:id" element={<BatteryDetail />} />
               <Route path="/battery-form" element={<BatteryExitFormPage />} />
               <Route
                 path="/battery-attendance"

@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ChevronDown,
-  History,
   Pencil,
   Plus,
   Search,
@@ -150,6 +150,7 @@ const MovementsList = ({ battery }: { battery: Battery }) => {
 };
 
 export default function Batteries() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const canStock = canManageStock(user?.role);
   const isManager = canApprove(user?.role);
@@ -495,7 +496,7 @@ export default function Batteries() {
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-line bg-haze">
-                  {["BATTERY", "STATE", "BUS", "NOTES", "ACTIONS"].map((h) => (
+                  {["BATTERY", "STATUS", "BUS", "NOTES", "ACTIONS"].map((h) => (
                     <th
                       key={h}
                       className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
@@ -509,16 +510,38 @@ export default function Batteries() {
                 {batteries.map((battery) => (
                   <tr
                     key={battery._id}
-                    className="border-b border-line last:border-0"
+                    onClick={() => navigate(`/batteries/${battery._id}`)}
+                    className="cursor-pointer border-b border-line transition-colors last:border-0 hover:bg-haze"
                   >
-                    <td className="whitespace-nowrap px-4 py-3 text-[14px] font-extrabold tracking-[-0.2px] text-ink">
+                    <td className="whitespace-nowrap px-4 py-3 text-[14px] font-extrabold tracking-[-0.2px] text-brand-600">
                       {battery.code}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <StatusPill
-                        tone={metaFor(battery.status).tone}
-                        label={metaFor(battery.status).label}
-                      />
+                    <td
+                      className="whitespace-nowrap px-4 py-3"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {canStock ? (
+                        <select
+                          aria-label={`Set status for ${battery.code}`}
+                          value={battery.status}
+                          disabled={setStatus.isPending}
+                          onChange={(e) =>
+                            quickStatus(battery, e.target.value as BatteryStatus)
+                          }
+                          className="cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-base font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none sm:text-[12.5px]"
+                        >
+                          {STATUS_OPTIONS.map(([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <StatusPill
+                          tone={metaFor(battery.status).tone}
+                          label={metaFor(battery.status).label}
+                        />
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
                       {battery.bus && battery.busNumber ? (
@@ -536,7 +559,10 @@ export default function Batteries() {
                         {battery.notes || "—"}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3">
+                    <td
+                      className="whitespace-nowrap px-4 py-3"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center gap-2">
                         {canStock && (
                           <button
@@ -573,34 +599,6 @@ export default function Batteries() {
                             Collect from {battery.busNumber}
                           </button>
                         )}
-                        {canStock && (
-                          <select
-                            aria-label={`Set status for ${battery.code}`}
-                            value={battery.status}
-                            disabled={setStatus.isPending}
-                            onChange={(e) =>
-                              quickStatus(
-                                battery,
-                                e.target.value as BatteryStatus,
-                              )
-                            }
-                            className="cursor-pointer rounded-lg border border-line bg-white px-2.5 py-1.5 text-base font-bold text-bark transition-colors hover:border-brand-500 focus:border-brand-500 focus:outline-none sm:text-[12.5px]"
-                          >
-                            {STATUS_OPTIONS.map(([value, label]) => (
-                              <option key={value} value={value}>
-                                {label}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                        <button
-                          type="button"
-                          aria-label={`History for ${battery.code}`}
-                          onClick={() => setHistoryFor(battery)}
-                          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line bg-white text-bark transition-colors hover:border-brand-500 hover:text-brand-600"
-                        >
-                          <History size={14} />
-                        </button>
                         {canStock && (
                           <button
                             type="button"

@@ -111,3 +111,66 @@ export interface BatteriesQueryParams {
   isActive?: "true" | "false";
   search?: string;
 }
+
+// everything the console knows about one pack, on one page
+export interface BatteryTripBlock {
+  trips: number;
+  receipts: number;
+}
+
+export interface BatteryTripReceipt {
+  _id: string;
+  billId: number;
+  date: string;
+  busNumber: string;
+  expectedTrips: number;
+  createdAt: string;
+}
+
+export interface BatteryClosingAppearance {
+  _id: string;
+  date: string;
+  sheet?: string;
+  batteryName: string;
+  percent: number;
+  voltage: string;
+  location: BatteryLocation;
+  worked: boolean;
+  addedByName: string;
+}
+
+export interface BatterySwapRecord {
+  _id: string;
+  busNumber: string;
+  initialBatteryCode: string;
+  suppliedBatteryCode: string;
+  tripsAdded: number;
+  byName: string;
+  createdAt: string;
+  role: "went_on" | "came_off";
+}
+
+export interface BatteryAttendanceHistoryRow {
+  _id: string;
+  date: string;
+  session: string;
+  register?: string;
+  status: "seen" | "missing";
+  location?: BatteryLocation;
+  lastSeen: string;
+  markedByName: string;
+  updatedAt: string;
+}
+
+export interface BatteryDetailsData {
+  battery: Battery;
+  trips: {
+    today: BatteryTripBlock;
+    thisMonth: BatteryTripBlock;
+    allTime: BatteryTripBlock;
+  };
+  receipts: BatteryTripReceipt[];
+  attendance: BatteryAttendanceHistoryRow[];
+  closings: BatteryClosingAppearance[];
+  swaps: BatterySwapRecord[];
+}

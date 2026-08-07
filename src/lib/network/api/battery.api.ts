@@ -15,6 +15,7 @@ import type {
   CollectBatteryPayload,
   SetBatteryStatusPayload,
   BatteriesQueryParams,
+  BatteryDetailsData,
 } from "../types/battery.types";
 import {
   useQuery,
@@ -76,6 +77,11 @@ export const snoozeBatteryFn = (
 ): Promise<ApiResponse<Battery>> =>
   api.post<ApiResponse<Battery>>(`${BASE}/${id}/snooze`, { days });
 
+export const getBatteryDetailsFn = (
+  id: string,
+): Promise<ApiResponse<BatteryDetailsData>> =>
+  api.get<ApiResponse<BatteryDetailsData>>(`${BASE}/${id}/details`);
+
 export const getBatteryMovementsFn = (
   id: string,
   params?: { page?: number; pageSize?: number },
@@ -92,6 +98,7 @@ export const batteryKeys = {
   list: (params?: BatteriesQueryParams) =>
     [...batteryKeys.all, "list", params ?? {}] as const,
   summary: () => [...batteryKeys.all, "summary"] as const,
+  details: (id: string) => [...batteryKeys.all, "details", id] as const,
   idle: () => [...batteryKeys.all, "idle"] as const,
   movements: (id: string, page?: number) =>
     [...batteryKeys.all, "movements", id, page ?? 1] as const,
@@ -114,6 +121,19 @@ const getErrorMessage = (error: unknown): string => {
 };
 
 // REACT QUERY: Queries
+
+export const useGetBatteryDetails = (
+  id: string,
+  options?: Partial<
+    UseQueryOptions<ApiResponse<BatteryDetailsData>, AxiosError>
+  >,
+) =>
+  useQuery<ApiResponse<BatteryDetailsData>, AxiosError>({
+    queryKey: batteryKeys.details(id),
+    queryFn: () => getBatteryDetailsFn(id),
+    enabled: !!id,
+    ...options,
+  });
 
 export const useGetBatteries = (
   params?: BatteriesQueryParams,
