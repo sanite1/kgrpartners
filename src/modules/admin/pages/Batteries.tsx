@@ -449,79 +449,6 @@ export default function Batteries() {
         ))}
       </div>
 
-      {/* accountability: is every pack accounted for by a human sighting */}
-      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="rounded-2xl border border-forest-border bg-forest-deep p-4">
-          {summaryLoading ? (
-            <Skeleton className="h-6 w-9 bg-white/15" />
-          ) : (
-            <span className="block text-[24px] font-extrabold leading-none text-neon">
-              {summary?.onBus ?? 0}
-            </span>
-          )}
-          <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
-            ON THE ROAD TODAY
-          </span>
-        </div>
-        <div className="rounded-2xl border border-line bg-white p-4">
-          {summaryLoading ? (
-            <Skeleton className="h-6 w-9" />
-          ) : (
-            <span className="block text-[24px] font-extrabold leading-none text-ink">
-              {summary?.sighted?.today ?? 0}
-            </span>
-          )}
-          <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
-            SIGHTED TODAY
-          </span>
-        </div>
-        <div className="rounded-2xl border border-line bg-white p-4">
-          {summaryLoading ? (
-            <Skeleton className="h-6 w-9" />
-          ) : (
-            <span className="block text-[24px] font-extrabold leading-none text-ink">
-              {summary?.sighted?.week ?? 0}
-            </span>
-          )}
-          <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
-            SIGHTED THIS WEEK
-          </span>
-        </div>
-        <div
-          className={cn(
-            "rounded-2xl border p-4",
-            (summary?.sighted?.unsighted ?? 0) > 0
-              ? "border-red-200 bg-red-50"
-              : "border-line bg-white",
-          )}
-        >
-          {summaryLoading ? (
-            <Skeleton className="h-6 w-9" />
-          ) : (
-            <span
-              className={cn(
-                "block text-[24px] font-extrabold leading-none",
-                (summary?.sighted?.unsighted ?? 0) > 0
-                  ? "text-red-600"
-                  : "text-ink",
-              )}
-            >
-              {summary?.sighted?.unsighted ?? 0}
-            </span>
-          )}
-          <span
-            className={cn(
-              "mt-1.5 block text-[11px] font-extrabold tracking-[1px]",
-              (summary?.sighted?.unsighted ?? 0) > 0
-                ? "text-red-600"
-                : "text-fog",
-            )}
-          >
-            NOT SIGHTED IN 7 DAYS
-          </span>
-        </div>
-      </div>
-
       <div className="mb-4 flex justify-end">
         <div className="relative w-full sm:w-[240px]">
           <Search
@@ -548,7 +475,7 @@ export default function Batteries() {
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-line bg-haze">
-                  {["S/N", "BATTERY", "STATUS", "LAST SEEN ON", "NOTES", "ACTIONS"].map((h) => (
+                  {["S/N", "BATTERY", "STATUS", "TRIPS TODAY", "TRIPS THIS MONTH", "LAST SEEN ON", "NOTES", "ACTIONS"].map((h) => (
                     <th
                       key={h}
                       className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
@@ -597,6 +524,30 @@ export default function Batteries() {
                           label={metaFor(battery.status).label}
                         />
                       )}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <span
+                        className={cn(
+                          "text-[14px] font-extrabold tabular-nums",
+                          (battery.trips?.today ?? 0) > 0
+                            ? "text-ink"
+                            : "text-fog",
+                        )}
+                      >
+                        {battery.trips?.today ?? 0}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <span
+                        className={cn(
+                          "text-[14px] font-extrabold tabular-nums",
+                          (battery.trips?.month ?? 0) > 0
+                            ? "text-ink"
+                            : "text-fog",
+                        )}
+                      >
+                        {battery.trips?.month ?? 0}
+                      </span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
                       {battery.lastSeen ? (

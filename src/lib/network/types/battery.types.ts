@@ -31,6 +31,8 @@ export interface Battery {
   location: BatteryLocation;
   needsCheck: boolean;
   lastSeen?: BatterySighting | null;
+  // per-row summary: receipts naming this pack, canon matched
+  trips?: { today: number; month: number };
   notes: string;
   isActive: boolean;
   retiredReason?: BatteryRetiredReason;
@@ -57,8 +59,6 @@ export interface BatterySummaryData {
   counts: Record<BatteryStatus, number>;
   total: number;
   onBus: number; // distinct batteries named on today's live receipts
-  // how much of the fleet has a human sighting (checklist/receipt)
-  sighted: { today: number; week: number; unsighted: number };
 }
 
 // a pack that has not appeared on any receipt for 48h or more
