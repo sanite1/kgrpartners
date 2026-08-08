@@ -4,14 +4,10 @@ import { ArrowLeft } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
-import SearchSelect from "../components/console/SearchSelect";
 import Modal from "../components/console/Modal";
-import { useGetBuses } from "@/lib/network/api/bus.api";
 import {
   useGetBatteryDetails,
   useGetBatteryMovements,
-  useIssueBattery,
-  useCollectBattery,
   useSetBatteryStatus,
   useUpdateBattery,
 } from "@/lib/network/api/battery.api";
@@ -95,28 +91,12 @@ export default function BatteryDetail() {
   const movements = movesData?.data ?? [];
   const movePagination = movesData?.pagination;
 
-  // issue modal
-  const [issueOpen, setIssueOpen] = useState(false);
-  const [busSearch, setBusSearch] = useState("");
-  const [busOpen, setBusOpen] = useState(false);
-  const [issueNote, setIssueNote] = useState("");
-  const { data: busData } = useGetBuses(
-    { search: busSearch, isActive: "true", pageSize: 8 },
-    { enabled: busOpen },
-  );
-
-  // collect modal
-  const [collectOpen, setCollectOpen] = useState(false);
-  const [collectNote, setCollectNote] = useState("");
-
   // edit modal
   const [editOpen, setEditOpen] = useState(false);
   const [editCode, setEditCode] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [editActive, setEditActive] = useState(true);
 
-  const issueBattery = useIssueBattery();
-  const collectBattery = useCollectBattery();
   const setStatus = useSetBatteryStatus();
   const updateBattery = useUpdateBattery();
 
@@ -136,7 +116,7 @@ export default function BatteryDetail() {
         title={battery?.code ?? "Battery"}
         subtitle={
           battery
-            ? `${metaFor(battery.status).label}${battery.busNumber ? ` · on ${battery.busNumber}` : ""} · ${LOCATION_LABEL[battery.location] ?? battery.location}${battery.isActive ? "" : " · RETIRED"}`
+            ? `${metaFor(battery.status).label}${details?.lastSeen ? ` · last seen on ${details.lastSeen.busName} (${details.lastSeen.source}, ${fmtDate(details.lastSeen.date)})` : " · not sighted this week"} · ${LOCATION_LABEL[battery.location] ?? battery.location}${battery.isActive ? "" : " · RETIRED"}`
             : "Loading the pack's record."
         }
         actions={
@@ -153,37 +133,6 @@ export default function BatteryDetail() {
       {/* every action the table offers, in one bar */}
       {canStock && battery && (
         <div className="mb-5 flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            disabled={!!battery.bus || battery.status === "faulty"}
-            title={
-              battery.bus
-                ? `${battery.code} is already on ${battery.busNumber}`
-                : battery.status === "faulty"
-                  ? "Faulty packs cannot be issued"
-                  : undefined
-            }
-            onClick={() => {
-              setBusSearch("");
-              setIssueNote("");
-              setIssueOpen(true);
-            }}
-            className="cta-gradient cursor-pointer rounded-[10px] border-none px-4 py-2.5 text-[13.5px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Issue to bus
-          </button>
-          {battery.bus && (
-            <button
-              type="button"
-              onClick={() => {
-                setCollectNote("");
-                setCollectOpen(true);
-              }}
-              className="cta-gradient cursor-pointer rounded-[10px] border-none px-4 py-2.5 text-[13.5px] font-extrabold text-forest-deep"
-            >
-              Collect from {battery.busNumber}
-            </button>
-          )}
           <select
             aria-label="Set status"
             value={battery.status}
@@ -536,104 +485,6 @@ export default function BatteryDetail() {
           </p>
         </div>
       )}
-
-      {/* issue */}
-      <Modal
-        title={battery ? `Issue ${battery.code}` : "Issue"}
-        open={issueOpen}
-        onClose={() => setIssueOpen(false)}
-      >
-        {battery && (
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="bd-issue-bus" className={labelClasses}>
-                Bus <span className="text-brand-500">*</span>
-              </label>
-              <SearchSelect
-                id="bd-issue-bus"
-                placeholder="Type a bus number"
-                icon
-                search={busSearch}
-                onSearch={setBusSearch}
-                onOpenChange={setBusOpen}
-                options={(busData?.data ?? []).map((b) => ({
-                  key: b._id,
-                  title: b.number,
-                  subtitle: b.driverName || "",
-                }))}
-                onPick={(key) =>
-                  issueBattery.mutate(
-                    {
-                      id: battery._id,
-                      payload: { busId: key, note: issueNote || undefined },
-                    },
-                    { onSuccess: () => setIssueOpen(false) },
-                  )
-                }
-                emptyText="No active bus matches."
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="bd-issue-note" className={labelClasses}>
-                Note
-              </label>
-              <input
-                id="bd-issue-note"
-                type="text"
-                placeholder="Optional"
-                value={issueNote}
-                onChange={(e) => setIssueNote(e.target.value)}
-                className={inputClasses}
-              />
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* collect */}
-      <Modal
-        title={battery ? `Collect ${battery.code}` : "Collect"}
-        open={collectOpen}
-        onClose={() => setCollectOpen(false)}
-      >
-        {battery && (
-          <div className="flex flex-col gap-4">
-            <p className="m-0 text-[13.5px] font-semibold text-fog">
-              Take {battery.code} off {battery.busNumber} and back into the
-              yard.
-            </p>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="bd-collect-note" className={labelClasses}>
-                Note
-              </label>
-              <input
-                id="bd-collect-note"
-                type="text"
-                placeholder="Optional"
-                value={collectNote}
-                onChange={(e) => setCollectNote(e.target.value)}
-                className={inputClasses}
-              />
-            </div>
-            <button
-              type="button"
-              disabled={collectBattery.isPending}
-              onClick={() =>
-                collectBattery.mutate(
-                  {
-                    id: battery._id,
-                    payload: { note: collectNote || undefined },
-                  },
-                  { onSuccess: () => setCollectOpen(false) },
-                )
-              }
-              className="cta-gradient mt-1 cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {collectBattery.isPending ? "Collecting…" : "Collect →"}
-            </button>
-          </div>
-        )}
-      </Modal>
 
       {/* edit */}
       <Modal

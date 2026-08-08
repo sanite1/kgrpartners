@@ -563,9 +563,9 @@ export default function BatteryAttendance() {
                           >
                             <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
                               {row.batteryCode}
-                              {row.busNumber && (
+                              {row.lastSeen && (
                                 <span className="ml-2 text-[11.5px] font-bold text-fog">
-                                  on {row.busNumber}
+                                  seen on {row.lastSeen.busName}
                                 </span>
                               )}
                             </td>
@@ -750,9 +750,9 @@ export default function BatteryAttendance() {
                             </td>
                             <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
                               {row.batteryCode}
-                              {row.busNumber && (
+                              {row.lastSeen && (
                                 <span className="ml-2 text-[11.5px] font-bold text-fog">
-                                  on {row.busNumber}
+                                  seen on {row.lastSeen.busName}
                                 </span>
                               )}
                             </td>

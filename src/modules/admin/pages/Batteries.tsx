@@ -11,12 +11,10 @@ import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
 import StatusPill from "../components/console/StatusPill";
-import SearchSelect from "../components/console/SearchSelect";
 import Skeleton from "../components/console/Skeleton";
 import Modal from "../components/console/Modal";
 import Pagination from "../components/console/Pagination";
 import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
-import { useGetBuses } from "@/lib/network/api/bus.api";
 import {
   useGetBatteries,
   useGetBatterySummary,
@@ -25,8 +23,6 @@ import {
   useSnoozeBattery,
   useCreateBattery,
   useUpdateBattery,
-  useIssueBattery,
-  useCollectBattery,
   useSetBatteryStatus,
 } from "@/lib/network/api/battery.api";
 import type { Battery, BatteryStatus } from "@/lib/network/types/battery.types";
@@ -165,8 +161,6 @@ export default function Batteries() {
 
   // modals
   const [registerOpen, setRegisterOpen] = useState(false);
-  const [issueFor, setIssueFor] = useState<Battery | null>(null);
-  const [collectFor, setCollectFor] = useState<Battery | null>(null);
   const [editFor, setEditFor] = useState<Battery | null>(null);
   const [historyFor, setHistoryFor] = useState<Battery | null>(null);
 
@@ -174,14 +168,6 @@ export default function Batteries() {
   const [regCode, setRegCode] = useState("");
   const [regStatus, setRegStatus] = useState<BatteryStatus>("active");
   const [regNotes, setRegNotes] = useState("");
-
-  // issue form
-  const [busSearch, setBusSearch] = useState("");
-  const [busOpen, setBusOpen] = useState(false);
-  const [issueNote, setIssueNote] = useState("");
-
-  // collect form
-  const [collectNote, setCollectNote] = useState("");
 
   // edit form
   const [editCode, setEditCode] = useState("");
@@ -207,15 +193,8 @@ export default function Batteries() {
   const batteries = data?.data ?? [];
   const pagination = data?.pagination;
 
-  const { data: busData } = useGetBuses(
-    { search: busSearch, isActive: "true", pageSize: 6 },
-    { enabled: !!issueFor && busOpen },
-  );
-
   const createBattery = useCreateBattery();
   const updateBattery = useUpdateBattery();
-  const issueBattery = useIssueBattery();
-  const collectBattery = useCollectBattery();
   const setStatus = useSetBatteryStatus();
 
   const openEdit = (battery: Battery) => {
@@ -496,7 +475,7 @@ export default function Batteries() {
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-line bg-haze">
-                  {["BATTERY", "STATUS", "BUS", "NOTES", "ACTIONS"].map((h) => (
+                  {["BATTERY", "STATUS", "LAST SEEN ON", "NOTES", "ACTIONS"].map((h) => (
                     <th
                       key={h}
                       className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
@@ -544,13 +523,18 @@ export default function Batteries() {
                       )}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
-                      {battery.bus && battery.busNumber ? (
-                        <span className="rounded-full bg-haze px-2.5 py-1 text-[11.5px] font-extrabold text-brand-600">
-                          {battery.busNumber}
-                        </span>
+                      {battery.lastSeen ? (
+                        <div className="flex flex-col items-start gap-0.5">
+                          <span className="rounded-full bg-haze px-2.5 py-1 text-[11.5px] font-extrabold text-brand-600">
+                            {battery.lastSeen.busName}
+                          </span>
+                          <span className="text-[10.5px] font-semibold text-fog">
+                            {battery.lastSeen.source} · {fmtDate(battery.lastSeen.date)}
+                          </span>
+                        </div>
                       ) : (
                         <span className="text-[13px] font-semibold text-fog">
-                          —
+                          Not sighted
                         </span>
                       )}
                     </td>
@@ -564,41 +548,6 @@ export default function Batteries() {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center gap-2">
-                        {canStock && (
-                          <button
-                            type="button"
-                            disabled={
-                              !!battery.bus || battery.status === "faulty"
-                            }
-                            title={
-                              battery.bus
-                                ? `${battery.code} is already on ${battery.busNumber}`
-                                : battery.status === "faulty"
-                                  ? "Faulty packs cannot be issued"
-                                  : undefined
-                            }
-                            onClick={() => {
-                              setBusSearch("");
-                              setIssueNote("");
-                              setIssueFor(battery);
-                            }}
-                            className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            Issue to bus
-                          </button>
-                        )}
-                        {canStock && battery.bus && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setCollectNote("");
-                              setCollectFor(battery);
-                            }}
-                            className="cta-gradient cursor-pointer rounded-lg border-none px-3.5 py-1.5 text-[12.5px] font-extrabold text-forest-deep"
-                          >
-                            Collect from {battery.busNumber}
-                          </button>
-                        )}
                         {canStock && (
                           <button
                             type="button"
@@ -714,105 +663,6 @@ export default function Batteries() {
             className="cta-gradient mt-1 cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-50"
           >
             {createBattery.isPending ? "Saving…" : "Register →"}
-          </button>
-        </div>
-      </Modal>
-
-      {/* issue modal */}
-      <Modal
-        title={issueFor ? `Issue ${issueFor.code}` : "Issue"}
-        open={!!issueFor}
-        onClose={() => setIssueFor(null)}
-      >
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="issue-bus" className={labelClasses}>
-              Bus <span className="text-brand-500">*</span>
-            </label>
-            <SearchSelect
-              id="issue-bus"
-              placeholder="Search bus number"
-              search={busSearch}
-              onSearch={setBusSearch}
-              onOpenChange={setBusOpen}
-              inline
-              options={(busData?.data ?? []).map((bus) => ({
-                key: bus._id,
-                title: bus.number,
-                subtitle: bus.driverName || "",
-              }))}
-              onPick={(key) => {
-                if (!issueFor) return;
-                issueBattery.mutate(
-                  {
-                    id: issueFor._id,
-                    payload: { busId: key, note: issueNote || undefined },
-                  },
-                  { onSuccess: () => setIssueFor(null) },
-                );
-              }}
-              emptyText="No active bus matches."
-            />
-            <p className="m-0 text-[12px] font-semibold text-fog">
-              Picking a bus issues the battery immediately.
-            </p>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="issue-note" className={labelClasses}>
-              Note
-            </label>
-            <input
-              id="issue-note"
-              type="text"
-              placeholder="Morning swap"
-              value={issueNote}
-              onChange={(e) => setIssueNote(e.target.value)}
-              className={inputClasses}
-            />
-          </div>
-        </div>
-      </Modal>
-
-      {/* collect modal */}
-      <Modal
-        title={collectFor ? `Collect ${collectFor.code}` : "Collect"}
-        open={!!collectFor}
-        onClose={() => setCollectFor(null)}
-      >
-        <div className="flex flex-col gap-4">
-          <p className="m-0 text-[13px] font-semibold text-fog">
-            This takes {collectFor?.code} off {collectFor?.busNumber}. Its
-            status stays as it is; update it separately if it needs charging.
-          </p>
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="collect-note" className={labelClasses}>
-              Note
-            </label>
-            <input
-              id="collect-note"
-              type="text"
-              placeholder="End of day"
-              value={collectNote}
-              onChange={(e) => setCollectNote(e.target.value)}
-              className={inputClasses}
-            />
-          </div>
-          <button
-            type="button"
-            disabled={collectBattery.isPending}
-            onClick={() => {
-              if (!collectFor) return;
-              collectBattery.mutate(
-                {
-                  id: collectFor._id,
-                  payload: { note: collectNote || undefined },
-                },
-                { onSuccess: () => setCollectFor(null) },
-              );
-            }}
-            className="cta-gradient mt-1 cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {collectBattery.isPending ? "Collecting…" : "Collect →"}
           </button>
         </div>
       </Modal>

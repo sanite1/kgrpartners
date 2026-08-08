@@ -17,14 +17,20 @@ export type BatteryLocation =
 export type BatteryRetiredReason =
   "sold" | "dismantled" | "accident" | "bms_burnt" | "other";
 
+// where humans last wrote the pack down (checklist or receipt)
+export interface BatterySighting {
+  busName: string;
+  date: string;
+  source: "checklist" | "receipt";
+}
+
 export interface Battery {
   _id: string;
   code: string;
   status: BatteryStatus;
   location: BatteryLocation;
   needsCheck: boolean;
-  bus?: string;
-  busNumber?: string;
+  lastSeen?: BatterySighting | null;
   notes: string;
   isActive: boolean;
   retiredReason?: BatteryRetiredReason;
@@ -89,15 +95,6 @@ export interface UpdateBatteryPayload {
   retiredReason?: BatteryRetiredReason;
 }
 
-export interface IssueBatteryPayload {
-  busId: string;
-  note?: string;
-}
-
-export interface CollectBatteryPayload {
-  note?: string;
-}
-
 export interface SetBatteryStatusPayload {
   to: BatteryStatus;
   note?: string;
@@ -107,7 +104,6 @@ export interface BatteriesQueryParams {
   page?: number;
   pageSize?: number;
   status?: BatteryStatus;
-  busId?: string;
   isActive?: "true" | "false";
   search?: string;
 }
@@ -164,6 +160,7 @@ export interface BatteryAttendanceHistoryRow {
 
 export interface BatteryDetailsData {
   battery: Battery;
+  lastSeen: BatterySighting | null;
   trips: {
     today: BatteryTripBlock;
     thisMonth: BatteryTripBlock;

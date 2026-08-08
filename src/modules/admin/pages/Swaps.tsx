@@ -15,6 +15,9 @@ import type { Battery, BatteryStatus } from "@/lib/network/types/battery.types";
 import { cn, fmtDate, fmtTime } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
+// "KGR 7" and "kgr7" are the same bus when written by different hands
+const canon = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
+
 const STATUS_LABEL: Record<BatteryStatus, string> = {
   active: "Active",
   faulty: "Faulty",
@@ -28,7 +31,9 @@ const STATUS_LABEL: Record<BatteryStatus, string> = {
 // when it is already on a bus
 const batterySubtitle = (battery: Battery): string => {
   const state = STATUS_LABEL[battery.status] ?? battery.status;
-  return battery.busNumber ? `${state} · on ${battery.busNumber}` : state;
+  return battery.lastSeen
+    ? `${state} · seen on ${battery.lastSeen.busName}`
+    : state;
 };
 
 interface PickerProps {
@@ -126,13 +131,18 @@ export default function Swaps() {
   );
   const busResults = busData?.data ?? [];
 
-  // what the fleet believes is on the chosen bus; shown as a hint only,
-  // the user always picks the battery themselves
-  const { data: onBusData } = useGetBatteries(
-    { busId: bus?._id, pageSize: 2 },
+  // the last checklist/receipt sighting says which pack this bus was
+  // carrying; shown as a hint only, the user always picks the battery
+  const { data: fleetData } = useGetBatteries(
+    { pageSize: 100, isActive: "true" },
     { enabled: !!bus },
   );
-  const currentOnBus = bus ? (onBusData?.data?.[0] ?? null) : null;
+  const currentOnBus = bus
+    ? ((fleetData?.data ?? [])
+        .filter((b) => b.lastSeen && canon(b.lastSeen.busName) === canon(bus.number))
+        .sort((a, b) => (a.lastSeen!.date < b.lastSeen!.date ? 1 : -1))[0] ??
+      null)
+    : null;
 
   const createSwap = useCreateSwap();
 
@@ -356,8 +366,8 @@ export default function Swaps() {
                 )}
               >
                 {initial && initial._id !== currentOnBus._id
-                  ? `Note: the system has ${currentOnBus.code} on ${bus?.number}, not ${initial.code}.`
-                  : `The system has ${currentOnBus.code} on ${bus?.number}. Pick the pack you can actually see.`}
+                  ? `Note: ${currentOnBus.code} was last seen on ${bus?.number} (${currentOnBus.lastSeen?.source}), not ${initial.code}.`
+                  : `${currentOnBus.code} was last seen on ${bus?.number} (${currentOnBus.lastSeen?.source}, ${currentOnBus.lastSeen ? fmtDate(currentOnBus.lastSeen.date) : ""}). Pick the pack you can actually see.`}
               </span>
             )}
           </div>
@@ -375,12 +385,9 @@ export default function Swaps() {
             />
             {supplied &&
               (supplied.status === "faulty" ||
-                supplied.status === "not_in_use" ||
-                !!supplied.bus) && (
+                supplied.status === "not_in_use") && (
                 <span className="text-[12px] font-bold text-red-600">
-                  {supplied.bus
-                    ? `${supplied.code} is recorded on ${supplied.busNumber}; this will be rejected.`
-                    : `${supplied.code} is ${STATUS_LABEL[supplied.status].toLowerCase()}; this will be rejected.`}
+                  {`${supplied.code} is ${STATUS_LABEL[supplied.status].toLowerCase()}; this will be rejected.`}
                 </span>
               )}
           </div>

@@ -1,7 +1,7 @@
 // Mirrors kgr-backend interfaces/batteryAttendance.interface.ts. The
 // paper "Battery Attendance" sheet: three times a day the registered
 // fleet is called and every pack is seen somewhere or missing.
-import type { BatteryLocation } from "./battery.types";
+import type { BatteryLocation, BatterySighting } from "./battery.types";
 
 export type AttendanceSession = "morning" | "afternoon" | "night";
 export type AttendanceStatus = "seen" | "missing";
@@ -38,7 +38,7 @@ export interface AttendanceRow {
   batteryId: string;
   batteryCode: string;
   batteryStatus: string;
-  busNumber: string;
+  lastSeen: BatterySighting | null;
   closing: AttendanceClosingHint | null;
   mark: AttendanceMark | null;
 }
@@ -95,7 +95,7 @@ export type AttendanceCompareStatus =
 export interface AttendanceCompareRow {
   batteryId: string;
   batteryCode: string;
-  busNumber: string;
+  lastSeen: BatterySighting | null;
   manager: CompareVerdict | null;
   staff: CompareVerdict | null;
   storekeeper: CompareVerdict | null;

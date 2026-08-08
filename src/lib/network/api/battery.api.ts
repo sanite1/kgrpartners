@@ -11,8 +11,6 @@ import type {
   IdleBatteriesData,
   CreateBatteryPayload,
   UpdateBatteryPayload,
-  IssueBatteryPayload,
-  CollectBatteryPayload,
   SetBatteryStatusPayload,
   BatteriesQueryParams,
   BatteryDetailsData,
@@ -52,18 +50,6 @@ export const updateBatteryFn = (
   payload: UpdateBatteryPayload,
 ): Promise<ApiResponse<Battery>> =>
   api.patch<ApiResponse<Battery>>(`${BASE}/${id}`, payload);
-
-export const issueBatteryFn = (
-  id: string,
-  payload: IssueBatteryPayload,
-): Promise<ApiResponse<Battery>> =>
-  api.post<ApiResponse<Battery>>(`${BASE}/${id}/issue`, payload);
-
-export const collectBatteryFn = (
-  id: string,
-  payload: CollectBatteryPayload,
-): Promise<ApiResponse<Battery>> =>
-  api.post<ApiResponse<Battery>>(`${BASE}/${id}/collect`, payload);
 
 export const setBatteryStatusFn = (
   id: string,
@@ -205,42 +191,6 @@ export const useUpdateBattery = () => {
     { id: string; payload: UpdateBatteryPayload }
   >({
     mutationFn: ({ id, payload }) => updateBatteryFn(id, payload),
-    onSuccess: (data) => {
-      toast.success(data.message);
-      qc.invalidateQueries({ queryKey: batteryKeys.all });
-    },
-    onError: (error) => {
-      toast.error(getErrorMessage(error));
-    },
-  });
-};
-
-export const useIssueBattery = () => {
-  const qc = useQueryClient();
-  return useMutation<
-    ApiResponse<Battery>,
-    AxiosError,
-    { id: string; payload: IssueBatteryPayload }
-  >({
-    mutationFn: ({ id, payload }) => issueBatteryFn(id, payload),
-    onSuccess: (data) => {
-      toast.success(data.message);
-      qc.invalidateQueries({ queryKey: batteryKeys.all });
-    },
-    onError: (error) => {
-      toast.error(getErrorMessage(error));
-    },
-  });
-};
-
-export const useCollectBattery = () => {
-  const qc = useQueryClient();
-  return useMutation<
-    ApiResponse<Battery>,
-    AxiosError,
-    { id: string; payload: CollectBatteryPayload }
-  >({
-    mutationFn: ({ id, payload }) => collectBatteryFn(id, payload),
     onSuccess: (data) => {
       toast.success(data.message);
       qc.invalidateQueries({ queryKey: batteryKeys.all });
