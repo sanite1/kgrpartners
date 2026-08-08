@@ -15,9 +15,6 @@ import type { Battery, BatteryStatus } from "@/lib/network/types/battery.types";
 import { cn, fmtDate, fmtTime } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
-// "KGR 7" and "kgr7" are the same bus when written by different hands
-const canon = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
-
 const STATUS_LABEL: Record<BatteryStatus, string> = {
   active: "Active",
   faulty: "Faulty",
@@ -29,12 +26,8 @@ const STATUS_LABEL: Record<BatteryStatus, string> = {
 
 // what the picker shows under each pack: its state, and a loud warning
 // when it is already on a bus
-const batterySubtitle = (battery: Battery): string => {
-  const state = STATUS_LABEL[battery.status] ?? battery.status;
-  return battery.lastSeen
-    ? `${state} · seen on ${battery.lastSeen.busName}`
-    : state;
-};
+const batterySubtitle = (battery: Battery): string =>
+  STATUS_LABEL[battery.status] ?? battery.status;
 
 interface PickerProps {
   id: string;
@@ -130,19 +123,6 @@ export default function Swaps() {
     { enabled: busOpen && !bus },
   );
   const busResults = busData?.data ?? [];
-
-  // the last checklist/receipt sighting says which pack this bus was
-  // carrying; shown as a hint only, the user always picks the battery
-  const { data: fleetData } = useGetBatteries(
-    { pageSize: 100, isActive: "true" },
-    { enabled: !!bus },
-  );
-  const currentOnBus = bus
-    ? ((fleetData?.data ?? [])
-        .filter((b) => b.lastSeen && canon(b.lastSeen.busName) === canon(bus.number))
-        .sort((a, b) => (a.lastSeen!.date < b.lastSeen!.date ? 1 : -1))[0] ??
-      null)
-    : null;
 
   const createSwap = useCreateSwap();
 
@@ -356,20 +336,6 @@ export default function Swaps() {
               selected={initial}
               onSelect={setInitial}
             />
-            {currentOnBus && (
-              <span
-                className={cn(
-                  "text-[12px] font-bold",
-                  initial && initial._id !== currentOnBus._id
-                    ? "text-solar-700"
-                    : "text-fog",
-                )}
-              >
-                {initial && initial._id !== currentOnBus._id
-                  ? `Note: ${currentOnBus.code} was last seen on ${bus?.number} (${currentOnBus.lastSeen?.source}), not ${initial.code}.`
-                  : `${currentOnBus.code} was last seen on ${bus?.number} (${currentOnBus.lastSeen?.source}, ${currentOnBus.lastSeen ? fmtDate(currentOnBus.lastSeen.date) : ""}). Pick the pack you can actually see.`}
-              </span>
-            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -383,13 +349,6 @@ export default function Swaps() {
               selected={supplied}
               onSelect={setSupplied}
             />
-            {supplied &&
-              (supplied.status === "faulty" ||
-                supplied.status === "not_in_use") && (
-                <span className="text-[12px] font-bold text-red-600">
-                  {`${supplied.code} is ${STATUS_LABEL[supplied.status].toLowerCase()}; this will be rejected.`}
-                </span>
-              )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
