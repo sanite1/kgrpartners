@@ -5,13 +5,10 @@ import type {
   ApiErrorResponse,
 } from "../types/api.types";
 import type {
-  AttendanceData,
-  AttendanceMark,
-  AttendanceSession,
-  AttendanceRegister,
+  AttendanceFleetData,
+  AttendanceLog,
   AttendanceCompareData,
-  MarkAttendancePayload,
-  AttendanceDayRow,
+  CreateAttendanceLogPayload,
 } from "../types/batteryAttendance.types";
 import {
   useQuery,
@@ -26,58 +23,46 @@ const BASE = "/api/battery-attendance";
 
 // RAW API FUNCTIONS
 
-export const getAttendanceFn = (
-  session: AttendanceSession,
-  register: AttendanceRegister,
-  date?: string,
-): Promise<ApiResponse<AttendanceData>> =>
-  api.get<ApiResponse<AttendanceData>>(BASE, { session, register, date });
+export const getAttendanceFleetFn = (): Promise<
+  ApiResponse<AttendanceFleetData>
+> => api.get<ApiResponse<AttendanceFleetData>>(`${BASE}/fleet`);
 
-export const getAttendanceCompareFn = (
-  session: AttendanceSession,
-  date?: string,
-): Promise<ApiResponse<AttendanceCompareData>> =>
-  api.get<ApiResponse<AttendanceCompareData>>(`${BASE}/compare`, {
-    session,
-    date,
-  });
+export const createAttendanceLogFn = (
+  payload: CreateAttendanceLogPayload,
+): Promise<ApiResponse<AttendanceLog>> =>
+  api.post<ApiResponse<AttendanceLog>>(`${BASE}/logs`, payload);
 
-export const markAttendanceFn = (
-  payload: MarkAttendancePayload,
-): Promise<ApiResponse<AttendanceMark>> =>
-  api.post<ApiResponse<AttendanceMark>>(BASE, payload);
-
-export const getAttendanceDaysFn = (params?: {
+export const getAttendanceLogsFn = (params?: {
   page?: number;
   pageSize?: number;
-}): Promise<PaginatedResponse<AttendanceDayRow>> =>
-  api.get<PaginatedResponse<AttendanceDayRow>>(`${BASE}/days`, params);
+}): Promise<PaginatedResponse<AttendanceLog>> =>
+  api.get<PaginatedResponse<AttendanceLog>>(`${BASE}/logs`, params);
 
-export const clearAttendanceFn = (
+export const getAttendanceLogFn = (
+  id: string,
+): Promise<ApiResponse<AttendanceLog>> =>
+  api.get<ApiResponse<AttendanceLog>>(`${BASE}/logs/${id}`);
+
+export const getAttendanceCompareFn = (
+  date?: string,
+): Promise<ApiResponse<AttendanceCompareData>> =>
+  api.get<ApiResponse<AttendanceCompareData>>(`${BASE}/compare`, { date });
+
+export const deleteAttendanceLogFn = (
   id: string,
 ): Promise<ApiResponse<undefined>> =>
-  api.delete<ApiResponse<undefined>>(`${BASE}/${id}`);
+  api.delete<ApiResponse<undefined>>(`${BASE}/logs/${id}`);
 
 // REACT QUERY: Query Keys
 
 export const attendanceKeys = {
   all: ["battery-attendance"] as const,
-  sheet: (
-    session: AttendanceSession,
-    register: AttendanceRegister,
-    date?: string,
-  ) =>
-    [
-      ...attendanceKeys.all,
-      "sheet",
-      session,
-      register,
-      date ?? "today",
-    ] as const,
-  compare: (session: AttendanceSession, date?: string) =>
-    [...attendanceKeys.all, "compare", session, date ?? "today"] as const,
-  days: (page?: number, pageSize?: number) =>
-    [...attendanceKeys.all, "days", page ?? 1, pageSize ?? 20] as const,
+  fleet: () => [...attendanceKeys.all, "fleet"] as const,
+  logs: (page?: number, pageSize?: number) =>
+    [...attendanceKeys.all, "logs", page ?? 1, pageSize ?? 20] as const,
+  log: (id: string) => [...attendanceKeys.all, "log", id] as const,
+  compare: (date?: string) =>
+    [...attendanceKeys.all, "compare", date ?? "today"] as const,
 } as const;
 
 // Error helper
@@ -98,54 +83,63 @@ const getErrorMessage = (error: unknown): string => {
 
 // REACT QUERY: Queries
 
-export const useGetAttendance = (
-  session: AttendanceSession,
-  register: AttendanceRegister,
-  date?: string,
-  options?: Partial<UseQueryOptions<ApiResponse<AttendanceData>, AxiosError>>,
+export const useGetAttendanceFleet = (
+  options?: Partial<
+    UseQueryOptions<ApiResponse<AttendanceFleetData>, AxiosError>
+  >,
 ) =>
-  useQuery<ApiResponse<AttendanceData>, AxiosError>({
-    queryKey: attendanceKeys.sheet(session, register, date),
-    queryFn: () => getAttendanceFn(session, register, date),
+  useQuery<ApiResponse<AttendanceFleetData>, AxiosError>({
+    queryKey: attendanceKeys.fleet(),
+    queryFn: () => getAttendanceFleetFn(),
+    ...options,
+  });
+
+export const useGetAttendanceLogs = (
+  page?: number,
+  pageSize?: number,
+  options?: Partial<
+    UseQueryOptions<PaginatedResponse<AttendanceLog>, AxiosError>
+  >,
+) =>
+  useQuery<PaginatedResponse<AttendanceLog>, AxiosError>({
+    queryKey: attendanceKeys.logs(page, pageSize),
+    queryFn: () => getAttendanceLogsFn({ page, pageSize }),
+    ...options,
+  });
+
+export const useGetAttendanceLog = (
+  id: string,
+  options?: Partial<UseQueryOptions<ApiResponse<AttendanceLog>, AxiosError>>,
+) =>
+  useQuery<ApiResponse<AttendanceLog>, AxiosError>({
+    queryKey: attendanceKeys.log(id),
+    queryFn: () => getAttendanceLogFn(id),
+    enabled: !!id,
     ...options,
   });
 
 export const useGetAttendanceCompare = (
-  session: AttendanceSession,
   date?: string,
   options?: Partial<
     UseQueryOptions<ApiResponse<AttendanceCompareData>, AxiosError>
   >,
 ) =>
   useQuery<ApiResponse<AttendanceCompareData>, AxiosError>({
-    queryKey: attendanceKeys.compare(session, date),
-    queryFn: () => getAttendanceCompareFn(session, date),
-    ...options,
-  });
-
-export const useGetAttendanceDays = (
-  page?: number,
-  pageSize?: number,
-  options?: Partial<
-    UseQueryOptions<PaginatedResponse<AttendanceDayRow>, AxiosError>
-  >,
-) =>
-  useQuery<PaginatedResponse<AttendanceDayRow>, AxiosError>({
-    queryKey: attendanceKeys.days(page, pageSize),
-    queryFn: () => getAttendanceDaysFn({ page, pageSize }),
+    queryKey: attendanceKeys.compare(date),
+    queryFn: () => getAttendanceCompareFn(date),
     ...options,
   });
 
 // REACT QUERY: Mutations
 
-export const useMarkAttendance = () => {
+export const useCreateAttendanceLog = () => {
   const qc = useQueryClient();
   return useMutation<
-    ApiResponse<AttendanceMark>,
+    ApiResponse<AttendanceLog>,
     AxiosError,
-    MarkAttendancePayload
+    CreateAttendanceLogPayload
   >({
-    mutationFn: (payload) => markAttendanceFn(payload),
+    mutationFn: (payload) => createAttendanceLogFn(payload),
     onSuccess: (data) => {
       toast.success(data.message);
       qc.invalidateQueries({ queryKey: attendanceKeys.all });
@@ -156,10 +150,10 @@ export const useMarkAttendance = () => {
   });
 };
 
-export const useClearAttendance = () => {
+export const useDeleteAttendanceLog = () => {
   const qc = useQueryClient();
   return useMutation<ApiResponse<undefined>, AxiosError, string>({
-    mutationFn: (id) => clearAttendanceFn(id),
+    mutationFn: (id) => deleteAttendanceLogFn(id),
     onSuccess: (data) => {
       toast.success(data.message);
       qc.invalidateQueries({ queryKey: attendanceKeys.all });

@@ -14,7 +14,7 @@ import {
 import type { BatteryStatus } from "@/lib/network/types/battery.types";
 import { LOCATION_LABEL } from "../components/exitform/meta";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { canManageStock, isAdminRole } from "../permissions";
+import { canManageStock } from "../permissions";
 import { cn, fmtDate, fmtTime } from "@/lib/utils";
 import { inputClasses, labelClasses } from "../components/console/form";
 
@@ -43,12 +43,6 @@ const SESSION_LABEL: Record<string, string> = {
   morning: "Morning",
   afternoon: "Afternoon",
   night: "Night",
-};
-
-const REGISTER_LABEL: Record<string, string> = {
-  manager: "Managers",
-  staff: "Staff",
-  storekeeper: "Storekeeper",
 };
 
 const CLOSING_SHEET_LABEL: Record<string, string> = {
@@ -80,7 +74,6 @@ export default function BatteryDetail() {
   const { id = "" } = useParams();
   const { user } = useAuthStore();
   const canStock = canManageStock(user?.role);
-  const isAdmin = isAdminRole(user?.role);
 
   const { data, isLoading } = useGetBatteryDetails(id);
   const details = data?.data;
@@ -213,8 +206,8 @@ export default function BatteryDetail() {
                 <thead>
                   <tr className="border-b border-line">
                     <th className={th}>DATE</th>
-                    <th className={th}>SESSION</th>
-                    {isAdmin && <th className={th}>REGISTER</th>}
+                    <th className={th}>TIME</th>
+                    <th className={th}>LOG</th>
                     <th className={th}>STATUS</th>
                     <th className={th}>DETAIL</th>
                     <th className={th}>BY</th>
@@ -233,13 +226,11 @@ export default function BatteryDetail() {
                         {fmtDate(a.date)}
                       </td>
                       <td className={td}>
-                        {SESSION_LABEL[a.session] ?? a.session}
+                        {SESSION_LABEL[a.timeOfDay] ?? a.timeOfDay}
                       </td>
-                      {isAdmin && (
-                        <td className={td}>
-                          {REGISTER_LABEL[a.register ?? "staff"] ?? a.register}
-                        </td>
-                      )}
+                      <td className={cn(td, "tabular-nums text-fog")}>
+                        #{a.logId}
+                      </td>
                       <td className="whitespace-nowrap px-4 py-2.5">
                         <span
                           className={cn(
@@ -258,7 +249,7 @@ export default function BatteryDetail() {
                           : a.lastSeen || "-"}
                       </td>
                       <td className={cn(td, "text-fog")}>
-                        {a.markedByName || "-"}
+                        {a.submittedByName || "-"}
                       </td>
                     </tr>
                   ))}

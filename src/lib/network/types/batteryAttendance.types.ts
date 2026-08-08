@@ -1,46 +1,40 @@
-// Mirrors kgr-backend interfaces/batteryAttendance.interface.ts. The
-// paper "Battery Attendance" sheet: three times a day the registered
-// fleet is called and every pack is seen somewhere or missing.
+// Mirrors kgr-backend interfaces/batteryAttendance.interface.ts.
+// Attendance is a submitted form like the battery exit form: one user
+// walks the fleet, marks each pack, and saves the whole thing as one
+// numbered log. Many users may each submit their own log per day.
 import type { BatteryLocation, BatterySighting } from "./battery.types";
 
-export type AttendanceSession = "morning" | "afternoon" | "night";
 export type AttendanceStatus = "seen" | "missing";
+export type AttendanceTimeOfDay = "morning" | "afternoon" | "night";
 
-// three independent registers kept by three different sets of eyes;
-// the admin compares them
-export type AttendanceRegister = "manager" | "staff" | "storekeeper";
-
-export interface AttendanceMark {
-  _id: string;
-  date: string;
-  session: AttendanceSession;
-  register: AttendanceRegister;
-  battery: string;
-  batteryCode: string;
-  status: AttendanceStatus;
-  location?: BatteryLocation;
-  lastSeen: string;
-  markedBy: string;
-  markedByName: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// where the closing sheets last put the pack to bed (a suggestion)
+// where the closing sheets last put a pack to bed (a hint while marking)
 export interface AttendanceClosingHint {
   location: BatteryLocation;
   date: string;
-  sheet: string; // main | muhd_kamila | main_yard | ubs
+  sheet: string;
 }
 
-// one fleet pack with its verdict for the session (null = unmarked)
-export interface AttendanceRow {
+// one fleet row on the blank sheet for a new log
+export interface AttendanceFleetRow {
   batteryId: string;
   batteryCode: string;
   batteryStatus: string;
   lastSeen: BatterySighting | null;
   closing: AttendanceClosingHint | null;
-  mark: AttendanceMark | null;
+}
+
+export interface AttendanceFleetData {
+  date: string;
+  rows: AttendanceFleetRow[];
+}
+
+export interface AttendanceLogRow {
+  battery: string;
+  batteryCode: string;
+  status: AttendanceStatus;
+  timeOfDay: AttendanceTimeOfDay;
+  location?: BatteryLocation;
+  lastSeen?: string;
 }
 
 export interface AttendanceTotals {
@@ -50,55 +44,58 @@ export interface AttendanceTotals {
   unmarked: number;
 }
 
-export interface AttendanceData {
+export interface AttendanceLog {
+  _id: string;
+  logId: number;
   date: string;
-  session: AttendanceSession;
-  register: AttendanceRegister;
-  rows: AttendanceRow[];
+  rows?: AttendanceLogRow[]; // absent in the list view
   totals: AttendanceTotals;
+  submittedBy: string;
+  submittedByName: string;
+  submittedByRole: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface MarkAttendancePayload {
+export interface CreateAttendanceLogRow {
   batteryId: string;
-  session: AttendanceSession;
-  register: AttendanceRegister;
   status: AttendanceStatus;
+  timeOfDay: AttendanceTimeOfDay;
   location?: BatteryLocation;
   lastSeen?: string;
 }
 
-export interface AttendanceDayRow {
-  date: string;
-  session: AttendanceSession;
-  register: AttendanceRegister;
-  seen: number;
-  missing: number;
-  marked: number;
+export interface CreateAttendanceLogPayload {
+  rows: CreateAttendanceLogRow[];
 }
 
-// one register's verdict on one pack inside the comparison
-export interface CompareVerdict {
-  status: AttendanceStatus;
-  location?: BatteryLocation;
-  lastSeen?: string;
-  markedByName: string;
-}
+// COMPARE (admin): all of a date's logs laid side by side per battery
 
-// green: all three agree; red: they disagree; amber: some registers
-// have not called it yet; plain: nobody has
 export type AttendanceCompareStatus =
   | "match"
   | "mismatch"
   | "partial"
   | "unmarked";
 
+export interface CompareVerdict {
+  status: AttendanceStatus;
+  timeOfDay: AttendanceTimeOfDay;
+  location?: BatteryLocation;
+  lastSeen?: string;
+}
+
+export interface CompareLogMeta {
+  _id: string;
+  logId: number;
+  submittedByName: string;
+  submittedAt: string;
+}
+
 export interface AttendanceCompareRow {
   batteryId: string;
   batteryCode: string;
   lastSeen: BatterySighting | null;
-  manager: CompareVerdict | null;
-  staff: CompareVerdict | null;
-  storekeeper: CompareVerdict | null;
+  verdicts: (CompareVerdict | null)[]; // aligned with logs order
   status: AttendanceCompareStatus;
 }
 
@@ -112,7 +109,7 @@ export interface AttendanceCompareTotals {
 
 export interface AttendanceCompareData {
   date: string;
-  session: AttendanceSession;
+  logs: CompareLogMeta[];
   rows: AttendanceCompareRow[];
   totals: AttendanceCompareTotals;
 }

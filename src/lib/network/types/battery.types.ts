@@ -149,15 +149,15 @@ export interface BatterySwapRecord {
 }
 
 export interface BatteryAttendanceHistoryRow {
-  _id: string;
+  _id: string; // the log's id
+  logId: number;
   date: string;
-  session: string;
-  register?: string;
+  timeOfDay: string;
   status: "seen" | "missing";
   location?: BatteryLocation;
   lastSeen: string;
-  markedByName: string;
-  updatedAt: string;
+  submittedByName: string;
+  at: string;
 }
 
 export interface BatteryDetailsData {
