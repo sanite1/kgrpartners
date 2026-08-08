@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Check, Plus, Search, Trash2, X } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
@@ -10,7 +11,6 @@ import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import {
   useGetAttendanceFleet,
   useGetAttendanceLogs,
-  useGetAttendanceLog,
   useGetAttendanceCompare,
   useCreateAttendanceLog,
   useDeleteAttendanceLog,
@@ -130,6 +130,7 @@ const thClasses =
 // log. The list shows who logged what; the admin compares a date's
 // logs side by side to catch disagreements.
 export default function BatteryAttendance() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const isAdmin = isAdminRole(user?.role);
 
@@ -137,7 +138,6 @@ export default function BatteryAttendance() {
   const [tab, setTab] = useState<"logs" | "compare">("logs");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [viewLogId, setViewLogId] = useState<string | null>(null);
   const [deleteFor, setDeleteFor] = useState<AttendanceLog | null>(null);
   const [compareDate, setCompareDate] = useState("");
 
@@ -176,9 +176,6 @@ export default function BatteryAttendance() {
     enabled: mode === "new",
   });
   const fleetRows = fleetData?.data?.rows ?? [];
-
-  const { data: viewData } = useGetAttendanceLog(viewLogId ?? "");
-  const viewLog = viewData?.data;
 
   const { data: compareData, isLoading: compareLoading } =
     useGetAttendanceCompare(compareDate || undefined, {
@@ -558,7 +555,7 @@ export default function BatteryAttendance() {
                       {logs.map((log) => (
                         <tr
                           key={log._id}
-                          onClick={() => setViewLogId(log._id)}
+                          onClick={() => navigate(`/battery-attendance/${log._id}`)}
                           className="cursor-pointer border-b border-line transition-colors last:border-0 hover:bg-haze"
                         >
                           <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
@@ -977,75 +974,6 @@ export default function BatteryAttendance() {
             >
               {markFor.status === "seen" ? "Mark seen →" : "Mark MISSING"}
             </button>
-          </div>
-        )}
-      </Modal>
-
-      {/* one submitted log, read only */}
-      <Modal
-        title={viewLog ? `Attendance #${viewLog.logId}` : "Attendance"}
-        open={viewLogId !== null}
-        onClose={() => setViewLogId(null)}
-      >
-        {viewLog && (
-          <div className="flex flex-col gap-3">
-            <p className="m-0 text-[13px] font-semibold text-fog">
-              {fmtDate(viewLog.date)} · submitted by{" "}
-              <strong className="text-ink">{viewLog.submittedByName}</strong> at{" "}
-              {fmtTime(viewLog.createdAt)} · {viewLog.totals.seen} seen,{" "}
-              {viewLog.totals.missing} missing, {viewLog.totals.unmarked}{" "}
-              unmarked.
-            </p>
-            <div className="max-h-[55vh] overflow-y-auto rounded-xl border border-line">
-              <table className="w-full border-collapse text-left">
-                <thead className="sticky top-0 bg-haze">
-                  <tr className="border-b border-line">
-                    {["BATTERY", "STATUS", "TIME", "DETAIL"].map((h) => (
-                      <th key={h} className={thClasses}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(viewLog.rows ?? []).map((r) => (
-                    <tr
-                      key={r.battery}
-                      className={cn(
-                        "border-b border-line last:border-0",
-                        r.status === "missing" && "bg-red-50/60",
-                      )}
-                    >
-                      <td className="whitespace-nowrap px-4 py-2.5 text-[13px] font-extrabold text-ink">
-                        {r.batteryCode}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-2.5">
-                        <span
-                          className={cn(
-                            "rounded-full px-2 py-0.5 text-[11px] font-extrabold",
-                            r.status === "seen"
-                              ? "bg-brand-50 text-brand-600"
-                              : "bg-red-50 text-red-600",
-                          )}
-                        >
-                          {r.status === "seen" ? "Seen" : "MISSING"}
-                        </span>
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] font-semibold text-fog">
-                        {TIME_LABEL[r.timeOfDay]}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] font-semibold text-bark">
-                        {r.status === "seen" && r.location
-                          ? LOCATION_LABEL[r.location]
-                          : r.lastSeen
-                            ? `Last seen: ${r.lastSeen}`
-                            : "-"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </div>
         )}
       </Modal>

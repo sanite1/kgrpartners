@@ -21,6 +21,9 @@ const Batteries = lazy(() => import("../pages/Batteries"));
 const BatteryDetail = lazy(() => import("../pages/BatteryDetail"));
 const BatteryExitFormPage = lazy(() => import("../pages/BatteryExitFormPage"));
 const BatteryAttendance = lazy(() => import("../pages/BatteryAttendance"));
+const AttendanceLogDetail = lazy(
+  () => import("../pages/AttendanceLogDetail"),
+);
 const BatteryClosing = lazy(() => import("../pages/BatteryClosing"));
 const HouseClosing = lazy(() => import("../pages/HouseClosing"));
 const MainYardClosing = lazy(() => import("../pages/MainYardClosing"));
@@ -86,6 +89,10 @@ export const AdminRoutes = () => {
               <Route
                 path="/battery-attendance"
                 element={<BatteryAttendance />}
+              />
+              <Route
+                path="/battery-attendance/:id"
+                element={<AttendanceLogDetail />}
               />
               <Route path="/battery-closing" element={<BatteryClosing />} />
               <Route path="/house-closing" element={<HouseClosing />} />
