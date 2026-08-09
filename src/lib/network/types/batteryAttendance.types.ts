@@ -49,6 +49,8 @@ export interface AttendanceLog {
   logId: number;
   date: string;
   rows?: AttendanceLogRow[]; // absent in the list view
+  // fleet packs the submitter never marked (detail view only)
+  unmarked?: { battery: string; batteryCode: string }[];
   totals: AttendanceTotals;
   submittedBy: string;
   submittedByName: string;

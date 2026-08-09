@@ -22,12 +22,13 @@ const TIME_LABEL: Record<AttendanceTimeOfDay, string> = {
   night: "Night",
 };
 
-type RowFilter = "all" | "seen" | "missing";
+type RowFilter = "all" | "seen" | "missing" | "unmarked";
 
 const ROW_FILTERS: { id: RowFilter; label: string }[] = [
   { id: "all", label: "All" },
   { id: "seen", label: "Seen" },
   { id: "missing", label: "Missing" },
+  { id: "unmarked", label: "Unmarked" },
 ];
 
 const thClasses =
@@ -51,16 +52,19 @@ export default function AttendanceLogDetail() {
 
   const deleteLog = useDeleteAttendanceLog();
 
+  const matches = (code: string) =>
+    !search || code.toUpperCase().includes(search.trim().toUpperCase());
+
   const visibleRows = rows.filter((r) => {
     if (filter !== "all" && r.status !== filter) return false;
-    if (
-      search &&
-      !r.batteryCode.toUpperCase().includes(search.trim().toUpperCase())
-    ) {
-      return false;
-    }
-    return true;
+    return matches(r.batteryCode);
   });
+
+  // packs the submitter never called, listed after the marked ones
+  const visibleUnmarked =
+    filter === "all" || filter === "unmarked"
+      ? (log?.unmarked ?? []).filter((u) => matches(u.batteryCode))
+      : [];
 
   return (
     <>
@@ -242,6 +246,30 @@ export default function AttendanceLogDetail() {
                   </td>
                 </tr>
               ))}
+              {visibleUnmarked.map((u, i) => (
+                <tr
+                  key={u.battery}
+                  className="border-b border-line bg-[#FDF6E3]/40 last:border-0"
+                >
+                  <td className="whitespace-nowrap px-4 py-3 text-[13px] font-bold tabular-nums text-fog">
+                    {visibleRows.length + i + 1}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
+                    {u.batteryCode}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <span className="rounded-full bg-[#FDF6E3] px-2.5 py-1 text-[11.5px] font-extrabold text-solar-700">
+                      Not called
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
+                    -
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
+                    -
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -261,7 +289,10 @@ export default function AttendanceLogDetail() {
           </div>
         )}
 
-        {!isLoading && log && visibleRows.length === 0 && (
+        {!isLoading &&
+          log &&
+          visibleRows.length === 0 &&
+          visibleUnmarked.length === 0 && (
           <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
             <BoltMark width={22} height={29} fill="#B5ECC2" />
             <p className="m-0 text-[15px] font-bold text-bark">
