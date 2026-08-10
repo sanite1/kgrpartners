@@ -244,8 +244,12 @@ export default function BatteryDetail() {
                         </span>
                       </td>
                       <td className={td}>
-                        {a.status === "seen" && a.location
-                          ? (LOCATION_LABEL[a.location] ?? a.location)
+                        {a.status === "seen"
+                          ? a.location
+                            ? (LOCATION_LABEL[a.location] ?? a.location)
+                            : a.onBus
+                              ? `On ${a.onBus} (auto)`
+                              : "-"
                           : a.lastSeen || "-"}
                       </td>
                       <td className={cn(td, "text-fog")}>

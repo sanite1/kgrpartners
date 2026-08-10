@@ -281,7 +281,7 @@ export default function BatteryAttendance() {
     if (v.status === "seen") {
       return (
         <span className="text-[13px] font-extrabold text-brand-600">
-          Seen · {v.location ? LOCATION_LABEL[v.location] : ""}
+          Seen · {v.location ? LOCATION_LABEL[v.location] : v.onBus ? `on ${v.onBus}` : ""}
           <span className="ml-1 text-[11px] font-bold text-fog">
             {TIME_LABEL[v.timeOfDay].toLowerCase()}
           </span>
@@ -989,7 +989,9 @@ export default function BatteryAttendance() {
             {unmarkedCount > 0 && (
               <>
                 {" "}
-                <strong>{unmarkedCount} will be saved as unmarked.</strong>
+                <strong>{unmarkedCount} are unmarked</strong>: any of them
+                seen on a bus today (checklist or receipt) will be
+                auto-marked as seen on that bus; the rest stay unmarked.
               </>
             )}{" "}
             A submitted log cannot be edited.

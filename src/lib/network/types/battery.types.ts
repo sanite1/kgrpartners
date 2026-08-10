@@ -155,6 +155,8 @@ export interface BatteryAttendanceHistoryRow {
   timeOfDay: string;
   status: "seen" | "missing";
   location?: BatteryLocation;
+  onBus?: string; // auto-marked from a sighting
+  auto?: boolean;
   lastSeen: string;
   submittedByName: string;
   at: string;

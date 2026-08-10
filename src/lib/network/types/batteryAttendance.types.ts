@@ -29,6 +29,9 @@ export interface AttendanceFleetData {
 }
 
 export interface AttendanceLogRow {
+  // filled by the system from a checklist/receipt sighting, not typed
+  onBus?: string;
+  auto?: boolean;
   battery: string;
   batteryCode: string;
   status: AttendanceStatus;
@@ -42,6 +45,7 @@ export interface AttendanceTotals {
   seen: number;
   missing: number;
   unmarked: number;
+  auto?: number; // of the seen, how many the system filled in
 }
 
 export interface AttendanceLog {
@@ -80,6 +84,8 @@ export type AttendanceCompareStatus =
   | "unmarked";
 
 export interface CompareVerdict {
+  onBus?: string;
+  auto?: boolean;
   status: AttendanceStatus;
   timeOfDay: AttendanceTimeOfDay;
   location?: BatteryLocation;

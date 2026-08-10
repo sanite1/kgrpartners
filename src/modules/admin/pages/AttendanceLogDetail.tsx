@@ -116,7 +116,7 @@ export default function AttendanceLogDetail() {
             {log?.totals.seen ?? 0}
           </span>
           <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
-            SEEN
+            SEEN{(log?.totals.auto ?? 0) > 0 && ` · ${log?.totals.auto} AUTO`}
           </span>
         </div>
         <div
@@ -238,11 +238,24 @@ export default function AttendanceLogDetail() {
                     {TIME_LABEL[r.timeOfDay] ?? r.timeOfDay}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-bark">
-                    {r.status === "seen" && r.location
-                      ? LOCATION_LABEL[r.location]
-                      : r.lastSeen
-                        ? `Last seen: ${r.lastSeen}`
-                        : "-"}
+                    {r.status === "seen" ? (
+                      r.location ? (
+                        LOCATION_LABEL[r.location]
+                      ) : r.onBus ? (
+                        <>
+                          On {r.onBus}{" "}
+                          <span className="text-[11px] font-bold text-fog">
+                            auto
+                          </span>
+                        </>
+                      ) : (
+                        "-"
+                      )
+                    ) : r.lastSeen ? (
+                      `Last seen: ${r.lastSeen}`
+                    ) : (
+                      "-"
+                    )}
                   </td>
                 </tr>
               ))}
