@@ -29,6 +29,7 @@ const HouseClosing = lazy(() => import("../pages/HouseClosing"));
 const MainYardClosing = lazy(() => import("../pages/MainYardClosing"));
 const UbsClosing = lazy(() => import("../pages/UbsClosing"));
 const Swaps = lazy(() => import("../pages/Swaps"));
+const Hijet = lazy(() => import("../pages/Hijet"));
 const GatePassPage = lazy(() => import("../pages/GatePass"));
 const GatePassNewPage = lazy(() => import("../pages/GatePassNewPage"));
 const Purchases = lazy(() => import("../pages/Purchases"));
@@ -100,6 +101,7 @@ export const AdminRoutes = () => {
               <Route path="/main-yard-closing" element={<MainYardClosing />} />
               <Route path="/ubs-closing" element={<UbsClosing />} />
               <Route path="/swaps" element={<Swaps />} />
+              <Route path="/hijet" element={<Hijet />} />
               <Route path="/gate-pass" element={<GatePassPage />} />
               <Route path="/gate-pass/new" element={<GatePassNewPage />} />
               <Route path="/purchases" element={<Purchases />} />

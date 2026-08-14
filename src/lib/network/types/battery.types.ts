@@ -21,7 +21,7 @@ export type BatteryRetiredReason =
 export interface BatterySighting {
   busName: string;
   date: string;
-  source: "checklist" | "receipt";
+  source: "checklist" | "receipt" | "hijet";
 }
 
 export interface Battery {

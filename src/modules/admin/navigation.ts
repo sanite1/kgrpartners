@@ -102,6 +102,7 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
         module: "ubs_closing",
       },
       { label: "Swaps", to: "/swaps", icon: "ArrowLeftRight", module: "swaps" },
+      { label: "Hijet Battery", to: "/hijet", icon: "Truck", module: "hijet" },
     ],
   },
   {
