@@ -474,6 +474,7 @@ export default function Trackers() {
               id="tr-bus"
               placeholder="Search or type a bus"
               icon
+              inline
               search={busSearch}
               onSearch={setBusSearch}
               onOpenChange={setBusOpen}

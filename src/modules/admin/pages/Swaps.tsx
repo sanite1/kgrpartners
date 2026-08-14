@@ -79,6 +79,7 @@ const BatteryPicker = ({
       id={id}
       placeholder={placeholder}
       icon
+      inline
       search={search}
       onSearch={setSearch}
       onOpenChange={setOpen}
@@ -308,6 +309,7 @@ export default function Swaps() {
                 id="sw-bus"
                 placeholder="Type a bus number, e.g. A 37"
                 icon
+                inline
                 search={busSearch}
                 onSearch={setBusSearch}
                 onOpenChange={setBusOpen}

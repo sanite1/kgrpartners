@@ -789,6 +789,7 @@ export default function Expenditures() {
               ) : (
                 <SearchSelect
                   placeholder="Overhead — no bus"
+                  inline
                   search={formBusSearch}
                   onSearch={setFormBusSearch}
                   onOpenChange={setFormBusOpen}
