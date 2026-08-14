@@ -36,6 +36,7 @@ const PriceListPage = lazy(() => import("../pages/PriceList"));
 const Todos = lazy(() => import("../pages/Todos"));
 const Checklist = lazy(() => import("../pages/Checklist"));
 const TrackerReportPage = lazy(() => import("../pages/TrackerReportPage"));
+const Trackers = lazy(() => import("../pages/Trackers"));
 const Repairs = lazy(() => import("../pages/Repairs"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Users = lazy(() => import("../pages/Users"));
@@ -106,6 +107,7 @@ export const AdminRoutes = () => {
               <Route path="/todos" element={<Todos />} />
               <Route path="/checklist" element={<Checklist />} />
               <Route path="/tracker-report" element={<TrackerReportPage />} />
+              <Route path="/trackers" element={<Trackers />} />
               <Route path="/repairs" element={<Repairs />} />
               <Route path="/buses" element={<Buses />} />
               <Route path="/buses/:id" element={<BusDetail />} />

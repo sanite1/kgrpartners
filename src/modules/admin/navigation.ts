@@ -168,6 +168,12 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
         module: "tracker_report",
       },
       {
+        label: "Tracker Update",
+        to: "/trackers",
+        icon: "Satellite",
+        module: "trackers",
+      },
+      {
         label: "Trip Price",
         to: "/trip-price",
         icon: "Tag",
