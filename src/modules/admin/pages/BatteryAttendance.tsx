@@ -285,8 +285,13 @@ export default function BatteryAttendance() {
       return <span className="text-[13px] font-semibold text-fog">-</span>;
     if (v.status === "seen") {
       return (
-        <span className="text-[13px] font-extrabold text-brand-600">
-          Seen ·{" "}
+        <span
+          className={cn(
+            "text-[13px] font-extrabold",
+            v.auto ? "text-blue-600" : "text-brand-600",
+          )}
+        >
+          {v.auto ? "Auto" : "Seen"} ·{" "}
           {v.autoSource === "battery_status"
             ? (PARKED_LABEL[v.note ?? ""] ?? v.note)
             : v.autoSource === "last_sighting"

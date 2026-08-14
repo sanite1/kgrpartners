@@ -235,12 +235,18 @@ export default function BatteryDetail() {
                         <span
                           className={cn(
                             "rounded-full px-2 py-0.5 text-[11px] font-extrabold",
-                            a.status === "seen"
-                              ? "bg-brand-50 text-brand-600"
-                              : "bg-red-50 text-red-600",
+                            a.auto
+                              ? "bg-blue-50 text-blue-600"
+                              : a.status === "seen"
+                                ? "bg-brand-50 text-brand-600"
+                                : "bg-red-50 text-red-600",
                           )}
                         >
-                          {a.status === "seen" ? "Seen" : "MISSING"}
+                          {a.auto
+                            ? "Auto marked"
+                            : a.status === "seen"
+                              ? "Seen"
+                              : "MISSING"}
                         </span>
                       </td>
                       <td className={td}>
@@ -251,12 +257,14 @@ export default function BatteryDetail() {
                               ? (LOCATION_LABEL[a.location] ?? a.location)
                               : "-"
                             : a.autoSource === "battery_status"
-                              ? `${a.note === "not_in_use" ? "Not in use" : "Faulty"} (auto)`
+                              ? a.note === "not_in_use"
+                                ? "Not in use"
+                                : "Faulty"
                               : a.autoSource === "last_sighting"
-                                ? `Last seen on ${a.onBus} · ${a.asOf ? fmtDate(a.asOf) : ""} (auto)`
+                                ? `Last seen on ${a.onBus} · ${a.asOf ? fmtDate(a.asOf) : ""}`
                                 : a.autoSource === "prev_attendance"
-                                  ? `Prev roll call: ${a.location ? (LOCATION_LABEL[a.location] ?? a.location) : `on ${a.onBus}`} · ${a.asOf ? fmtDate(a.asOf) : ""} (auto)`
-                                  : `On ${a.onBus} (auto)`}
+                                  ? `Prev roll call: ${a.location ? (LOCATION_LABEL[a.location] ?? a.location) : `on ${a.onBus}`} · ${a.asOf ? fmtDate(a.asOf) : ""}`
+                                  : `On ${a.onBus}`}
                       </td>
                       <td className={cn(td, "text-fog")}>
                         {a.submittedByName || "-"}

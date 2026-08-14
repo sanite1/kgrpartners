@@ -231,12 +231,18 @@ export default function AttendanceLogDetail() {
                     <span
                       className={cn(
                         "rounded-full px-2.5 py-1 text-[11.5px] font-extrabold",
-                        r.status === "seen"
-                          ? "bg-brand-50 text-brand-600"
-                          : "bg-red-50 text-red-600",
+                        r.auto
+                          ? "bg-blue-50 text-blue-600"
+                          : r.status === "seen"
+                            ? "bg-brand-50 text-brand-600"
+                            : "bg-red-50 text-red-600",
                       )}
                     >
-                      {r.status === "seen" ? "Seen" : "MISSING"}
+                      {r.auto
+                        ? "Auto marked"
+                        : r.status === "seen"
+                          ? "Seen"
+                          : "MISSING"}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-fog">
@@ -263,10 +269,7 @@ export default function AttendanceLogDetail() {
                             ? `Last seen on ${r.onBus} · ${r.asOf ? fmtDate(r.asOf) : ""}`
                             : r.autoSource === "prev_attendance"
                               ? `Prev roll call: ${r.location ? LOCATION_LABEL[r.location] : `on ${r.onBus}`} · ${r.asOf ? fmtDate(r.asOf) : ""}`
-                              : `On ${r.onBus}`}{" "}
-                        <span className="text-[11px] font-bold text-fog">
-                          auto
-                        </span>
+                              : `On ${r.onBus}`}
                       </>
                     )}
                   </td>
