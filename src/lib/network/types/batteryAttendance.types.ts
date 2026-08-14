@@ -28,10 +28,19 @@ export interface AttendanceFleetData {
   rows: AttendanceFleetRow[];
 }
 
+export type AttendanceAutoSource =
+  | "today_sighting"
+  | "last_sighting"
+  | "battery_status"
+  | "prev_attendance";
+
 export interface AttendanceLogRow {
   // filled by the system from a checklist/receipt sighting, not typed
   onBus?: string;
   auto?: boolean;
+  autoSource?: AttendanceAutoSource;
+  asOf?: string; // the date the evidence is from
+  note?: string; // battery_status rows: the status value
   battery: string;
   batteryCode: string;
   status: AttendanceStatus;
@@ -86,6 +95,9 @@ export type AttendanceCompareStatus =
 export interface CompareVerdict {
   onBus?: string;
   auto?: boolean;
+  autoSource?: AttendanceAutoSource;
+  asOf?: string;
+  note?: string;
   status: AttendanceStatus;
   timeOfDay: AttendanceTimeOfDay;
   location?: BatteryLocation;

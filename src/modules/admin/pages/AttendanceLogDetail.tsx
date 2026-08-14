@@ -22,6 +22,11 @@ const TIME_LABEL: Record<AttendanceTimeOfDay, string> = {
   night: "Night",
 };
 
+const PARKED_LABEL: Record<string, string> = {
+  faulty: "Faulty",
+  not_in_use: "Not in use",
+};
+
 type RowFilter = "all" | "seen" | "missing" | "unmarked";
 
 const ROW_FILTERS: { id: RowFilter; label: string }[] = [
@@ -238,23 +243,31 @@ export default function AttendanceLogDetail() {
                     {TIME_LABEL[r.timeOfDay] ?? r.timeOfDay}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-[13px] font-semibold text-bark">
-                    {r.status === "seen" ? (
-                      r.location ? (
-                        LOCATION_LABEL[r.location]
-                      ) : r.onBus ? (
-                        <>
-                          On {r.onBus}{" "}
-                          <span className="text-[11px] font-bold text-fog">
-                            auto
-                          </span>
-                        </>
+                    {r.status === "missing" ? (
+                      r.lastSeen ? (
+                        `Last seen: ${r.lastSeen}`
                       ) : (
                         "-"
                       )
-                    ) : r.lastSeen ? (
-                      `Last seen: ${r.lastSeen}`
+                    ) : !r.auto ? (
+                      r.location ? (
+                        LOCATION_LABEL[r.location]
+                      ) : (
+                        "-"
+                      )
                     ) : (
-                      "-"
+                      <>
+                        {r.autoSource === "battery_status"
+                          ? `${PARKED_LABEL[r.note ?? ""] ?? r.note} since ${r.asOf ? fmtDate(r.asOf) : ""}`
+                          : r.autoSource === "last_sighting"
+                            ? `Last seen on ${r.onBus} · ${r.asOf ? fmtDate(r.asOf) : ""}`
+                            : r.autoSource === "prev_attendance"
+                              ? `Prev roll call: ${r.location ? LOCATION_LABEL[r.location] : `on ${r.onBus}`} · ${r.asOf ? fmtDate(r.asOf) : ""}`
+                              : `On ${r.onBus}`}{" "}
+                        <span className="text-[11px] font-bold text-fog">
+                          auto
+                        </span>
+                      </>
                     )}
                   </td>
                 </tr>

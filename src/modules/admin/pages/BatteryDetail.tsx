@@ -244,13 +244,19 @@ export default function BatteryDetail() {
                         </span>
                       </td>
                       <td className={td}>
-                        {a.status === "seen"
-                          ? a.location
-                            ? (LOCATION_LABEL[a.location] ?? a.location)
-                            : a.onBus
-                              ? `On ${a.onBus} (auto)`
+                        {a.status !== "seen"
+                          ? a.lastSeen || "-"
+                          : !a.auto
+                            ? a.location
+                              ? (LOCATION_LABEL[a.location] ?? a.location)
                               : "-"
-                          : a.lastSeen || "-"}
+                            : a.autoSource === "battery_status"
+                              ? `${a.note === "not_in_use" ? "Not in use" : "Faulty"} (auto)`
+                              : a.autoSource === "last_sighting"
+                                ? `Last seen on ${a.onBus} · ${a.asOf ? fmtDate(a.asOf) : ""} (auto)`
+                                : a.autoSource === "prev_attendance"
+                                  ? `Prev roll call: ${a.location ? (LOCATION_LABEL[a.location] ?? a.location) : `on ${a.onBus}`} · ${a.asOf ? fmtDate(a.asOf) : ""} (auto)`
+                                  : `On ${a.onBus} (auto)`}
                       </td>
                       <td className={cn(td, "text-fog")}>
                         {a.submittedByName || "-"}

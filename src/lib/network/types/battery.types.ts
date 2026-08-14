@@ -157,6 +157,9 @@ export interface BatteryAttendanceHistoryRow {
   location?: BatteryLocation;
   onBus?: string; // auto-marked from a sighting
   auto?: boolean;
+  autoSource?: string;
+  asOf?: string;
+  note?: string;
   lastSeen: string;
   submittedByName: string;
   at: string;

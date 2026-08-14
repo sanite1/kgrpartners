@@ -57,6 +57,11 @@ const currentTimeOfDay = (): AttendanceTimeOfDay => {
 };
 
 // which closing tab a suggestion came from
+const PARKED_LABEL: Record<string, string> = {
+  faulty: "Faulty",
+  not_in_use: "Not in use",
+};
+
 const CLOSING_SHEET_LABEL: Record<string, string> = {
   main: "Battery Closing",
   muhd_kamila: "Muh'd & Kamila House",
@@ -281,7 +286,18 @@ export default function BatteryAttendance() {
     if (v.status === "seen") {
       return (
         <span className="text-[13px] font-extrabold text-brand-600">
-          Seen · {v.location ? LOCATION_LABEL[v.location] : v.onBus ? `on ${v.onBus}` : ""}
+          Seen ·{" "}
+          {v.autoSource === "battery_status"
+            ? (PARKED_LABEL[v.note ?? ""] ?? v.note)
+            : v.autoSource === "last_sighting"
+              ? `last on ${v.onBus} (${v.asOf ? fmtDate(v.asOf) : ""})`
+              : v.autoSource === "prev_attendance"
+                ? `prev ${v.location ? LOCATION_LABEL[v.location] : `on ${v.onBus}`} (${v.asOf ? fmtDate(v.asOf) : ""})`
+                : v.location
+                  ? LOCATION_LABEL[v.location]
+                  : v.onBus
+                    ? `on ${v.onBus}`
+                    : ""}
           <span className="ml-1 text-[11px] font-bold text-fog">
             {TIME_LABEL[v.timeOfDay].toLowerCase()}
           </span>
@@ -989,9 +1005,11 @@ export default function BatteryAttendance() {
             {unmarkedCount > 0 && (
               <>
                 {" "}
-                <strong>{unmarkedCount} are unmarked</strong>: any of them
-                seen on a bus today (checklist or receipt) will be
-                auto-marked as seen on that bus; the rest stay unmarked.
+                <strong>{unmarkedCount} are unmarked</strong>: the system
+                will account for them from today's checklist, their status
+                (faulty / not in use), the week's last sighting, or the
+                previous roll call, each stamped with its date. Only packs
+                with no trace anywhere stay unmarked.
               </>
             )}{" "}
             A submitted log cannot be edited.
