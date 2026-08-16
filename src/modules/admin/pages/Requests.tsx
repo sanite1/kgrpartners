@@ -7,6 +7,7 @@ import Pagination from "../components/console/Pagination";
 import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import StatusPill from "../components/console/StatusPill";
 import SearchSelect from "../components/console/SearchSelect";
+import ConfirmModal from "../components/console/ConfirmModal";
 import { useGetBuses } from "@/lib/network/api/bus.api";
 import { useGetItems } from "@/lib/network/api/inventory.api";
 import {
@@ -17,7 +18,10 @@ import {
 } from "@/lib/network/api/partRequest.api";
 import type { Bus } from "@/lib/network/types/bus.types";
 import type { InventoryItem } from "@/lib/network/types/inventory.types";
-import type { RequestStatus } from "@/lib/network/types/partRequest.types";
+import type {
+  PartRequest,
+  RequestStatus,
+} from "@/lib/network/types/partRequest.types";
 import type { ApiErrorResponse } from "@/lib/network/types/api.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canApprove } from "../permissions";
@@ -62,6 +66,7 @@ export default function Requests() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [approveFor, setApproveFor] = useState<PartRequest | null>(null);
   const [declineFor, setDeclineFor] = useState<string | null>(null);
   const [declineNote, setDeclineNote] = useState("");
 
@@ -426,6 +431,28 @@ export default function Requests() {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
+                      {request.status === "pending" && (
+                        <span
+                          className={cn(
+                            "rounded-full px-2.5 py-1 text-[11.5px] font-extrabold",
+                            !request.stock || !request.stock.isActive
+                              ? "bg-mist text-bark"
+                              : request.stock.onHand >= request.quantity
+                                ? "bg-brand-50 text-brand-600"
+                                : request.stock.onHand > 0
+                                  ? "bg-[#FDF6E3] text-solar-700"
+                                  : "bg-red-50 text-red-600",
+                          )}
+                        >
+                          {!request.stock || !request.stock.isActive
+                            ? "No longer stocked"
+                            : request.stock.onHand >= request.quantity
+                              ? `In stock: ${request.stock.onHand} ${request.stock.unit}`
+                              : request.stock.onHand > 0
+                                ? `Only ${request.stock.onHand} of ${request.quantity}`
+                                : "Out of stock"}
+                        </span>
+                      )}
                       <span className="text-[15px] font-extrabold text-ink">
                         {fmtNaira(request.amount)}
                       </span>
@@ -448,6 +475,14 @@ export default function Requests() {
                         locked until {fmtDate(request.nextRequestDate)}
                       </span>
                     )}
+                    {request.status === "pending" &&
+                      request.warehouse &&
+                      request.warehouse.onHand > 0 && (
+                        <span>
+                          warehouse also has {request.warehouse.onHand}{" "}
+                          {request.warehouse.unit} ("{request.warehouse.name}")
+                        </span>
+                      )}
                     {request.decisionNote && (
                       <span className="text-sage">
                         decision: {request.decisionNote}
@@ -459,11 +494,21 @@ export default function Requests() {
                     <div className="mt-3 flex flex-wrap items-center gap-2.5 border-t border-line pt-3">
                       <button
                         type="button"
-                        disabled={approve.isPending}
-                        onClick={() =>
-                          approve.mutate({ id: request._id, payload: {} })
+                        disabled={
+                          approve.isPending ||
+                          !request.stock ||
+                          !request.stock.isActive ||
+                          request.stock.onHand < request.quantity
                         }
-                        className="cta-gradient flex cursor-pointer items-center gap-1.5 rounded-lg border-none px-4 py-2 text-[13px] font-extrabold text-forest-deep disabled:opacity-50"
+                        title={
+                          !request.stock || !request.stock.isActive
+                            ? "This item is no longer stocked"
+                            : request.stock.onHand < request.quantity
+                              ? `Not enough stock: ${request.stock.onHand} of ${request.quantity}`
+                              : undefined
+                        }
+                        onClick={() => setApproveFor(request)}
+                        className="cta-gradient flex cursor-pointer items-center gap-1.5 rounded-lg border-none px-4 py-2 text-[13px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Check size={14} strokeWidth={3} /> Approve & issue
                       </button>
@@ -545,6 +590,31 @@ export default function Requests() {
           </div>
         </div>
       </div>
+      <ConfirmModal
+        open={approveFor !== null}
+        title="Approve and issue?"
+        message={
+          <>
+            Approve <strong>#{approveFor?.requestId}</strong>:{" "}
+            <strong>
+              {approveFor?.itemName} × {approveFor?.quantity}
+            </strong>{" "}
+            for <strong>{approveFor?.busNumber}</strong>? This deducts the
+            stock ({approveFor?.stock ? `${approveFor.stock.onHand} on hand` : "count unknown"})
+            and books {fmtNaira(approveFor?.amount ?? "0")} as an expenditure.
+          </>
+        }
+        confirmLabel="Yes, approve"
+        loading={approve.isPending}
+        onConfirm={() =>
+          approveFor &&
+          approve.mutate(
+            { id: approveFor._id, payload: {} },
+            { onSuccess: () => setApproveFor(null) },
+          )
+        }
+        onClose={() => setApproveFor(null)}
+      />
     </>
   );
 }

@@ -3,7 +3,22 @@ import type { ReceiptUserRef } from "./receipt.types";
 
 export type RequestStatus = "pending" | "approved" | "declined";
 
+// live availability attached by the list endpoint
+export interface RequestStockInfo {
+  onHand: number;
+  unit: string;
+  isActive: boolean;
+}
+
+export interface RequestWarehouseInfo {
+  name: string;
+  onHand: number;
+  unit: string;
+}
+
 export interface PartRequest {
+  stock?: RequestStockInfo | null;
+  warehouse?: RequestWarehouseInfo | null;
   _id: string;
   requestId: number;
   bus: string;
