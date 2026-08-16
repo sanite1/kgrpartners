@@ -11,6 +11,8 @@ import type {
   VoidReceiptPayload,
   ReceiptSummary,
   OutstandingSummary,
+  ReceiptSeriesRange,
+  ReceiptSeriesData,
 } from "../types/receipt.types";
 import {
   useQuery,
@@ -67,6 +69,11 @@ export const getReceiptSummaryFn = (
     date ? { date } : undefined,
   );
 
+export const getReceiptSeriesFn = (
+  range: ReceiptSeriesRange,
+): Promise<ApiResponse<ReceiptSeriesData>> =>
+  api.get<ApiResponse<ReceiptSeriesData>>(`${BASE}/series`, { range });
+
 // REACT QUERY: Query Keys
 
 export const receiptKeys = {
@@ -77,6 +84,7 @@ export const receiptKeys = {
   summary: (date?: string) =>
     [...receiptKeys.all, "summary", date ?? "today"] as const,
   outstanding: () => [...receiptKeys.all, "outstanding"] as const,
+  series: (range: string) => [...receiptKeys.all, "series", range] as const,
 } as const;
 
 // Error helper
@@ -114,6 +122,16 @@ export const useGetReceiptSummary = (
   useQuery<ApiResponse<ReceiptSummary>, AxiosError>({
     queryKey: receiptKeys.summary(date),
     queryFn: () => getReceiptSummaryFn(date),
+    ...options,
+  });
+
+export const useGetReceiptSeries = (
+  range: ReceiptSeriesRange,
+  options?: Partial<UseQueryOptions<ApiResponse<ReceiptSeriesData>, AxiosError>>,
+) =>
+  useQuery<ApiResponse<ReceiptSeriesData>, AxiosError>({
+    queryKey: receiptKeys.series(range),
+    queryFn: () => getReceiptSeriesFn(range),
     ...options,
   });
 

@@ -78,6 +78,20 @@ export interface VoidReceiptPayload {
   reason: string;
 }
 
+export type ReceiptSeriesRange = "daily" | "weekly" | "monthly" | "yearly";
+
+export interface ReceiptSeriesBucket {
+  key: string;
+  label: string; // ready to print under the bar
+  expectedAmount: string;
+  collectedAmount: string;
+}
+
+export interface ReceiptSeriesData {
+  range: ReceiptSeriesRange;
+  buckets: ReceiptSeriesBucket[];
+}
+
 export interface ReceiptSummarySeriesPoint {
   date: string;
   expectedAmount: string;

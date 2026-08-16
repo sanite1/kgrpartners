@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { TriangleAlert } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
@@ -6,6 +7,7 @@ import Skeleton from "../components/console/Skeleton";
 import {
   useGetReceiptSummary,
   useGetOutstandingSummary,
+  useGetReceiptSeries,
 } from "@/lib/network/api/receipt.api";
 import { useGetBuses } from "@/lib/network/api/bus.api";
 import { useGetItems } from "@/lib/network/api/inventory.api";
@@ -18,7 +20,7 @@ import { useGetPartRequests } from "@/lib/network/api/partRequest.api";
 import { useGetGatePasses } from "@/lib/network/api/gatePass.api";
 import { useGetChecklist } from "@/lib/network/api/checklist.api";
 import { useGetTodos } from "@/lib/network/api/todo.api";
-import type { ReceiptSummarySeriesPoint } from "@/lib/network/types/receipt.types";
+import type { ReceiptSeriesRange } from "@/lib/network/types/receipt.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canApprove, isAdminRole } from "../permissions";
 import { cn, fmtNaira } from "@/lib/utils";
@@ -83,41 +85,57 @@ const StatCell = ({
   );
 };
 
-// 7-day bars. Personal mode drops the "expected" bar (a cashier has no
-// personal expected figure) and shows collections only.
+// The money bars. Personal mode drops the "expected" bar (a cashier
+// has no personal expected figure) and shows collections only. Points
+// arrive with ready-made labels so one chart serves every zoom level.
+type TrendPoint = {
+  key: string;
+  label: string;
+  expectedAmount: string;
+  collectedAmount: string;
+};
+
 const TrendChart = ({
-  series,
+  points,
+  title,
   loading,
   personal,
+  controls,
 }: {
-  series: ReceiptSummarySeriesPoint[];
+  points: TrendPoint[];
+  title: string;
   loading: boolean;
   personal?: boolean;
+  controls?: React.ReactNode;
 }) => {
   const max = Math.max(
     1,
-    ...series.map((s) =>
+    ...points.map((s) =>
       Math.max(Number(s.expectedAmount), Number(s.collectedAmount)),
     ),
   );
+  const crowded = points.length > 8;
   return (
     <div className="mt-6 rounded-[20px] border border-line bg-white p-6 shadow-[0_12px_30px_rgba(13,31,21,0.05)]">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
         <span className="text-[12px] font-extrabold tracking-[1.5px] text-fog">
-          {personal
-            ? "LAST 7 DAYS · MY COLLECTIONS"
-            : "LAST 7 DAYS · EXPECTED VS COLLECTED"}
+          {title}
         </span>
-        {!personal && (
-          <span className="flex items-center gap-4 text-[11px] font-bold text-fog">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-sm bg-card-line" /> expected
+        <div className="flex flex-wrap items-center gap-3">
+          {!personal && (
+            <span className="flex items-center gap-4 text-[11px] font-bold text-fog">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-sm bg-card-line" />{" "}
+                expected
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="cta-gradient h-2.5 w-2.5 rounded-sm" />{" "}
+                collected
+              </span>
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="cta-gradient h-2.5 w-2.5 rounded-sm" /> collected
-            </span>
-          </span>
-        )}
+          )}
+          {controls}
+        </div>
       </div>
       {loading ? (
         <div className="flex h-[160px] items-end justify-between gap-2 sm:gap-4">
@@ -134,8 +152,8 @@ const TrendChart = ({
           ))}
         </div>
       ) : (
-        <div className="flex h-[160px] items-end justify-between gap-2 sm:gap-4">
-          {series.map((point) => {
+        <div className="flex h-[160px] items-end justify-between gap-1.5 sm:gap-4">
+          {points.map((point) => {
             const expectedPct = Math.round(
               (Number(point.expectedAmount) / max) * 100,
             );
@@ -144,15 +162,20 @@ const TrendChart = ({
             );
             return (
               <div
-                key={point.date}
+                key={point.key}
                 className="flex flex-1 flex-col items-center gap-1.5"
                 title={
                   personal
-                    ? `${point.date}: collected ${fmtNaira(point.collectedAmount)}`
-                    : `${point.date}: expected ${fmtNaira(point.expectedAmount)}, collected ${fmtNaira(point.collectedAmount)}`
+                    ? `${point.label}: collected ${fmtNaira(point.collectedAmount)}`
+                    : `${point.label}: expected ${fmtNaira(point.expectedAmount)}, collected ${fmtNaira(point.collectedAmount)}`
                 }
               >
-                <span className="whitespace-nowrap text-[9.5px] font-extrabold tabular-nums text-brand-600 sm:text-[11px]">
+                <span
+                  className={cn(
+                    "whitespace-nowrap text-[9.5px] font-extrabold tabular-nums text-brand-600 sm:text-[11px]",
+                    crowded && "hidden sm:block",
+                  )}
+                >
                   {fmtCompact(point.collectedAmount)}
                 </span>
                 <div className="flex h-[102px] w-full items-end justify-center gap-1">
@@ -172,8 +195,13 @@ const TrendChart = ({
                     style={{ height: `${Math.max(2, collectedPct)}%` }}
                   />
                 </div>
-                <span className="text-[11px] font-bold text-fog">
-                  {dayLabel(point.date)}
+                <span
+                  className={cn(
+                    "whitespace-nowrap font-bold text-fog",
+                    crowded ? "text-[9px] sm:text-[10.5px]" : "text-[11px]",
+                  )}
+                >
+                  {point.label}
                 </span>
               </div>
             );
@@ -192,6 +220,7 @@ export default function Dashboard() {
   // managers see the day's numbers
   const isAdmin = isAdminRole(role);
   const isCashier = role === "cashier";
+  const [chartRange, setChartRange] = useState<ReceiptSeriesRange>("daily");
   const isStore = role === "storekeeper";
   const isSecurity = role === "security";
   const showMoney = isManager || isCashier;
@@ -253,6 +282,44 @@ export default function Dashboard() {
 
   const batteryCounts = batterySummaryData?.data?.counts;
   const series = summary?.series ?? [];
+
+  // the admin chart at four zoom levels
+  const { data: seriesData, isLoading: seriesLoading } = useGetReceiptSeries(
+    chartRange,
+    { enabled: isAdmin },
+  );
+  const chartPoints = seriesData?.data?.buckets ?? [];
+  const CHART_TITLE: Record<ReceiptSeriesRange, string> = {
+    daily: "LAST 7 DAYS",
+    weekly: "LAST 8 WEEKS",
+    monthly: "LAST 12 MONTHS",
+    yearly: "BY YEAR",
+  };
+  const RANGES: { id: ReceiptSeriesRange; label: string }[] = [
+    { id: "daily", label: "Daily" },
+    { id: "weekly", label: "Weekly" },
+    { id: "monthly", label: "Monthly" },
+    { id: "yearly", label: "Yearly" },
+  ];
+  const rangePicker = (
+    <div className="flex w-fit gap-1 rounded-lg border border-line bg-white p-0.5">
+      {RANGES.map((r) => (
+        <button
+          key={r.id}
+          type="button"
+          onClick={() => setChartRange(r.id)}
+          className={cn(
+            "cursor-pointer rounded-md border-none px-2.5 py-1 text-[11.5px] font-extrabold transition-colors",
+            chartRange === r.id
+              ? "cta-gradient text-forest-deep"
+              : "bg-transparent text-fog hover:text-bark",
+          )}
+        >
+          {r.label}
+        </button>
+      ))}
+    </div>
+  );
 
   const opsCells = (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -461,7 +528,14 @@ export default function Dashboard() {
 
           <div className="mt-4">{opsCells}</div>
           {/* week-long money trends are the admin's view alone */}
-          {isAdmin && <TrendChart series={series} loading={summaryLoading} />}
+          {isAdmin && (
+            <TrendChart
+              points={chartPoints}
+              title={`${CHART_TITLE[chartRange]} · EXPECTED VS COLLECTED`}
+              loading={seriesLoading}
+              controls={rangePicker}
+            />
+          )}
         </>
       )}
 
@@ -506,7 +580,17 @@ export default function Dashboard() {
               loading={summaryLoading}
             />
           </div>
-          <TrendChart series={series} loading={summaryLoading} personal />
+          <TrendChart
+            points={series.map((p) => ({
+              key: p.date,
+              label: dayLabel(p.date),
+              expectedAmount: p.expectedAmount,
+              collectedAmount: p.collectedAmount,
+            }))}
+            title="LAST 7 DAYS · MY COLLECTIONS"
+            loading={summaryLoading}
+            personal
+          />
         </>
       )}
 
