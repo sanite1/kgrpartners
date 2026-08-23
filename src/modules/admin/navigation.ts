@@ -54,6 +54,12 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
         icon: "Wallet",
         module: "expenditures",
       },
+      {
+        label: "Finance",
+        to: "/finance",
+        icon: "Landmark",
+        module: "finance",
+      },
     ],
   },
   {

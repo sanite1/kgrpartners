@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { TriangleAlert } from "lucide-react";
+import { Minus, TrendingDown, TrendingUp, TriangleAlert } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import PageHead from "../components/console/PageHead";
 import Skeleton from "../components/console/Skeleton";
@@ -21,8 +21,13 @@ import { useGetGatePasses } from "@/lib/network/api/gatePass.api";
 import { useGetChecklist } from "@/lib/network/api/checklist.api";
 import { useGetTodos } from "@/lib/network/api/todo.api";
 import type { ReceiptSeriesRange } from "@/lib/network/types/receipt.types";
+import {
+  useGetFinanceSeries,
+  useGetFinanceOverview,
+} from "@/lib/network/api/finance.api";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canApprove, isAdminRole } from "../permissions";
+import { hasModule } from "../access";
 import { cn, fmtNaira } from "@/lib/utils";
 
 const dayLabel = (iso: string) =>
@@ -101,12 +106,21 @@ const TrendChart = ({
   loading,
   personal,
   controls,
+  legend = ["expected", "collected"],
+  topLabel,
+  barClass,
+  hoverText,
 }: {
   points: TrendPoint[];
   title: string;
   loading: boolean;
   personal?: boolean;
   controls?: React.ReactNode;
+  legend?: [string, string];
+  // what prints above each bar pair; defaults to the second value
+  topLabel?: (p: TrendPoint) => { text: string; className?: string };
+  barClass?: string; // colour of the second (main) bar
+  hoverText?: (p: TrendPoint) => string;
 }) => {
   const max = Math.max(
     1,
@@ -126,11 +140,16 @@ const TrendChart = ({
             <span className="flex items-center gap-4 text-[11px] font-bold text-fog">
               <span className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-sm bg-card-line" />{" "}
-                expected
+                {legend[0]}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="cta-gradient h-2.5 w-2.5 rounded-sm" />{" "}
-                collected
+                <span
+                  className={cn(
+                    "h-2.5 w-2.5 rounded-sm",
+                    barClass ?? "cta-gradient",
+                  )}
+                />{" "}
+                {legend[1]}
               </span>
             </span>
           )}
@@ -165,18 +184,21 @@ const TrendChart = ({
                 key={point.key}
                 className="flex flex-1 flex-col items-center gap-1.5"
                 title={
-                  personal
-                    ? `${point.label}: collected ${fmtNaira(point.collectedAmount)}`
-                    : `${point.label}: expected ${fmtNaira(point.expectedAmount)}, collected ${fmtNaira(point.collectedAmount)}`
+                  hoverText
+                    ? hoverText(point)
+                    : personal
+                      ? `${point.label}: collected ${fmtNaira(point.collectedAmount)}`
+                      : `${point.label}: expected ${fmtNaira(point.expectedAmount)}, collected ${fmtNaira(point.collectedAmount)}`
                 }
               >
                 <span
                   className={cn(
-                    "whitespace-nowrap text-[9.5px] font-extrabold tabular-nums text-brand-600 sm:text-[11px]",
+                    "whitespace-nowrap text-[9.5px] font-extrabold tabular-nums sm:text-[11px]",
+                    topLabel?.(point).className ?? "text-brand-600",
                     crowded && "hidden sm:block",
                   )}
                 >
-                  {fmtCompact(point.collectedAmount)}
+                  {topLabel?.(point).text ?? fmtCompact(point.collectedAmount)}
                 </span>
                 <div className="flex h-[102px] w-full items-end justify-center gap-1">
                   {!personal && (
@@ -187,7 +209,8 @@ const TrendChart = ({
                   )}
                   <div
                     className={cn(
-                      "cta-gradient rounded-t-md",
+                      "rounded-t-md",
+                      barClass ?? "cta-gradient",
                       personal
                         ? "w-[46%] max-w-[34px]"
                         : "w-[38%] max-w-[26px]",
@@ -301,6 +324,58 @@ export default function Dashboard() {
     { id: "monthly", label: "Monthly" },
     { id: "yearly", label: "Yearly" },
   ];
+  // the finance pair: operation performance and debt, admin only
+  const [financeRange, setFinanceRange] =
+    useState<ReceiptSeriesRange>("monthly");
+  // the finance routes also require the module, so a narrowed admin
+  // must not even ask
+  const canFinance = isAdmin && hasModule(user, "finance");
+  const { data: financeSeriesData, isLoading: financeSeriesLoading } =
+    useGetFinanceSeries(financeRange, { enabled: canFinance });
+  const { data: financeOverviewData } = useGetFinanceOverview({
+    enabled: canFinance,
+  });
+  const financeVerdict = financeOverviewData?.data?.verdict;
+  const financeMonth = financeOverviewData?.data?.thisMonth;
+  const performancePoints = (financeSeriesData?.data?.performance ?? []).map(
+    (p) => ({
+      key: p.key,
+      label: p.label,
+      expectedAmount: p.costs,
+      collectedAmount: p.revenue,
+      profit: p.profit,
+    }),
+  );
+  const debtPoints = (financeSeriesData?.data?.debt ?? []).map((p) => ({
+    key: p.key,
+    label: p.label,
+    expectedAmount: "0",
+    collectedAmount: p.outstanding,
+    repaid: p.repaid,
+  }));
+  const pickerFor = (
+    value: ReceiptSeriesRange,
+    onChange: (r: ReceiptSeriesRange) => void,
+  ) => (
+    <div className="flex w-fit gap-1 rounded-lg border border-line bg-white p-0.5">
+      {RANGES.map((r) => (
+        <button
+          key={r.id}
+          type="button"
+          onClick={() => onChange(r.id)}
+          className={cn(
+            "cursor-pointer rounded-md border-none px-2.5 py-1 text-[11.5px] font-extrabold transition-colors",
+            value === r.id
+              ? "cta-gradient text-forest-deep"
+              : "bg-transparent text-fog hover:text-bark",
+          )}
+        >
+          {r.label}
+        </button>
+      ))}
+    </div>
+  );
+
   const rangePicker = (
     <div className="flex w-fit gap-1 rounded-lg border border-line bg-white p-0.5">
       {RANGES.map((r) => (
@@ -535,6 +610,91 @@ export default function Dashboard() {
               loading={seriesLoading}
               controls={rangePicker}
             />
+          )}
+
+          {/* the money behind it: are we going up or down */}
+          {canFinance && (
+            <>
+              {financeVerdict && financeMonth && (
+                <Link
+                  to="/finance"
+                  className={cn(
+                    "mt-6 flex flex-wrap items-center gap-3 rounded-2xl border px-5 py-4 transition-colors",
+                    financeVerdict.direction === "up"
+                      ? "border-brand-200 bg-brand-50 text-brand-600 hover:border-brand-500"
+                      : financeVerdict.direction === "down"
+                        ? "border-red-200 bg-red-50 text-red-600 hover:border-red-300"
+                        : "border-line bg-white text-bark hover:border-brand-500",
+                  )}
+                >
+                  {financeVerdict.direction === "up" ? (
+                    <TrendingUp size={22} strokeWidth={2.5} />
+                  ) : financeVerdict.direction === "down" ? (
+                    <TrendingDown size={22} strokeWidth={2.5} />
+                  ) : (
+                    <Minus size={22} strokeWidth={2.5} />
+                  )}
+                  <span className="text-[15px] font-extrabold">
+                    {financeVerdict.direction === "up"
+                      ? "Going up"
+                      : financeVerdict.direction === "down"
+                        ? "Going down"
+                        : "Holding steady"}
+                  </span>
+                  <span className="text-[12.5px] font-semibold opacity-90">
+                    {financeVerdict.compared &&
+                    financeVerdict.profitChangePct !== null
+                      ? `last finished month ${financeVerdict.profitChangePct > 0 ? "+" : ""}${financeVerdict.profitChangePct}% vs the one before`
+                      : "not enough finished months to compare yet"}
+                    {` · this month so far ${fmtNaira(financeMonth.profit)}`}
+                    {financeVerdict.repaidThisMonth > 0
+                      ? ` · debt down ${fmtNaira(financeVerdict.repaidThisMonth)}`
+                      : ""}
+                    {" · open Finance"}
+                  </span>
+                </Link>
+              )}
+              <TrendChart
+                points={performancePoints}
+                title={`${CHART_TITLE[financeRange]} · OPERATION PERFORMANCE`}
+                loading={financeSeriesLoading}
+                controls={pickerFor(financeRange, setFinanceRange)}
+                legend={["costs", "revenue"]}
+                hoverText={(p) =>
+                  `${p.label}: revenue ${fmtNaira(p.collectedAmount)}, costs ${fmtNaira(p.expectedAmount)}, profit ${fmtNaira((p as { profit?: string }).profit ?? "0")}`
+                }
+                topLabel={(p) => {
+                  const profit = Number(
+                    (p as { profit?: string }).profit ?? "0",
+                  );
+                  return {
+                    text: `${profit < 0 ? "-" : ""}${fmtCompact(Math.abs(profit))}`,
+                    className: profit < 0 ? "text-red-600" : "text-brand-600",
+                  };
+                }}
+              />
+              <TrendChart
+                points={debtPoints}
+                title={`${CHART_TITLE[financeRange]} · DEBT AND LOAN MANAGEMENT`}
+                loading={financeSeriesLoading}
+                personal
+                barClass="bg-bark"
+                hoverText={(p) =>
+                  `${p.label}: debt outstanding ${fmtNaira(p.collectedAmount)}, repaid ${fmtNaira((p as { repaid?: string }).repaid ?? "0")}`
+                }
+                topLabel={(p) => {
+                  const repaid = Number(
+                    (p as { repaid?: string }).repaid ?? "0",
+                  );
+                  return repaid > 0
+                    ? { text: `-${fmtCompact(repaid)}`, className: "text-blue-600" }
+                    : {
+                        text: fmtCompact(p.collectedAmount),
+                        className: "text-bark",
+                      };
+                }}
+              />
+            </>
           )}
         </>
       )}

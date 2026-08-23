@@ -343,7 +343,9 @@ export default function UserFormPage() {
                 </div>
                 <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 rounded-xl border border-line bg-haze p-4 sm:grid-cols-2 lg:grid-cols-3">
                   {ACCESS_MODULES.filter(
-                    (m) => role === "admin" || m.key !== "users",
+                    (m) =>
+                      role === "admin" ||
+                      (m.key !== "users" && m.key !== "finance"),
                   ).map((m) => (
                     <label
                       key={m.key}
