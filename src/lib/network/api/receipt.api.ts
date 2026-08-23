@@ -158,6 +158,8 @@ export const useCreateReceipt = () => {
     mutationFn: (payload) => createReceiptFn(payload),
     onSuccess: (data) => {
       toast.success(data.message);
+      // the checklist "vs Receipts" view reads receipts and swaps too
+      qc.invalidateQueries({ queryKey: ["checklists", "compare-receipts"] });
       qc.invalidateQueries({ queryKey: receiptKeys.all });
       // the dashboard's batteries-on-buses count comes from today's receipts
       qc.invalidateQueries({ queryKey: ["batteries", "summary"] });
@@ -176,6 +178,8 @@ export const useCheckInReceipt = () => {
     mutationFn: (id) => checkInReceiptFn(id),
     onSuccess: (data) => {
       toast.success(data.message);
+      // the checklist "vs Receipts" view reads receipts and swaps too
+      qc.invalidateQueries({ queryKey: ["checklists", "compare-receipts"] });
       qc.invalidateQueries({ queryKey: receiptKeys.all });
     },
     onError: (error) => {
@@ -194,6 +198,8 @@ export const useVoidReceipt = () => {
     mutationFn: ({ id, payload }) => voidReceiptFn(id, payload),
     onSuccess: (data) => {
       toast.success(data.message);
+      // the checklist "vs Receipts" view reads receipts and swaps too
+      qc.invalidateQueries({ queryKey: ["checklists", "compare-receipts"] });
       qc.invalidateQueries({ queryKey: receiptKeys.all });
     },
     onError: (error) => {

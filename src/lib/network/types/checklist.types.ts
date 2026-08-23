@@ -84,3 +84,54 @@ export interface ChecklistCompareData {
   rows: CompareRow[];
   totals: ChecklistCompareTotals;
 }
+
+// the checklists against the day's receipts, per bus
+export type ReceiptsCompareStatus =
+  | "match"
+  | "underpaid"
+  | "no_receipt"
+  | "not_on_checklist"
+  | "battery_differs"
+  | "fewer_trips";
+
+export interface ReceiptsCompareSide {
+  batteries: string[];
+  trips: number;
+  sessions: string[];
+  addedByNames: string[];
+  batteryOk: boolean;
+  tripsVerdict: "ok" | "more" | "fewer";
+}
+
+export interface ReceiptsCompareReceipt {
+  bills: { billId: number; batteryName: string; trips: number }[];
+  batteries: string[];
+  trips: number;
+}
+
+export interface ReceiptsCompareRow {
+  busName: string;
+  security: ReceiptsCompareSide | null;
+  staff: ReceiptsCompareSide | null;
+  receipt: ReceiptsCompareReceipt | null;
+  status: ReceiptsCompareStatus;
+  note: string;
+}
+
+export interface ReceiptsCompareTotals {
+  matched: number;
+  underpaid: number;
+  noReceipt: number;
+  notOnChecklist: number;
+  batteryDiffers: number;
+  fewerTrips: number;
+  receiptTrips: number;
+  securityTrips: number;
+  staffTrips: number;
+}
+
+export interface ChecklistReceiptsCompareData {
+  date: string;
+  rows: ReceiptsCompareRow[];
+  totals: ReceiptsCompareTotals;
+}

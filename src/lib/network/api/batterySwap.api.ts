@@ -83,6 +83,8 @@ export const useCreateSwap = () => {
     mutationFn: (payload) => createSwapFn(payload),
     onSuccess: (data) => {
       toast.success(data.message);
+      // the checklist "vs Receipts" view reads receipts and swaps too
+      qc.invalidateQueries({ queryKey: ["checklists", "compare-receipts"] });
       qc.invalidateQueries({ queryKey: swapKeys.all });
       qc.invalidateQueries({ queryKey: ["batteries"] });
     },

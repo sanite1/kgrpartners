@@ -11,6 +11,7 @@ import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
 import {
   useGetChecklist,
   useGetChecklistCompare,
+  useGetChecklistReceiptsCompare,
   useGetChecklistDays,
   useCreateChecklistEntry,
   useDeleteChecklistEntry,
@@ -20,6 +21,8 @@ import type {
   ChecklistKind,
   ChecklistSession,
   CompareStatus,
+  ReceiptsCompareStatus,
+  ReceiptsCompareSide,
 } from "@/lib/network/types/checklist.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canApprove, isAdminRole } from "../permissions";
@@ -39,12 +42,86 @@ const KIND_LABEL: Record<ChecklistKind, string> = {
   admin: "Staff checklist",
 };
 
-// managers get a third view laying the two lists side by side
-type ChecklistTab = ChecklistKind | "compare";
+// managers get a third view laying the two lists side by side, and a
+// fourth laying both against the day's receipts
+type ChecklistTab = ChecklistKind | "compare" | "receipts";
 
 const TAB_LABEL: Record<ChecklistTab, string> = {
   ...KIND_LABEL,
   compare: "Compare",
+  receipts: "vs Receipts",
+};
+
+// how each checklist-vs-receipts verdict paints its row and badge
+const RECEIPTS_META: Record<
+  ReceiptsCompareStatus,
+  { label: string; badge: string; row: string }
+> = {
+  match: {
+    label: "Match",
+    badge: "bg-brand-50 text-brand-600",
+    row: "bg-brand-50/40",
+  },
+  underpaid: {
+    label: "Underpaid",
+    badge: "bg-red-50 text-red-600",
+    row: "bg-red-50/60",
+  },
+  no_receipt: {
+    label: "No receipt",
+    badge: "bg-red-50 text-red-600",
+    row: "bg-red-50/60",
+  },
+  not_on_checklist: {
+    label: "Not on checklist",
+    badge: "bg-red-50 text-red-600",
+    row: "bg-red-50/40",
+  },
+  battery_differs: {
+    label: "Battery differs",
+    badge: "bg-[#FDF6E3] text-solar-700",
+    row: "bg-[#FDF6E3]/60",
+  },
+  fewer_trips: {
+    label: "Fewer trips",
+    badge: "bg-[#FDF6E3] text-solar-700",
+    row: "bg-[#FDF6E3]/40",
+  },
+};
+
+const SESSION_SHORT: Record<string, string> = { morning: "M", evening: "E" };
+
+// one checklist side inside a receipts-comparison cell
+const ReceiptsSideCell = ({ side }: { side: ReceiptsCompareSide | null }) => {
+  if (!side) {
+    return <span className="text-[13px] font-semibold text-fog">-</span>;
+  }
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span
+        className={cn(
+          "text-[13px] font-extrabold",
+          side.batteryOk ? "text-ink" : "text-red-600",
+        )}
+      >
+        {side.batteries.join(" / ")}
+      </span>
+      <span
+        className={cn(
+          "text-[12px] font-bold",
+          side.tripsVerdict === "more"
+            ? "text-red-600"
+            : side.tripsVerdict === "fewer"
+              ? "text-solar-700"
+              : "text-fog",
+        )}
+      >
+        {side.trips} trip{side.trips === 1 ? "" : "s"} ·{" "}
+        {side.sessions.map((x) => SESSION_SHORT[x] ?? x).join("+")}
+        {side.addedByNames.length > 0 && ` · ${side.addedByNames.join(", ")}`}
+      </span>
+    </div>
+  );
 };
 
 // same normalization the backend matches with: case, spaces and
@@ -92,7 +169,8 @@ export default function Checklist() {
   const [tab, setTab] = useState<ChecklistTab>(
     isSecurity ? "security" : "admin",
   );
-  const kind: ChecklistKind = tab === "compare" ? "admin" : tab;
+  const isCompareTab = tab === "compare" || tab === "receipts";
+  const kind: ChecklistKind = isCompareTab ? "admin" : tab;
   const [viewDate, setViewDate] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -108,7 +186,7 @@ export default function Checklist() {
   const [deleteFor, setDeleteFor] = useState<ChecklistEntry | null>(null);
 
   const { data, isLoading } = useGetChecklist(kind, viewDate || undefined, {
-    enabled: tab !== "compare",
+    enabled: !isCompareTab,
   });
   const sheet = data?.data;
   const entries = sheet?.entries ?? [];
@@ -121,6 +199,18 @@ export default function Checklist() {
   const compare = compareData?.data;
   const compareRows = compare?.rows ?? [];
   const compareTotals = compare?.totals;
+
+  const {
+    data: receiptsData,
+    isLoading: receiptsLoading,
+    isError: receiptsError,
+    refetch: refetchReceipts,
+  } = useGetChecklistReceiptsCompare(viewDate || undefined, {
+    enabled: isManager && tab === "receipts",
+  });
+  const receiptsCompare = receiptsData?.data;
+  const receiptRows = receiptsCompare?.rows ?? [];
+  const receiptTotals = receiptsCompare?.totals;
 
   const { data: daysData, isLoading: daysLoading } = useGetChecklistDays(
     page,
@@ -191,7 +281,7 @@ export default function Checklist() {
                 {historyOpen ? "Back to sheet" : "History"}
               </button>
             )}
-            {!historyOpen && tab !== "compare" && canWrite && (
+            {!historyOpen && !isCompareTab && canWrite && (
               <button
                 type="button"
                 onClick={openAdd}
@@ -303,7 +393,7 @@ export default function Checklist() {
               </span>
             ) : (
               <div className="flex w-fit gap-1 rounded-xl border border-line bg-white p-1">
-                {(["security", "admin", "compare"] as const).map((value) => (
+                {(["security", "admin", "compare", "receipts"] as const).map((value) => (
                   <button
                     key={value}
                     type="button"
@@ -322,7 +412,12 @@ export default function Checklist() {
             )}
             <span className="text-[14px] font-extrabold text-ink">
               {(() => {
-                const shown = tab === "compare" ? compare?.date : sheet?.date;
+                const shown =
+                  tab === "compare"
+                    ? compare?.date
+                    : tab === "receipts"
+                      ? receiptsCompare?.date
+                      : sheet?.date;
                 return shown ? fmtDate(shown) : "";
               })()}
               {!isToday && (
@@ -337,7 +432,195 @@ export default function Checklist() {
             </span>
           </div>
 
-          {tab === "compare" ? (
+          {tab === "receipts" ? (
+            <>
+              <p className="m-0 mb-4 text-[12.5px] font-semibold text-fog">
+                Every bus the gate logged or a receipt was issued for, side by
+                side with what was paid for. Red means money or a bus went
+                unaccounted; amber means the battery or trip count needs a
+                look (the evening session may simply not be logged yet).
+              </p>
+              {/* the verdict, counted */}
+              <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                {(
+                  [
+                    ["MATCH", receiptTotals?.matched ?? 0, "good"],
+                    ["UNDERPAID", receiptTotals?.underpaid ?? 0, "red"],
+                    ["NO RECEIPT", receiptTotals?.noReceipt ?? 0, "red"],
+                    [
+                      "NOT ON CHECKLIST",
+                      receiptTotals?.notOnChecklist ?? 0,
+                      "red",
+                    ],
+                    [
+                      "BATTERY DIFFERS",
+                      receiptTotals?.batteryDiffers ?? 0,
+                      "amber",
+                    ],
+                    ["FEWER TRIPS", receiptTotals?.fewerTrips ?? 0, "amber"],
+                  ] as const
+                ).map(([label, count, tone]) => {
+                  const hot = count > 0 && tone !== "good";
+                  return (
+                    <div
+                      key={label}
+                      className={cn(
+                        "rounded-2xl border p-4",
+                        hot && tone === "red"
+                          ? "border-red-200 bg-red-50"
+                          : hot
+                            ? "border-solar/40 bg-[#FDF6E3]"
+                            : "border-line bg-white",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "block text-[24px] font-extrabold leading-none",
+                          tone === "good"
+                            ? "text-brand-600"
+                            : hot && tone === "red"
+                              ? "text-red-600"
+                              : hot
+                                ? "text-solar-700"
+                                : "text-ink",
+                        )}
+                      >
+                        {count}
+                      </span>
+                      <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-fog">
+                        {label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="m-0 mb-4 text-[12.5px] font-semibold text-fog">
+                Receipts paid for{" "}
+                <strong className="text-ink">
+                  {receiptTotals?.receiptTrips ?? 0}
+                </strong>{" "}
+                trips · security logged{" "}
+                <strong className="text-ink">
+                  {receiptTotals?.securityTrips ?? 0}
+                </strong>{" "}
+                · staff logged{" "}
+                <strong className="text-ink">
+                  {receiptTotals?.staffTrips ?? 0}
+                </strong>
+              </p>
+
+              <div className="overflow-hidden rounded-2xl border border-line bg-white">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-left">
+                    <thead>
+                      <tr className="border-b border-line bg-haze">
+                        {["BUS", "SECURITY", "STAFF", "RECEIPT", "STATUS"].map(
+                          (h) => (
+                            <th
+                              key={h}
+                              className="whitespace-nowrap px-4 py-3 text-[11px] font-extrabold tracking-[1.5px] text-fog"
+                            >
+                              {h}
+                            </th>
+                          ),
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {receiptRows.map((row) => {
+                        const meta = RECEIPTS_META[row.status];
+                        return (
+                          <tr
+                            key={row.busName}
+                            className={cn(
+                              "border-b border-line last:border-0",
+                              meta.row,
+                            )}
+                          >
+                            <td className="whitespace-nowrap px-4 py-3 text-[13.5px] font-extrabold text-ink">
+                              {row.busName}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              <ReceiptsSideCell side={row.security} />
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              <ReceiptsSideCell side={row.staff} />
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {row.receipt ? (
+                                <div className="flex flex-col gap-0.5">
+                                  {row.receipt.bills.map((b) => (
+                                    <span
+                                      key={b.billId}
+                                      className="text-[13px] font-semibold text-bark"
+                                    >
+                                      <span className="font-extrabold text-ink">
+                                        #{b.billId}
+                                      </span>{" "}
+                                      · {b.batteryName || "-"} · {b.trips} trip
+                                      {b.trips === 1 ? "" : "s"}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-[13px] font-extrabold text-red-600">
+                                  none
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex flex-col items-start gap-1">
+                                <span
+                                  className={cn(
+                                    "whitespace-nowrap rounded-full px-2.5 py-1 text-[11.5px] font-extrabold",
+                                    meta.badge,
+                                  )}
+                                >
+                                  {meta.label}
+                                </span>
+                                {row.note && (
+                                  <span className="max-w-[260px] text-[11.5px] font-semibold text-fog">
+                                    {row.note}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {receiptsLoading && (
+                  <div className="flex justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-brand-200 border-t-brand-600" />
+                  </div>
+                )}
+                {!receiptsLoading && receiptsError && (
+                  <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
+                    <p className="m-0 text-[15px] font-bold text-red-600">
+                      Could not load the comparison.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => refetchReceipts()}
+                      className="cursor-pointer rounded-[10px] border border-line bg-white px-5 py-2.5 text-[13.5px] font-extrabold text-ink transition-colors hover:border-brand-500"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+                {!receiptsLoading && !receiptsError && receiptRows.length === 0 && (
+                  <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
+                    <BoltMark width={22} height={29} fill="#B5ECC2" />
+                    <p className="m-0 text-[15px] font-bold text-bark">
+                      No checklist entries or receipts for this day yet.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : tab === "compare" ? (
             <>
               {/* the verdict, counted */}
               <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
