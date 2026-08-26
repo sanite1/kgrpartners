@@ -16,7 +16,7 @@ import type {
 } from "@/lib/network/types/bus.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canApprove } from "../permissions";
-import { cn } from "@/lib/utils";
+import { cn, fmtNaira } from "@/lib/utils";
 import { inputClasses } from "../components/console/form";
 
 // today in Lagos, matching the backend's business day
@@ -328,6 +328,7 @@ export default function Buses() {
                   "DAYS WORKED",
                   "AVG / DAY",
                   "PERFORMANCE",
+                  ...(canEdit ? ["MAINTENANCE"] : []),
                   "STATUS",
                 ].map((h) => (
                   <th
@@ -394,6 +395,23 @@ export default function Buses() {
                         {meta.label}
                       </span>
                     </td>
+                    {canEdit && (
+                      <td className="whitespace-nowrap px-4 py-4">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[13px] font-bold tabular-nums text-bark">
+                            {fmtNaira(bus.maintenance?.cost ?? 0)}
+                          </span>
+                          {(bus.maintenance?.openRepairs ?? 0) > 0 && (
+                            <span className="w-fit rounded-full bg-red-50 px-2 py-0.5 text-[10.5px] font-extrabold text-red-600">
+                              {bus.maintenance?.openRepairs} open repair
+                              {(bus.maintenance?.openRepairs ?? 0) === 1
+                                ? ""
+                                : "s"}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    )}
                     <td className="px-4 py-4">
                       <StatusPill
                         tone={bus.isActive ? "success" : "muted"}

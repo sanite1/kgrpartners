@@ -7,7 +7,12 @@ import PageHead from "../components/console/PageHead";
 import StatusPill from "../components/console/StatusPill";
 import Pagination from "../components/console/Pagination";
 import { DEFAULT_PAGE_SIZE } from "../components/console/paginationConfig";
-import { useGetBusTrips } from "@/lib/network/api/bus.api";
+import {
+  useGetBusTrips,
+  useGetBusMaintenance,
+} from "@/lib/network/api/bus.api";
+import { useAuthStore } from "@/lib/network/stores/auth.store";
+import { canApprove } from "../permissions";
 import { cn, fmtNaira, fmtDate, fmtTime } from "@/lib/utils";
 import { inputClasses } from "../components/console/form";
 
@@ -57,6 +62,18 @@ export default function BusDetail() {
     to: to || undefined,
   });
   const payload = data?.data;
+
+  // the workshop story: managers only, it carries money
+  const { user } = useAuthStore();
+  const isManager = canApprove(user?.role);
+  const { data: maintData } = useGetBusMaintenance(id, {
+    enabled: isManager && !!id,
+  });
+  const maint = maintData?.data;
+  const costPerTrip =
+    maint && payload && payload.summary.allTime.trips > 0
+      ? Number(maint.totals.maintenanceCost) / payload.summary.allTime.trips
+      : null;
   const bus = payload?.bus;
   const summary = payload?.summary;
   const receipts = payload?.receipts ?? [];
@@ -170,6 +187,112 @@ export default function BusDetail() {
           </span>
         </div>
       </div>
+
+      {/* the workshop story: repairs, requests, spend and swaps */}
+      {isManager && maint && (
+        <div className="mb-6 overflow-hidden rounded-2xl border border-line bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-haze px-5 py-3">
+            <span className="text-[11px] font-extrabold tracking-[1.5px] text-fog">
+              MAINTENANCE · WHY THIS BUS PERFORMS THE WAY IT DOES
+            </span>
+            <span className="text-[11.5px] font-bold text-fog">
+              {maint.totals.lastRepairAt
+                ? `last repair ${fmtDate(maint.totals.lastRepairAt)}`
+                : "never repaired"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 border-b border-line px-5 py-4 sm:grid-cols-4">
+            {(
+              [
+                ["MAINTENANCE COST", fmtNaira(maint.totals.maintenanceCost), false],
+                [
+                  "COST PER TRIP",
+                  costPerTrip === null
+                    ? "-"
+                    : fmtNaira(Math.round(costPerTrip * 100) / 100),
+                  false,
+                ],
+                [
+                  "REPAIRS",
+                  maint.totals.openRepairs > 0
+                    ? `${maint.totals.repairs} (${maint.totals.openRepairs} open)`
+                    : String(maint.totals.repairs),
+                  maint.totals.openRepairs > 0,
+                ],
+                ["DAYS IN WORKSHOP", String(maint.totals.workshopDays), false],
+              ] as const
+            ).map(([label, value, hot]) => (
+              <div key={label} className="flex flex-col">
+                <span className="text-[11px] font-extrabold tracking-[1px] text-fog">
+                  {label}
+                </span>
+                <span
+                  className={cn(
+                    "text-[15px] font-extrabold tabular-nums",
+                    hot ? "text-red-600" : "text-ink",
+                  )}
+                >
+                  {value}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col gap-2 p-4">
+            {maint.events.map((event, i) => (
+              <div
+                key={`${event.type}-${event.at}-${i}`}
+                className={cn(
+                  "rounded-xl border border-line px-4 py-3",
+                  event.type === "repair" && event.status === "open"
+                    ? "bg-red-50/60"
+                    : "bg-haze",
+                )}
+              >
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                  <span className="text-[13.5px] font-extrabold text-ink">
+                    <span
+                      className={cn(
+                        "mr-2 rounded-full px-2 py-0.5 text-[10.5px] font-extrabold",
+                        event.type === "repair"
+                          ? event.status === "open"
+                            ? "bg-red-50 text-red-600"
+                            : "bg-brand-50 text-brand-600"
+                          : event.type === "request"
+                            ? "bg-[#FDF6E3] text-solar-700"
+                            : event.type === "swap"
+                              ? "bg-blue-50 text-blue-600"
+                              : "bg-mist text-bark",
+                      )}
+                    >
+                      {event.type === "repair"
+                        ? event.status === "open"
+                          ? "REPAIR · OPEN"
+                          : "REPAIR"
+                        : event.type.toUpperCase()}
+                    </span>
+                    {event.title}
+                  </span>
+                  <span className="shrink-0 text-[12px] font-semibold tabular-nums text-fog sm:text-right">
+                    {event.amount ? `${fmtNaira(event.amount)} · ` : ""}
+                    {fmtDate(event.at)}
+                  </span>
+                </div>
+                {event.detail && (
+                  <p className="m-0 mt-0.5 text-[12.5px] font-semibold text-fog">
+                    {event.detail}
+                  </p>
+                )}
+              </div>
+            ))}
+            {maint.events.length === 0 && (
+              <p className="m-0 py-6 text-center text-[13.5px] font-semibold text-fog">
+                Nothing has ever been done to this bus. If it underperforms,
+                the workshop is not the reason.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* which days */}
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

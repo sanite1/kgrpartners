@@ -3,7 +3,14 @@ import type { PaginationMeta } from "./api.types";
 
 export type TrackerHealth = "ok" | "no_power" | "no_data";
 
+// managers-only extras attached by the list/performance endpoints
+export interface BusMaintenanceBadge {
+  openRepairs: number;
+  cost: string;
+}
+
 export interface Bus {
+  maintenance?: BusMaintenanceBadge;
   _id: string;
   number: string; // normalized "A 37" format
   driverName: string;
@@ -128,4 +135,32 @@ export interface BusPerformanceQueryParams {
   from?: string;
   to?: string;
   band?: PerformanceBand | "all";
+}
+
+// GET /api/buses/:id/maintenance (managers)
+export type BusMaintenanceEventType =
+  | "repair"
+  | "request"
+  | "expenditure"
+  | "swap";
+
+export interface BusMaintenanceEvent {
+  type: BusMaintenanceEventType;
+  at: string;
+  title: string;
+  detail: string;
+  amount?: string;
+  status?: string;
+}
+
+export interface BusMaintenanceData {
+  bus: { _id: string; number: string };
+  totals: {
+    repairs: number;
+    openRepairs: number;
+    maintenanceCost: string;
+    workshopDays: number;
+    lastRepairAt: string | null;
+  };
+  events: BusMaintenanceEvent[];
 }
