@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { History, Pencil, Plus, Trash2 } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import BoltMark from "@/components/shared/BoltMark";
 import PageHead from "../components/console/PageHead";
@@ -12,6 +12,7 @@ import {
   useGetChecklist,
   useGetChecklistCompare,
   useGetChecklistReceiptsCompare,
+  useUpdateChecklistEntry,
   useGetChecklistDays,
   useCreateChecklistEntry,
   useDeleteChecklistEntry,
@@ -23,6 +24,7 @@ import type {
   CompareStatus,
   ReceiptsCompareStatus,
   ReceiptsCompareSide,
+  ChecklistEdit,
 } from "@/lib/network/types/checklist.types";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
 import { canApprove, isAdminRole } from "../permissions";
@@ -91,8 +93,32 @@ const RECEIPTS_META: Record<
 
 const SESSION_SHORT: Record<string, string> = { morning: "M", evening: "E" };
 
+// what the admin picked to correct, from either comparison tab
+interface EditTarget {
+  entryId: string;
+  busName: string;
+  session: string;
+  listLabel: string;
+  batteryName: string;
+  trips: number;
+}
+
 // one checklist side inside a receipts-comparison cell
-const ReceiptsSideCell = ({ side }: { side: ReceiptsCompareSide | null }) => {
+const ReceiptsSideCell = ({
+  side,
+  busName,
+  listLabel,
+  isAdmin,
+  onEdit,
+  onHistory,
+}: {
+  side: ReceiptsCompareSide | null;
+  busName: string;
+  listLabel: string;
+  isAdmin?: boolean;
+  onEdit?: (target: EditTarget) => void;
+  onHistory?: (title: string, edits: ChecklistEdit[]) => void;
+}) => {
   if (!side) {
     return <span className="text-[13px] font-semibold text-fog">-</span>;
   }
@@ -120,6 +146,51 @@ const ReceiptsSideCell = ({ side }: { side: ReceiptsCompareSide | null }) => {
         {side.sessions.map((x) => SESSION_SHORT[x] ?? x).join("+")}
         {side.addedByNames.length > 0 && ` · ${side.addedByNames.join(", ")}`}
       </span>
+      {isAdmin && (
+        <div className="mt-0.5 flex flex-wrap gap-1">
+          {(side.entries ?? []).map((entry) => (
+            <span
+              key={entry._id}
+              className="flex items-center gap-1 rounded-full border border-line bg-white px-2 py-0.5 text-[11px] font-bold text-bark"
+            >
+              {SESSION_SHORT[entry.session] ?? entry.session} ·{" "}
+              {entry.batteryName} · {entry.trips}
+              <button
+                type="button"
+                aria-label={`Edit ${busName} ${entry.session}`}
+                onClick={() =>
+                  onEdit?.({
+                    entryId: entry._id,
+                    busName,
+                    session: entry.session,
+                    listLabel,
+                    batteryName: entry.batteryName,
+                    trips: entry.trips,
+                  })
+                }
+                className="cursor-pointer border-none bg-transparent p-0 text-fog hover:text-brand-600"
+              >
+                <Pencil size={11} />
+              </button>
+              {(entry.edits?.length ?? 0) > 0 && (
+                <button
+                  type="button"
+                  aria-label="Edit history"
+                  onClick={() =>
+                    onHistory?.(
+                      `${busName} · ${entry.session} · ${listLabel}`,
+                      entry.edits,
+                    )
+                  }
+                  className="cursor-pointer border-none bg-transparent p-0 text-blue-600 hover:text-blue-500"
+                >
+                  <History size={11} />
+                </button>
+              )}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -184,6 +255,23 @@ export default function Checklist() {
   const [trips, setTrips] = useState<number>(2);
   const [error, setError] = useState("");
   const [deleteFor, setDeleteFor] = useState<ChecklistEntry | null>(null);
+
+  // admin correction flow, launched from Compare or vs Receipts
+  const [editFor, setEditFor] = useState<EditTarget | null>(null);
+  const [editBattery, setEditBattery] = useState("");
+  const [editTrips, setEditTrips] = useState<number>(2);
+  const [editNote, setEditNote] = useState("");
+  const [historyView, setHistoryView] = useState<{
+    title: string;
+    edits: ChecklistEdit[];
+  } | null>(null);
+  const updateEntry = useUpdateChecklistEntry();
+  const openEdit = (target: EditTarget) => {
+    setEditBattery(target.batteryName);
+    setEditTrips(target.trips);
+    setEditNote("");
+    setEditFor(target);
+  };
 
   const { data, isLoading } = useGetChecklist(kind, viewDate || undefined, {
     enabled: !isCompareTab,
@@ -541,10 +629,28 @@ export default function Checklist() {
                               {row.busName}
                             </td>
                             <td className="whitespace-nowrap px-4 py-3">
-                              <ReceiptsSideCell side={row.security} />
+                              <ReceiptsSideCell
+                                side={row.security}
+                                busName={row.busName}
+                                listLabel="Security"
+                                isAdmin={isAdmin}
+                                onEdit={openEdit}
+                                onHistory={(title, edits) =>
+                                  setHistoryView({ title, edits })
+                                }
+                              />
                             </td>
                             <td className="whitespace-nowrap px-4 py-3">
-                              <ReceiptsSideCell side={row.staff} />
+                              <ReceiptsSideCell
+                                side={row.staff}
+                                busName={row.busName}
+                                listLabel="Staff"
+                                isAdmin={isAdmin}
+                                onEdit={openEdit}
+                                onHistory={(title, edits) =>
+                                  setHistoryView({ title, edits })
+                                }
+                              />
                             </td>
                             <td className="whitespace-nowrap px-4 py-3">
                               {row.receipt ? (
@@ -803,6 +909,40 @@ export default function Checklist() {
                                 )}
                               >
                                 {row.security?.batteryName ?? "-"}
+                                {isAdmin && row.security && (
+                                  <button
+                                    type="button"
+                                    aria-label={`Edit security entry for ${row.busName}`}
+                                    onClick={() =>
+                                      openEdit({
+                                        entryId: row.security!._id,
+                                        busName: row.busName,
+                                        session: row.session,
+                                        listLabel: "Security",
+                                        batteryName: row.security!.batteryName,
+                                        trips: row.security!.trips,
+                                      })
+                                    }
+                                    className="ml-1.5 cursor-pointer border-none bg-transparent p-0 align-middle text-fog hover:text-brand-600"
+                                  >
+                                    <Pencil size={12} />
+                                  </button>
+                                )}
+                                {(row.security?.edits?.length ?? 0) > 0 && (
+                                  <button
+                                    type="button"
+                                    aria-label="Edit history"
+                                    onClick={() =>
+                                      setHistoryView({
+                                        title: `${row.busName} · ${row.session} · Security`,
+                                        edits: row.security!.edits,
+                                      })
+                                    }
+                                    className="ml-1 cursor-pointer border-none bg-transparent p-0 align-middle text-blue-600 hover:text-blue-500"
+                                  >
+                                    <History size={12} />
+                                  </button>
+                                )}
                               </td>
                               <td
                                 className={cn(
@@ -822,6 +962,40 @@ export default function Checklist() {
                                 )}
                               >
                                 {row.staff?.batteryName ?? "-"}
+                                {isAdmin && row.staff && (
+                                  <button
+                                    type="button"
+                                    aria-label={`Edit staff entry for ${row.busName}`}
+                                    onClick={() =>
+                                      openEdit({
+                                        entryId: row.staff!._id,
+                                        busName: row.busName,
+                                        session: row.session,
+                                        listLabel: "Staff",
+                                        batteryName: row.staff!.batteryName,
+                                        trips: row.staff!.trips,
+                                      })
+                                    }
+                                    className="ml-1.5 cursor-pointer border-none bg-transparent p-0 align-middle text-fog hover:text-brand-600"
+                                  >
+                                    <Pencil size={12} />
+                                  </button>
+                                )}
+                                {(row.staff?.edits?.length ?? 0) > 0 && (
+                                  <button
+                                    type="button"
+                                    aria-label="Edit history"
+                                    onClick={() =>
+                                      setHistoryView({
+                                        title: `${row.busName} · ${row.session} · Staff`,
+                                        edits: row.staff!.edits,
+                                      })
+                                    }
+                                    className="ml-1 cursor-pointer border-none bg-transparent p-0 align-middle text-blue-600 hover:text-blue-500"
+                                  >
+                                    <History size={12} />
+                                  </button>
+                                )}
                               </td>
                               <td
                                 className={cn(
@@ -1144,6 +1318,144 @@ export default function Checklist() {
             {createEntry.isPending ? "Saving…" : "Clear bus →"}
           </button>
         </div>
+      </Modal>
+      {/* the admin's pen: correct an entry, history keeps the original */}
+      <Modal
+        title={
+          editFor
+            ? `Correct ${editFor.busName} · ${editFor.session} · ${editFor.listLabel}`
+            : "Correct entry"
+        }
+        open={editFor !== null}
+        onClose={() => setEditFor(null)}
+      >
+        {editFor && (
+          <div className="flex flex-col gap-4">
+            <p className="m-0 text-[13px] font-semibold text-fog">
+              The original stays in the entry's history with your name and
+              the time, so nothing is ever silently rewritten.
+            </p>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="ce-battery" className={labelClasses}>
+                Battery <span className="text-brand-500">*</span>
+              </label>
+              <input
+                id="ce-battery"
+                type="text"
+                maxLength={60}
+                value={editBattery}
+                onChange={(e) => setEditBattery(e.target.value.toUpperCase())}
+                className={inputClasses}
+                autoComplete="off"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className={labelClasses}>
+                Trips <span className="text-brand-500">*</span>
+              </span>
+              <div className="flex gap-2">
+                {TRIP_OPTIONS.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setEditTrips(t)}
+                    className={cn(
+                      "flex-1 cursor-pointer rounded-[10px] border px-2 py-2.5 text-[13.5px] font-extrabold transition-colors",
+                      editTrips === t
+                        ? "cta-gradient border-transparent text-forest-deep"
+                        : "border-line bg-white text-bark hover:border-brand-500",
+                    )}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="ce-note" className={labelClasses}>
+                Why the correction?
+              </label>
+              <input
+                id="ce-note"
+                type="text"
+                maxLength={300}
+                placeholder="Receipt shows 3 trips"
+                value={editNote}
+                onChange={(e) => setEditNote(e.target.value)}
+                className={inputClasses}
+                autoComplete="off"
+              />
+            </div>
+            <button
+              type="button"
+              disabled={
+                updateEntry.isPending ||
+                editBattery.trim().length === 0 ||
+                (editBattery.trim() === editFor.batteryName &&
+                  editTrips === editFor.trips)
+              }
+              onClick={() =>
+                updateEntry.mutate(
+                  {
+                    id: editFor.entryId,
+                    payload: {
+                      batteryName:
+                        editBattery.trim() !== editFor.batteryName
+                          ? editBattery.trim()
+                          : undefined,
+                      trips:
+                        editTrips !== editFor.trips ? editTrips : undefined,
+                      note: editNote.trim() || undefined,
+                    },
+                  },
+                  { onSuccess: () => setEditFor(null) },
+                )
+              }
+              className="cta-gradient mt-1 cursor-pointer rounded-[10px] border-none px-8 py-3.5 text-[14px] font-extrabold text-forest-deep disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {updateEntry.isPending ? "Saving…" : "Save correction →"}
+            </button>
+          </div>
+        )}
+      </Modal>
+
+      {/* what the entry said before each correction */}
+      <Modal
+        title={historyView ? `Edit history · ${historyView.title}` : "History"}
+        open={historyView !== null}
+        onClose={() => setHistoryView(null)}
+      >
+        {historyView && (
+          <div className="flex flex-col gap-2">
+            {historyView.edits.map((edit, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-line bg-haze px-4 py-3"
+              >
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                  <span className="text-[13.5px] font-extrabold text-ink">
+                    {edit.from.batteryName} · {edit.from.trips} trip
+                    {edit.from.trips === 1 ? "" : "s"} →{" "}
+                    <span className="text-brand-600">
+                      {edit.to.batteryName} · {edit.to.trips} trip
+                      {edit.to.trips === 1 ? "" : "s"}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-[12px] font-semibold text-fog sm:text-right">
+                    {fmtDate(edit.at)} · {fmtTime(edit.at)}
+                  </span>
+                </div>
+                <p className="m-0 mt-0.5 text-[12.5px] font-semibold text-fog">
+                  {edit.byName}
+                  {edit.note ? ` · ${edit.note}` : ""}
+                </p>
+              </div>
+            ))}
+            <p className="m-0 pt-1 text-[12px] font-semibold text-fog">
+              The first line's left side is what the gate originally wrote.
+            </p>
+          </div>
+        )}
       </Modal>
     </>
   );

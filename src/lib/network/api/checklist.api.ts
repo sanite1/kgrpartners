@@ -56,6 +56,12 @@ export const getChecklistDaysFn = (params?: {
 }): Promise<PaginatedResponse<ChecklistDayRow>> =>
   api.get<PaginatedResponse<ChecklistDayRow>>(`${BASE}/days`, params);
 
+export const updateChecklistEntryFn = (
+  id: string,
+  payload: { batteryName?: string; trips?: number; note?: string },
+): Promise<ApiResponse<ChecklistEntry>> =>
+  api.patch<ApiResponse<ChecklistEntry>>(`${BASE}/${id}`, payload);
+
 export const deleteChecklistEntryFn = (
   id: string,
 ): Promise<ApiResponse<undefined>> =>
@@ -151,6 +157,24 @@ export const useCreateChecklistEntry = () => {
     CreateChecklistEntryPayload
   >({
     mutationFn: (payload) => createChecklistEntryFn(payload),
+    onSuccess: (data) => {
+      toast.success(data.message);
+      qc.invalidateQueries({ queryKey: checklistKeys.all });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+};
+
+export const useUpdateChecklistEntry = () => {
+  const qc = useQueryClient();
+  return useMutation<
+    ApiResponse<ChecklistEntry>,
+    AxiosError,
+    { id: string; payload: { batteryName?: string; trips?: number; note?: string } }
+  >({
+    mutationFn: ({ id, payload }) => updateChecklistEntryFn(id, payload),
     onSuccess: (data) => {
       toast.success(data.message);
       qc.invalidateQueries({ queryKey: checklistKeys.all });

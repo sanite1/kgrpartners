@@ -50,11 +50,21 @@ export interface ChecklistDayRow {
 }
 
 // one side of a compared row: what one list wrote for a bus and session
+export interface ChecklistEdit {
+  at: string;
+  byName: string;
+  note: string;
+  from: { batteryName: string; trips: number };
+  to: { batteryName: string; trips: number };
+}
+
 export interface CompareSide {
+  _id: string;
   batteryName: string;
   trips: number;
   addedByName: string;
   createdAt: string;
+  edits: ChecklistEdit[];
 }
 
 // green: both lists agree; red: both wrote it but differently;
@@ -94,11 +104,20 @@ export type ReceiptsCompareStatus =
   | "battery_differs"
   | "fewer_trips";
 
+export interface ReceiptsSideEntry {
+  _id: string;
+  session: string;
+  batteryName: string;
+  trips: number;
+  edits: ChecklistEdit[];
+}
+
 export interface ReceiptsCompareSide {
   batteries: string[];
   trips: number;
   sessions: string[];
   addedByNames: string[];
+  entries: ReceiptsSideEntry[];
   batteryOk: boolean;
   tripsVerdict: "ok" | "more" | "fewer";
 }
