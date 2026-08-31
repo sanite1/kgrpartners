@@ -453,6 +453,17 @@ export default function Requests() {
                                 : "Out of stock"}
                         </span>
                       )}
+                      {request.status === "pending" &&
+                        request.warehouse &&
+                        request.warehouse.onHand > 0 && (
+                          <span
+                            className="rounded-full bg-blue-50 px-2.5 py-1 text-[11.5px] font-extrabold text-blue-600"
+                            title={`Matched to "${request.warehouse.name}" in the warehouse`}
+                          >
+                            Warehouse: {request.warehouse.onHand}{" "}
+                            {request.warehouse.unit}
+                          </span>
+                        )}
                       <span className="text-[15px] font-extrabold text-ink">
                         {fmtNaira(request.amount)}
                       </span>
@@ -475,14 +486,6 @@ export default function Requests() {
                         locked until {fmtDate(request.nextRequestDate)}
                       </span>
                     )}
-                    {request.status === "pending" &&
-                      request.warehouse &&
-                      request.warehouse.onHand > 0 && (
-                        <span>
-                          warehouse also has {request.warehouse.onHand}{" "}
-                          {request.warehouse.unit} ("{request.warehouse.name}")
-                        </span>
-                      )}
                     {request.decisionNote && (
                       <span className="text-sage">
                         decision: {request.decisionNote}
@@ -600,7 +603,10 @@ export default function Requests() {
               {approveFor?.itemName} × {approveFor?.quantity}
             </strong>{" "}
             for <strong>{approveFor?.busNumber}</strong>? This deducts the
-            stock ({approveFor?.stock ? `${approveFor.stock.onHand} on hand` : "count unknown"})
+            stock ({approveFor?.stock ? `${approveFor.stock.onHand} on hand` : "count unknown"}
+            {approveFor?.warehouse && approveFor.warehouse.onHand > 0
+              ? `, warehouse holds ${approveFor.warehouse.onHand} more`
+              : ""})
             and books {fmtNaira(approveFor?.amount ?? "0")} as an expenditure.
           </>
         }
