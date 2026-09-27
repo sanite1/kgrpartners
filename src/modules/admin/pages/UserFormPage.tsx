@@ -345,7 +345,9 @@ export default function UserFormPage() {
                   {ACCESS_MODULES.filter(
                     (m) =>
                       role === "admin" ||
-                      (m.key !== "users" && m.key !== "finance"),
+                      (m.key !== "users" &&
+                        m.key !== "finance" &&
+                        (m.key !== "assets" || role === "manager")),
                   ).map((m) => (
                     <label
                       key={m.key}

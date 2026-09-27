@@ -45,6 +45,14 @@ const QUICK_OPTIONS: { id: QuickRange; label: string }[] = [
 
 // One bus's whole trip story. Every generated receipt for the bus IS a
 // trip record, so everything here comes straight from receipts.
+// 1st, 2nd, 3rd, 4th, 11th, 21st
+const ordinal = (n: number) => {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  const suffix = { 1: "st", 2: "nd", 3: "rd" }[n % 10] ?? "th";
+  return `${n}${suffix}`;
+};
+
 export default function BusDetail() {
   const navigate = useNavigate();
   const { id = "" } = useParams();
@@ -150,6 +158,33 @@ export default function BusDetail() {
           </span>
           <span className="mt-1.5 block text-[11px] font-extrabold tracking-[1px] text-mint">
             TRIPS · {periodLabel}
+          </span>
+        </div>
+        <div
+          className={cn(
+            "rounded-2xl border p-4",
+            payload?.rank.position === 1
+              ? "border-forest-border bg-forest-deep"
+              : "border-line bg-white",
+          )}
+        >
+          <span
+            className={cn(
+              "block text-[24px] font-extrabold leading-none",
+              payload?.rank.position === 1 ? "text-neon" : "text-ink",
+            )}
+          >
+            {payload?.rank.position
+              ? `${ordinal(payload.rank.position)} of ${payload.rank.of}`
+              : "-"}
+          </span>
+          <span
+            className={cn(
+              "mt-1.5 block text-[11px] font-extrabold tracking-[1px]",
+              payload?.rank.position === 1 ? "text-mint" : "text-fog",
+            )}
+          >
+            RANK BY TRIPS · {periodLabel}
           </span>
         </div>
         <div className="rounded-2xl border border-line bg-white p-4">

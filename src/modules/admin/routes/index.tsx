@@ -47,6 +47,7 @@ const Conversions = lazy(() => import("../pages/Conversions"));
 const Partnerships = lazy(() => import("../pages/Partnerships"));
 const Expenditures = lazy(() => import("../pages/Expenditures"));
 const Finance = lazy(() => import("../pages/Finance"));
+const CompanyAssets = lazy(() => import("../pages/CompanyAssets"));
 const TripPrice = lazy(() => import("../pages/TripPrice"));
 
 const LoadingFallback = () => (
@@ -118,6 +119,7 @@ export const AdminRoutes = () => {
               <Route path="/reports" element={<Reports />} />
               <Route path="/expenditures" element={<Expenditures />} />
               <Route path="/finance" element={<Finance />} />
+              <Route path="/assets" element={<CompanyAssets />} />
               <Route path="/conversions" element={<Conversions />} />
               <Route path="/partnerships" element={<Partnerships />} />
               <Route path="/profile" element={<Profile />} />

@@ -210,6 +210,12 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
         module: "reports",
       },
       {
+        label: "Company Assets",
+        to: "/assets",
+        icon: "Gem",
+        module: "assets",
+      },
+      {
         label: "Partnerships",
         to: "/partnerships",
         icon: "Handshake",

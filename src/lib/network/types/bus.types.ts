@@ -87,6 +87,7 @@ export interface BusTripsData {
     allTime: BusTripsSummaryBlock;
     range: BusTripsSummaryBlock;
   };
+  rank: { position: number | null; of: number }; // for the period
   minTripsPerDay: number; // days below this are painted red
   days: BusTripDay[];
   lowTripDays: number; // days in the period below the minimum
@@ -109,6 +110,8 @@ export interface BusPerformanceRow extends Bus {
   daysWorked: number;
   avgTripsPerDay: number;
   band: PerformanceBand;
+  rank: number | null; // fleet-wide by trips; null when no trips
+  rankOf: number; // buses that made at least one trip
 }
 
 export interface FleetPerformanceSummary {
@@ -135,6 +138,7 @@ export interface BusPerformanceQueryParams {
   from?: string;
   to?: string;
   band?: PerformanceBand | "all";
+  sort?: "number" | "rank";
 }
 
 // GET /api/buses/:id/maintenance (managers)

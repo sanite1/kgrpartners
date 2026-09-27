@@ -48,6 +48,14 @@ const QUICK_OPTIONS: { id: QuickRange; label: string }[] = [
 
 type BandFilter = PerformanceBand | "all";
 
+// 1st, 2nd, 3rd, 4th, 11th, 21st
+const ordinal = (n: number) => {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  const suffix = { 1: "st", 2: "nd", 3: "rd" }[n % 10] ?? "th";
+  return `${n}${suffix}`;
+};
+
 const BAND_FILTERS: { id: BandFilter; label: string }[] = [
   { id: "all", label: "All" },
   { id: "good", label: "Good (above 3)" },
@@ -89,6 +97,7 @@ export default function Buses() {
   const [from, setFrom] = useState(quickRange("today").from ?? "");
   const [to, setTo] = useState(quickRange("today").to ?? "");
   const [band, setBand] = useState<BandFilter>("all");
+  const [sortByRank, setSortByRank] = useState(false);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>("all");
   const [page, setPage] = useState(1);
@@ -103,6 +112,7 @@ export default function Buses() {
     from: from || undefined,
     to: to || undefined,
     band,
+    sort: sortByRank ? "rank" : undefined,
   });
   const payload = data?.data;
   const buses = payload?.buses ?? [];
@@ -281,6 +291,21 @@ export default function Buses() {
               {f.label}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => {
+              setSortByRank((v) => !v);
+              setPage(1);
+            }}
+            className={cn(
+              "cursor-pointer rounded-full border px-4 py-2 text-[13px] font-bold transition-colors",
+              sortByRank
+                ? "border-transparent bg-forest-deep text-neon"
+                : "border-line bg-white text-bark hover:border-brand-500 hover:text-brand-600",
+            )}
+          >
+            {sortByRank ? "Sorted by rank" : "Sort by rank"}
+          </button>
         </div>
         <div className="flex items-center gap-2">
           <select
@@ -325,6 +350,7 @@ export default function Buses() {
                   "BUS",
                   "DRIVER",
                   "TRIPS",
+                  "RANK",
                   "DAYS WORKED",
                   "AVG / DAY",
                   "PERFORMANCE",
@@ -367,6 +393,25 @@ export default function Buses() {
                     </td>
                     <td className="px-4 py-4 text-[14px] font-extrabold tabular-nums text-ink">
                       {bus.trips}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-4">
+                      {bus.rank ? (
+                        <span
+                          className={cn(
+                            "rounded-full px-2.5 py-1 text-[12px] font-extrabold tabular-nums",
+                            bus.rank === 1
+                              ? "bg-forest-deep text-neon"
+                              : bus.rank <= 3
+                                ? "bg-brand-50 text-brand-600"
+                                : "bg-haze text-bark",
+                          )}
+                          title={`${ordinal(bus.rank)} of ${bus.rankOf} buses that worked`}
+                        >
+                          {ordinal(bus.rank)}
+                        </span>
+                      ) : (
+                        <span className="text-[13px] font-semibold text-fog">-</span>
+                      )}
                     </td>
                     <td className="px-4 py-4 text-[13.5px] font-bold tabular-nums text-bark">
                       {bus.daysWorked}
