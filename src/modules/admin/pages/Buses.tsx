@@ -405,7 +405,7 @@ export default function Buses() {
                                 ? "bg-brand-50 text-brand-600"
                                 : "bg-haze text-bark",
                           )}
-                          title={`${ordinal(bus.rank)} of ${bus.rankOf} buses that worked`}
+                          title={`${ordinal(bus.rank)} of ${bus.rankOf} buses that worked (ties broken by past record)`}
                         >
                           {ordinal(bus.rank)}
                         </span>
