@@ -55,6 +55,12 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
         module: "expenditures",
       },
       {
+        label: "Money Book",
+        to: "/money-book",
+        icon: "PiggyBank",
+        module: "money_book",
+      },
+      {
         label: "Finance",
         to: "/finance",
         icon: "Landmark",
