@@ -301,11 +301,10 @@ export default function Finance() {
           {cur ? monthLabel(cur.month).toUpperCase() : "THIS MONTH"} · HOW THE
           PROFIT IS WORKED OUT
         </div>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-3 px-5 py-4 text-[13.5px] font-semibold text-bark sm:grid-cols-4 lg:grid-cols-7">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3 px-5 py-4 text-[13.5px] font-semibold text-bark sm:grid-cols-3 lg:grid-cols-6">
           {(
             [
               ["Revenue collected", cur?.revenue, ""],
-              ["minus Expenditures", cur?.expenses, "text-fog"],
               ["minus Money Book purchases", cur?.purchases, "text-fog"],
               ["minus Salaries", cur?.salary, "text-fog"],
               ["= Profit", cur?.profit, "font-extrabold text-ink"],
@@ -337,8 +336,7 @@ export default function Finance() {
                 {[
                   "MONTH",
                   "REVENUE",
-                  "EXPENDITURES",
-                  "PURCHASES",
+                  "MONEY BOOK",
                   "SALARIES",
                   "PROFIT",
                   "BUY-DOWN",
@@ -357,9 +355,6 @@ export default function Finance() {
                     {monthLabel(m.month)}
                   </td>
                   <td className={tdClasses}>{fmtNaira(m.revenue)}</td>
-                  <td className={cn(tdClasses, "text-fog")}>
-                    {fmtNaira(m.expenses)}
-                  </td>
                   <td className={cn(tdClasses, "text-fog")}>
                     {fmtNaira(m.purchases)}
                   </td>
