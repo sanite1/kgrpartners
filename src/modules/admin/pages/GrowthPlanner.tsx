@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Target } from "lucide-react";
 import PageMeta from "@/components/shared/PageMeta";
 import PageHead from "../components/console/PageHead";
 import { cn, fmtNaira } from "@/lib/utils";
@@ -468,6 +470,22 @@ export default function GrowthPlanner() {
             </tbody>
           </table>
         </div>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4">
+        <div>
+          <span className="block text-[14px] font-extrabold text-ink">
+            Make this a real goal
+          </span>
+          <span className="block text-[12px] font-semibold text-fog">
+            Track the money that actually goes in against this plan.
+          </span>
+        </div>
+        <Link
+          to={`/goals?new=1&daily=${dailyNum}&rate=${rateNum}&months=${monthsNum}`}
+          className="cta-gradient flex items-center gap-2 rounded-[10px] px-5 py-3 text-[14px] font-extrabold text-forest-deep no-underline transition-transform hover:scale-[1.02]"
+        >
+          <Target size={16} strokeWidth={3} /> Send to Goal Tracker
+        </Link>
       </div>
       <p className="m-0 mt-3 text-[12px] font-semibold text-fog">
         A projection, not a promise: it assumes the rate holds and every deposit

@@ -228,6 +228,12 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
         module: "growth_planner",
       },
       {
+        label: "Goal Tracker",
+        to: "/goals",
+        icon: "Target",
+        module: "goal_tracker",
+      },
+      {
         label: "Partnerships",
         to: "/partnerships",
         icon: "Handshake",

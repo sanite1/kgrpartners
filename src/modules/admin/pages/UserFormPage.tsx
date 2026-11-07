@@ -349,7 +349,8 @@ export default function UserFormPage() {
                         m.key !== "finance" &&
                         ((m.key !== "assets" &&
                           m.key !== "money_book" &&
-                          m.key !== "growth_planner") ||
+                          m.key !== "growth_planner" &&
+                          m.key !== "goal_tracker") ||
                           role === "manager")),
                   ).map((m) => (
                     <label
