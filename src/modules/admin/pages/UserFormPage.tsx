@@ -347,7 +347,9 @@ export default function UserFormPage() {
                       role === "admin" ||
                       (m.key !== "users" &&
                         m.key !== "finance" &&
-                        ((m.key !== "assets" && m.key !== "money_book") ||
+                        ((m.key !== "assets" &&
+                          m.key !== "money_book" &&
+                          m.key !== "growth_planner") ||
                           role === "manager")),
                   ).map((m) => (
                     <label

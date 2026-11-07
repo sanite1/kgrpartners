@@ -222,6 +222,12 @@ export const CONSOLE_NAV_GROUPS: ConsoleNavGroup[] = [
         module: "assets",
       },
       {
+        label: "Growth Planner",
+        to: "/growth-planner",
+        icon: "TrendingUp",
+        module: "growth_planner",
+      },
+      {
         label: "Partnerships",
         to: "/partnerships",
         icon: "Handshake",
