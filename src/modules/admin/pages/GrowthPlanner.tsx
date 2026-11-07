@@ -63,7 +63,7 @@ const project = (
       contribution: money(monthly),
       interest: money(interest),
       closing: money(balance),
-      nextYield: money((balance + monthly) * (r / 12)),
+      nextYield: money(balance * (r / 12)),
     });
   }
   return rows;
@@ -89,7 +89,7 @@ export default function GrowthPlanner() {
   );
   const last = rows[rows.length - 1];
   const deposits = money(rows.reduce((s, r) => s + r.contribution, 0));
-  const interest = money(rows.reduce((s, r) => s + r.interest, 0));
+  const interest = money((last?.closing ?? 0) - deposits);
   const peak = Math.max(1, last?.closing ?? 1);
   const years = monthsNum / 12;
   const yearsText =
@@ -287,11 +287,11 @@ export default function GrowthPlanner() {
         ).map(([label, value, green]) => (
           <div
             key={label}
-            className="rounded-2xl border border-line bg-white p-4"
+            className="min-w-0 rounded-2xl border border-line bg-white p-4"
           >
             <span
               className={cn(
-                "block text-[20px] font-extrabold leading-none tabular-nums",
+                "block break-all text-[16px] font-extrabold leading-tight tabular-nums sm:text-[20px]",
                 green ? "text-brand-600" : "text-ink",
               )}
             >
