@@ -45,6 +45,7 @@ export interface CreateRepairJobPayload {
   busId?: string;
   batteryId?: string;
   parts?: RepairPartInput[];
+  laborCost?: string;
 }
 
 export interface CompleteRepairJobPayload {

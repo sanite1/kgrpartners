@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Outlet, NavLink, Link, Navigate, useLocation } from "react-router-dom";
 import {
+  ChevronDown,
   LayoutDashboard,
   Bus,
   Tag,
@@ -118,6 +119,24 @@ const AdminLayout = () => {
     };
   }, [drawerOpen]);
 
+  // the sidebar is taller than most laptop screens now; a mouse user
+  // needs to see that it scrolls, so show a thin bar and a nudge at
+  // the bottom while there is more below
+  const navRef = useRef<HTMLElement | null>(null);
+  const [moreBelow, setMoreBelow] = useState(false);
+  const measure = useCallback(() => {
+    const el = navRef.current;
+    if (!el) return;
+    setMoreBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 24);
+  }, []);
+  useEffect(() => {
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [measure, navGroups.length]);
+  const nudgeDown = () =>
+    navRef.current?.scrollBy({ top: 240, behavior: "smooth" });
+
   if (blocked) return <Navigate to="/" replace />;
 
   const sidebarContent = (
@@ -131,7 +150,11 @@ const AdminLayout = () => {
       </div>
 
       {/* nav: grouped sections, scrolls on its own when taller than the screen */}
-      <nav className="no-scrollbar flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 pb-28 lg:pb-8">
+      <nav
+        ref={navRef}
+        onScroll={measure}
+        className="sidebar-scroll flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 pb-28 lg:pb-8"
+      >
         {navGroups.map((group, gi) => (
           <div
             key={group.title ?? `group-${gi}`}
@@ -173,8 +196,18 @@ const AdminLayout = () => {
   return (
     <div className="flex min-h-screen bg-haze">
       {/* desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-[248px] flex-none flex-col bg-forest-deep lg:flex">
+      <aside className="relative sticky top-0 hidden h-screen w-[248px] flex-none flex-col bg-forest-deep lg:flex">
         {sidebarContent}
+        {moreBelow && (
+          <button
+            type="button"
+            onClick={nudgeDown}
+            aria-label="Scroll the menu down"
+            className="absolute bottom-3 left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-1 rounded-full border border-forest-border bg-forest px-3 py-1.5 text-[11px] font-extrabold text-neon shadow-lg transition-colors hover:bg-forest-border"
+          >
+            <ChevronDown size={14} strokeWidth={3} /> more
+          </button>
+        )}
       </aside>
 
       {/* mobile top bar */}

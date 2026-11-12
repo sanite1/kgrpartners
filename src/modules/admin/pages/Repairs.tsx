@@ -57,6 +57,7 @@ export default function Repairs() {
   // form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [outsideCost, setOutsideCost] = useState("");
   const [busSearch, setBusSearch] = useState("");
   const [busOpen, setBusOpen] = useState(false);
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
@@ -141,6 +142,7 @@ export default function Repairs() {
   const resetForm = () => {
     setTitle("");
     setDescription("");
+    setOutsideCost("");
     setSelectedBus(null);
     setBusSearch("");
     setSelectedBattery(null);
@@ -158,6 +160,7 @@ export default function Repairs() {
   const canSubmit =
     title.trim().length >= 3 &&
     (selectedBus || selectedBattery) &&
+    (!outsideCost || moneyPattern.test(outsideCost)) &&
     !createJob.isPending;
 
   const submit = () => {
@@ -166,6 +169,7 @@ export default function Repairs() {
       {
         title: title.trim(),
         description: description || undefined,
+        laborCost: outsideCost || undefined,
         busId: selectedBus?._id,
         batteryId: selectedBattery?._id,
         parts: draftParts.map((p) => ({
@@ -315,6 +319,32 @@ export default function Repairs() {
                   onChange={(e) => setDescription(e.target.value)}
                   className={cn(inputClasses, "resize-y")}
                 />
+              </div>
+
+              {/* outside work: a mechanic called in, a part bought
+                  elsewhere, anything not taken from stock */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="rj-outside" className={labelClasses}>
+                  Outside work / labour (₦)
+                </label>
+                <input
+                  id="rj-outside"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={outsideCost}
+                  onChange={(e) => setOutsideCost(e.target.value)}
+                  className={inputClasses}
+                />
+                <p className="m-0 text-[12px] font-semibold text-fog">
+                  What was paid for work or parts not from stock. It counts into
+                  the bus's maintenance cost the moment the job opens.
+                </p>
+                {outsideCost && !moneyPattern.test(outsideCost) && (
+                  <p className="m-0 text-[12px] font-bold text-red-600">
+                    Enter a plain amount like 100000 or 2500.50
+                  </p>
+                )}
               </div>
 
               {/* parts */}
@@ -534,7 +564,9 @@ export default function Repairs() {
                           <button
                             type="button"
                             onClick={() => {
-                              setLaborCost("");
+                              setLaborCost(
+                                Number(job.laborCost) > 0 ? job.laborCost : "",
+                              );
                               setCompleteNote("");
                               setCompleteFor(job);
                             }}

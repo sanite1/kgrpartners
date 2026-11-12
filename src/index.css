@@ -168,6 +168,25 @@
   }
 }
 
+/* console sidebar: a thin bar a mouse user can see and drag */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(181, 236, 194, 0.35) transparent;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(181, 236, 194, 0.35);
+  border-radius: 999px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(181, 236, 194, 0.6);
+}
+
 /* scrolls without showing a scrollbar (console sidebar) */
 .no-scrollbar {
   scrollbar-width: none;
