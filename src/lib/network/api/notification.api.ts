@@ -2,6 +2,9 @@ import { api } from "../api";
 import type { ApiResponse } from "../types/api.types";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { NOTIFICATIONS_ENABLED } from "../notificationsFlag";
+
+export { NOTIFICATIONS_ENABLED };
 
 export interface NotificationCounts {
   lowStock: number;
@@ -27,4 +30,5 @@ export const useGetNotificationCounts = () =>
     refetchInterval: 5 * 60_000,
     refetchIntervalInBackground: false,
     staleTime: 60_000,
+    enabled: NOTIFICATIONS_ENABLED,
   });

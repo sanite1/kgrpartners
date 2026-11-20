@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bell, ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { useGetNotificationCounts } from "@/lib/network/api/notification.api";
+import {
+  NOTIFICATIONS_ENABLED,
+  useGetNotificationCounts,
+} from "@/lib/network/api/notification.api";
 import { canApprove } from "../../permissions";
 import { cn } from "@/lib/utils";
 
@@ -209,7 +212,7 @@ const TopBar = () => (
   <header className="sticky top-0 z-40 hidden h-[84px] items-center justify-between border-b border-line bg-white px-10 lg:flex">
     <span className="text-[13.5px] font-bold text-fog">{todayLabel()}</span>
     <div className="flex items-center gap-3">
-      <NotificationBell />
+      {NOTIFICATIONS_ENABLED && <NotificationBell />}
       <ProfileBadge />
     </div>
   </header>
