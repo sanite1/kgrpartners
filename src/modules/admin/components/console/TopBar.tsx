@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bell, ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useAuthStore } from "@/lib/network/stores/auth.store";
-import { useGetItems } from "@/lib/network/api/inventory.api";
-import { useGetPartRequests } from "@/lib/network/api/partRequest.api";
-import { useGetGatePasses } from "@/lib/network/api/gatePass.api";
+import { useGetNotificationCounts } from "@/lib/network/api/notification.api";
 import { canApprove } from "../../permissions";
 import { cn } from "@/lib/utils";
 
@@ -35,25 +33,13 @@ export const NotificationBell = () => {
   const role = useAuthStore((s) => s.user?.role);
   const isSecurity = role === "security";
 
-  // real signals, refreshed each minute: stock running low, requests waiting
-  const { data: lowStockData } = useGetItems(
-    { lowStock: "true", isActive: "true", pageSize: 1 },
-    { refetchInterval: 60_000 },
-  );
-  const { data: pendingData } = useGetPartRequests(
-    { status: "pending", pageSize: 1 },
-    { refetchInterval: 60_000, enabled: !isSecurity },
-  );
-  // gate passes: managers see what waits for a decision (and staff their
-  // own pending); the gate sees what has been cleared for release
-  const { data: gatePassData } = useGetGatePasses(
-    { status: isSecurity ? "approved" : "pending", pageSize: 1 },
-    { refetchInterval: 60_000 },
-  );
-
-  const lowStock = isSecurity ? 0 : (lowStockData?.pagination?.totalItems ?? 0);
-  const pending = isSecurity ? 0 : (pendingData?.pagination?.totalItems ?? 0);
-  const gatePasses = gatePassData?.pagination?.totalItems ?? 0;
+  // real signals in one cheap call: stock running low, requests waiting,
+  // gate passes to decide (managers) or to release (the gate). The
+  // server applies each page's access rules, so hidden areas count zero.
+  const { data: countsData } = useGetNotificationCounts();
+  const lowStock = countsData?.data?.lowStock ?? 0;
+  const pending = countsData?.data?.pending ?? 0;
+  const gatePasses = countsData?.data?.gatePasses ?? 0;
   const count = lowStock + pending + gatePasses;
 
   return (
